@@ -1,8 +1,10 @@
 export class Util {
   static mergeDescriptors(infDescriptor, supDescriptor) {
     let descriptor = {
-      enumerable: 'enumerable' in infDescriptor ? infDescriptor.enumerable : true,
-      configurable: 'configurable' in infDescriptor ? infDescriptor.configurable : true
+      enumerable: 'enumerable' in infDescriptor ?
+          infDescriptor.enumerable : true,
+      configurable: 'configurable' in infDescriptor ?
+          infDescriptor.configurable : true
     };
     if ('set' in supDescriptor || 'get' in supDescriptor) {
       let setter = supDescriptor.set || infDescriptor.set;
@@ -22,8 +24,10 @@ export class Util {
       descriptor.set = setter || undefined;
       descriptor.get = getter || undefined;
     } else {
-      descriptor.value = supDescriptor.value || undefined;
-      descriptor.writable = 'writable' in supDescriptor ? supDescriptor.writable : true;
+      descriptor.value = 'value' in supDescriptor ?
+          supDescriptor.value : undefined;
+      descriptor.writable = 'writable' in supDescriptor ?
+          supDescriptor.writable : true;
     }
     return descriptor;
   }

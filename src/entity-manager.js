@@ -113,7 +113,8 @@ export class EntityManager {
         let data = EntityData.extract(entity);
         return Promise.resolve()
           .then(() => applyAsPromise(config.prePersist, entity))
-          .then(() => Reflect.apply(fetch, servers.get(this), [id ? `${path}/${id}` : path, data]))
+          .then(() => Reflect.apply(fetch, servers.get(this),
+              [id ? `${path}/${id}` : path, data]))
           .then(raw => raw && EntityData.inject(entity, raw))
           .then(() => applyAsPromise(config.postPersist, entity))
           .then(() => entity);
@@ -143,7 +144,8 @@ export class EntityManager {
         let config = EntityConfig.get(entity);
         return Promise.resolve()
           .then(() => applyAsPromise(config.preRemove, entity))
-          .then(() => id ? servers.get(this).delete(`${path}/${id}`) : undefined)
+          .then(() => id ?
+              servers.get(this).delete(`${path}/${id}`) : undefined)
           .then(() => config.configure({removed: true}))
           .then(() => applyAsPromise(config.postRemove, entity))
           .then(() => entity);

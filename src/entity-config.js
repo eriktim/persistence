@@ -60,7 +60,7 @@ class EntityPropertyConfig {
   configure(config) {
     Object.keys(config).forEach(key => {
       if (!Reflect.has(this, key)) {
-        throw new Error(`entity property key '${key}' is not a valid configuration`);
+        throw new Error(`unknown entity property configuration key: ${key}`);
       }
       if (this[key]) {
         throw new Error(`entity property key '${key}' is already configured`);

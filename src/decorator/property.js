@@ -7,5 +7,6 @@ export function Property(pathOrTarget, optPropertyKey, optDescriptor) {
     let path = isDecorator ? optPropertyKey : pathOrTarget || optPropertyKey;
     EntityConfig.get(target).configureProperty(propertyKey, {path});
   };
-  return isDecorator ? deco(pathOrTarget, optPropertyKey, optDescriptor) : deco;
+  return isDecorator ?
+      deco(pathOrTarget, optPropertyKey, optDescriptor) : deco;
 }

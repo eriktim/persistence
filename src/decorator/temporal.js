@@ -7,6 +7,8 @@ export const TemporalType = Object.seal({
   TIME: 'HH:mm:ss'
 });
 
+const formats = Object.keys(TemporalType).map(key => TemporalType[key]);
+
 export function Temporal(typeOrTarget, optPropertyKey, optDescriptor) {
   let isDecorator = Util.isPropertyDecorator(...arguments);
   let type = TemporalType.DATETIME;
@@ -14,7 +16,7 @@ export function Temporal(typeOrTarget, optPropertyKey, optDescriptor) {
     type = typeOrTarget || TemporalType.DATETIME;
   }
   let deco = function(target, propertyKey, descriptor) {
-    if (!Object.keys(TemporalType).map(key => TemporalType[key]).find(t => t === type)) {
+    if (!formats.find(f => f === type)) {
       throw new Error(`invalid type for @Temporal() ${propertyKey}`);
     }
     throw new Error('not yet implemented');
