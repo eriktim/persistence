@@ -1,0 +1,26 @@
+define(['exports', '../entity-config', '../util'], function (exports, _entityConfig, _util) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.PostRemove = PostRemove;
+  function PostRemove(optTarget, optPropertyKey, optDescriptor) {
+    var isDecorator = _util.Util.isPropertyDecorator.apply(_util.Util, arguments);
+    var deco = function deco(target, propertyKey, descriptor) {
+      var postRemove = target[propertyKey];
+      if (typeof postRemove !== 'function') {
+        throw new Error('@postRemove ' + propertyKey + ' is not a function');
+      }
+      var config = _entityConfig.EntityConfig.get(target);
+      config.configure({ postRemove: postRemove });
+      return {
+        configurable: true,
+        enumerable: false,
+        value: undefined,
+        writable: false
+      };
+    };
+    return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
+  }
+});
