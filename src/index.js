@@ -1,6 +1,7 @@
 // TODO
-// PreUpdate
-// PostUpdate
+// * PreUpdate
+// * PostUpdate
+// * Symbol('originalData')
 
 export {EntityManager} from './entity-manager';
 export {ElementCollection} from './decorator/element-collection';

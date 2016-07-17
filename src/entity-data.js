@@ -1,10 +1,9 @@
-// TODO accept propertyPath
-// TODO Symbol('originalData')
-// TODO get propertyPath from config
 import {Util} from './util';
 
-const VERSION = '__version__';
+export const VERSION = '__version__';
+
 const dataMap = new WeakMap();
+const PATH_SPLITTER = /[.\[)](.+)?/;
 
 function getData(entity) {
   if (!dataMap.has(entity)) {
@@ -13,15 +12,46 @@ function getData(entity) {
   return dataMap.get(entity);
 }
 
+function nextProperty(path) {
+  let [property, subpath] = path.split(PATH_SPLITTER);
+  return [property.replace(']', ''), subpath];
+}
+
+function readValue(obj, path) {
+  let [property, subpath] = nextProperty(path);
+  if (subpath) {
+    obj = obj[property];
+    return obj ? readValue(obj, subpath) : undefined;
+  }
+  return obj[property];
+}
+
+function writeValue(obj, path, value) {
+  let [property, subpath] = nextProperty(path);
+  if (subpath) {
+    if (!(property in obj)) {
+      let [nextProp] = subpath.split(PATH_SPLITTER);
+      obj[property] = nextProp.endsWith(']') ? [] : {};
+    }
+    obj = obj[property];
+    return obj ? writeValue(obj, subpath, value) : false;
+  }
+  let update = obj[property] !== value;
+  if (update) {
+    obj[property] = value;
+  }
+  return update;
+}
+
 export class EntityData {
   static getProperty(entity, propertyPath) {
-    return getData(entity)[propertyPath];
+    let data = getData(entity);
+    return readValue(data, propertyPath);
   }
 
   static setProperty(entity, propertyPath, value) {
     let data = getData(entity);
-    if (value !== data[propertyPath]) {
-      data[propertyPath] = value;
+    if (writeValue(data, propertyPath, value)) {
       entity[VERSION]++;
     }
   }
@@ -46,7 +76,6 @@ export class EntityData {
       });
     }
     dataMap.set(entity, data);
-    // TODO sub-objects (propertyPath)
   }
 }
 

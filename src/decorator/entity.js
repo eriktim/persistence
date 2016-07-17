@@ -22,14 +22,15 @@ export function Entity(pathOrTarget) {
       if (propConfig && propConfig.transient) {
         return;
       }
+      const path = propConfig ? propConfig.path || propertyKey : propertyKey;
       let ownDescriptor = Object.getOwnPropertyDescriptor(
           Target.prototype, propertyKey) || {};
       let descriptor = Util.mergeDescriptors(ownDescriptor, {
         get: function() {
-          return EntityData.getProperty(this, propertyKey);
+          return EntityData.getProperty(this, path);
         },
         set: function(value) {
-          return EntityData.setProperty(this, propertyKey, value);
+          return EntityData.setProperty(this, path, value);
         }
       });
       let finalDescriptor = propertyDecorator ?
