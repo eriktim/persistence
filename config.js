@@ -8,6 +8,7 @@ System.config({
 
   map: {
     "aurelia-binding": "npm:aurelia-binding@1.0.0-beta.1.3.6",
+    "moment": "npm:moment@2.14.1",
     "npm:aurelia-binding@1.0.0-beta.1.3.6": {
       "aurelia-logging": "npm:aurelia-logging@1.0.0-beta.1.2.1",
       "aurelia-metadata": "npm:aurelia-metadata@1.0.0-beta.1.2.1",

@@ -1,3 +1,4 @@
+import {EntityData} from './entity-data';
 import {Util} from './util';
 
 const configurations = new WeakMap();
@@ -41,12 +42,15 @@ export class EntityConfig {
 
   configureProperty(propertyKey, config) {
     if (!(propertyKey in this.propertyMap)) {
-      this.propertyMap[propertyKey] = new EntityPropertyConfig();
+      this.propertyMap[propertyKey] = new EntityPropertyConfig(propertyKey);
     }
     this.propertyMap[propertyKey].configure(config);
   }
 
   getProperty(propertyKey) {
+    if (!(propertyKey in this.propertyMap)) {
+      this.configureProperty(propertyKey, {});
+    }
     return this.propertyMap[propertyKey];
   }
 }
@@ -57,13 +61,20 @@ class EntityPropertyConfig {
   setter = undefined;
   transient = undefined;
 
+  constructor(propertyKey) {
+    let getPath = () => this.path || propertyKey;
+    this.getter = function() {
+      return EntityData.getProperty(this, getPath());
+    };
+    this.setter = function(value) {
+      return EntityData.setProperty(this, getPath(), value);
+    };
+  }
+
   configure(config) {
     Object.keys(config).forEach(key => {
       if (!Reflect.has(this, key)) {
         throw new Error(`unknown entity property configuration key: ${key}`);
-      }
-      if (this[key]) {
-        throw new Error(`entity property key '${key}' is already configured`);
       }
       this[key] = config[key];
     });

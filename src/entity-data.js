@@ -44,14 +44,14 @@ function writeValue(obj, path, value) {
 }
 
 export class EntityData {
-  static getProperty(entity, propertyPath) {
+  static getProperty(entity, path) {
     let data = getData(entity);
-    return readValue(data, propertyPath);
+    return readValue(data, path);
   }
 
-  static setProperty(entity, propertyPath, value) {
+  static setProperty(entity, path, value) {
     let data = getData(entity);
-    if (writeValue(data, propertyPath, value)) {
+    if (writeValue(data, path, value)) {
       entity[VERSION]++;
     }
   }

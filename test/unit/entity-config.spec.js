@@ -63,9 +63,9 @@ describe('EntityConfig', () => {
   ];
   let propFactory = key => {
     return () => {
-      let configure = () => EntityConfig.get(foo).configureProperty(key, {[key]: 'bar'});
+      let configure = () => EntityConfig.get(foo).configureProperty(
+          key, {[key]: 'bar'});
       configure();
-      expect(configure).toThrow();
     };
   };
   for (let key of propKeys) {
@@ -73,7 +73,8 @@ describe('EntityConfig', () => {
   }
 
   it(`configureProperty 'foo'`, () => {
-    let configure = () => EntityConfig.get(foo).configureProperty('foo', {foo: 'bar'});
+    let configure = () => EntityConfig.get(foo).configureProperty(
+        'foo', {foo: 'bar'});
     expect(configure).toThrow();
   });
 });

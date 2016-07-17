@@ -19,19 +19,14 @@ export function Entity(pathOrTarget) {
     const instance = Reflect.construct(Target, []);
     Object.keys(instance).forEach(propertyKey => {
       const propConfig = config.getProperty(propertyKey);
-      if (propConfig && propConfig.transient) {
+      if (propConfig.transient) {
         return;
       }
-      const path = propConfig ? propConfig.path || propertyKey : propertyKey;
       let ownDescriptor = Object.getOwnPropertyDescriptor(
           Target.prototype, propertyKey) || {};
       let descriptor = Util.mergeDescriptors(ownDescriptor, {
-        get: function() {
-          return EntityData.getProperty(this, path);
-        },
-        set: function(value) {
-          return EntityData.setProperty(this, path, value);
-        }
+        get: propConfig.getter,
+        set: propConfig.setter
       });
       let finalDescriptor = propertyDecorator ?
           propertyDecorator(target, propertyKey, descriptor) : descriptor;
