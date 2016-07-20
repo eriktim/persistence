@@ -1,5 +1,3 @@
-// TODO 'removed' flag
-
 import {Config} from './config';
 import {EntityConfig} from './entity-config';
 import {EntityData} from './entity-data';
@@ -12,9 +10,13 @@ export function getServerForTesting(entityManager) {
 }
 
 function getId(entity) {
-  let idKey = EntityConfig.get(entity).idKey;
+  const config = EntityConfig.get(entity);
+  let idKey = config.idKey;
   if (!idKey) {
     throw new Error('Entity has no primary key');
+  }
+  if (config.removed) {
+    throw new Error('Entity has been deleted');
   }
   return entity[idKey];
 }
@@ -128,11 +130,9 @@ export class EntityManager {
   reload(entity) {
     return Promise.resolve()
       .then(() => {
-        let Entity = Util.getClass(entity);
-        let idKey = EntityConfig.get(Entity).idKey;
-        let id = entity[idKey];
+        let id = getId(entity);
         EntityData.inject(entity, {});
-        return this.findById(Entity, id);
+        return this.findById(Util.getClass(entity), id);
       });
   }
 

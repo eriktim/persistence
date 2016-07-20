@@ -9,11 +9,12 @@ export class Stub {
     let server = getServerForTesting(entityManager);
     server.fetch = function(path, init, propertyMap) {
       if (propertyMap) {
-        throw new Error('propertyMap is not supported by the stub entity manager');
+        throw new Error('propertyMap is not supported' +
+            ' by the stub entity manager');
       }
       entityManager.requests.push({
         path,
-        body: JSON.parse(init.body)
+        body: JSON.parse(init.body || '{}')
       });
     };
     return entityManager;
