@@ -3,7 +3,7 @@ import {Util} from '../util';
 
 export function Transient(optTarget, optPropertyKey, optDescriptor) {
   let isDecorator = Util.isPropertyDecorator(...arguments);
-  let deco = function(target, propertyKey, descriptor) {
+  let deco = function(target, propertyKey) {
     EntityConfig.get(target).configureProperty(propertyKey, {transient: true});
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;

@@ -13,10 +13,8 @@ class Foo {
   @Id
   key;
 
-  undecorated = undefined;
-
   @Temporal
-  direct;
+  noFactory;
 
   @Temporal()
   default;
@@ -55,8 +53,8 @@ describe('Temporal', () => {
     });
   });
 
-  it('Direct', () => {
-    checkDateTime(foo, data, 'direct');
+  it('No factory', () => {
+    checkDateTime(foo, data, 'noFactory');
     expect(() => foo.direct = 'some day').toThrow();
   });
 

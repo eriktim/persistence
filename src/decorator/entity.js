@@ -46,6 +46,12 @@ export function Entity(pathOrTarget) {
             Reflect.apply(entityManager.config.onCreate, null, [this]);
           }
           if (!entityManager.config.extensible) {
+            Object.keys(instance).forEach(propertyKey => {
+              const propConfig = config.getProperty(propertyKey);
+              if (propConfig.transient && !Reflect.has(this, propertyKey)) {
+                this[propertyKey] = undefined;
+              }
+            });
             Object.preventExtensions(this);
           }
         }, argumentsList, Target);
