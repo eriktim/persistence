@@ -1,7 +1,16 @@
-import {EntityConfig} from '../entity-config';
 import {Util} from '../util';
 
-export function Embeddable(Target) {
+const embeddables = new WeakSet();
+
+export function isEmbeddable(entity) {
+  let Target = Util.getClass(entity);
+  return embeddables.has(Target);
+}
+
+export function Embeddable(optTarget) {
   let isDecorator = Util.isClassDecorator(...arguments);
-  throw new Error('not yet implemented');
+  let deco = function(Target) {
+    embeddables.add(Target);
+  };
+  return isDecorator ? deco(optTarget) : deco;
 }
