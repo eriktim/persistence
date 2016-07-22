@@ -1,4 +1,3 @@
-import {EntityData} from '../entity-data';
 import {EntityConfig} from '../entity-config';
 import {Util} from '../util';
 

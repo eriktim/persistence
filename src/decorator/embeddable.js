@@ -1,4 +1,4 @@
-import {Entity} from './entity';
+import {Entity as entityDecorator} from './entity';
 import {Util} from '../util';
 
 const embeddables = new WeakSet();
@@ -11,7 +11,7 @@ export function isEmbeddable(entity) {
 export function Embeddable(optTarget) {
   let isDecorator = Util.isClassDecorator(...arguments);
   let deco = function(Target) {
-    Entity()(Target);
+    entityDecorator()(Target);
     embeddables.add(Target);
   };
   return isDecorator ? deco(optTarget) : deco;

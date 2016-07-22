@@ -7,13 +7,13 @@ export function OneToOne(Type) {
       (Util.is(Type) && !Util.isClass(Type))) {
     throw new Error('@OneToOne requires a constructor argument');
   }
-  return function(target, propertyKey, descriptor) {
+  return function(target, propertyKey) {
     if (!Type) {
       Type = target.constructor;
     }
     let getter = function() {
       let id = EntityData.getProperty(this, propertyKey);
-      console.warn('TODO @OneToOne ' + id);
+      throw new Error('TODO @OneToOne ' + id);
     };
     let setter = function(value) {
       if (!(value instanceof Type)) {

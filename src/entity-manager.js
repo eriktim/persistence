@@ -214,8 +214,7 @@ class Server {
         }
         return null;
       })
-      .catch(err => {
-        console.error(err.message);
+      .catch(() => {
         return null;
       });
   }
