@@ -2,6 +2,7 @@ import {EntityData} from './entity-data';
 import {Util} from './util';
 
 const configurations = new WeakMap();
+const propertyKeys = new Map();
 
 export class EntityConfig {
   static get(target) {
@@ -61,13 +62,18 @@ class EntityPropertyConfig {
   setter = undefined;
   transient = undefined;
 
+  get fullPath() {
+    return this.path || propertyKeys.get(this);
+  }
+
   constructor(propertyKey) {
-    let getPath = () => this.path || propertyKey;
+    const config = this;
+    propertyKeys.set(config, propertyKey);
     this.getter = function() {
-      return EntityData.getProperty(this, getPath());
+      return EntityData.getProperty(this, config.fullPath);
     };
     this.setter = function(value) {
-      return EntityData.setProperty(this, getPath(), value);
+      return EntityData.setProperty(this, config.fullPath, value);
     };
   }
 
