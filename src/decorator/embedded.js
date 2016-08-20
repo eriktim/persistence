@@ -12,11 +12,11 @@ function getEmbeddedDataFactory(Type, path, getter) {
     }
     const embeddedData = embeddedDataMap.get(target);
     if (!embeddedData.has(propertyKey)) {
-      let type = new Type();
       let data = Reflect.apply(getter, target, []) || {};
       if (!Util.isObject(data)) {
         throw new Error('embedded data is corrupt');
       }
+      let type = new Type();
       EntityData.inject(type, data);
       EntityData.setProperty(target, path, data);
       embeddedData.set(propertyKey, type);

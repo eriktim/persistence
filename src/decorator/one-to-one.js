@@ -2,6 +2,7 @@ import {EntityConfig} from '../entity-config';
 import {EntityData} from '../entity-data';
 import {Util} from '../util';
 
+// TODO fetch=FetchType.LAZY
 export function OneToOne(Type) {
   if (Util.isPropertyDecorator(...arguments) ||
       (Util.is(Type) && !Util.isClass(Type))) {

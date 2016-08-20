@@ -1,3 +1,5 @@
+// TODO move @Embedded/@Collection/@Entity binding outside @Entity
+
 import {Config} from '../config';
 import {EntityConfig} from '../entity-config';
 import {EntityData} from '../entity-data';

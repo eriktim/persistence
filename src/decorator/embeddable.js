@@ -1,3 +1,5 @@
+// TODO deprecated
+
 import {Entity as entityDecorator} from './entity';
 import {Util} from '../util';
 

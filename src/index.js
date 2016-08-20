@@ -1,6 +1,7 @@
 // TODO
 // * PreUpdate
 // * PostUpdate
+// * version @ Embedded/Collection
 // * Symbol('originalData') a.k.a. reset
 
 export {EntityManager} from './entity-manager';
