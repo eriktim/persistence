@@ -2,8 +2,7 @@ import {Entity as entityDecorator} from './decorator/entity';
 import {EntityConfig} from './entity-config';
 import {PersistentData} from './persistent-data';
 
-const arrayMap = new WeakMap();
-const typeMap = new WeakMap();
+const configMap = new WeakMap();
 
 class Collection extends Set {
   create() {
@@ -12,37 +11,40 @@ class Collection extends Set {
   }
 
   add(data) {
-    let Type = typeMap.get(this);
-    let item = new Type();
+    let config = configMap.get(this);
+    let item = new config.Type();
+    if (!config.isExtensible) {
+      Object.preventExtensions(item);
+    }
     PersistentData.inject(item, data);
-    arrayMap.get(this).push(data);
+    config.array.push(data);
     super.add(item);
     return this;
   }
 
   clear() {
-    let array = arrayMap.get(this);
-    array.splice(0, array.length);
+    let config = configMap.get(this);
+    config.array.splice(0, config.array.length);
     super.clear();
   }
 
   delete(item) {
-    let array = arrayMap.get(this);
+    let config = configMap.get(this);
     let data = PersistentData.extract(item);
-    let index = array.indexOf(data);
-    array.splice(index, 1);
+    let index = config.array.indexOf(data);
+    config.array.splice(index, 1);
     return super.delete(item);
   }
 }
 
 export class CollectionFactory {
-  static create(Type, array) {
-    if (!EntityConfig.has(Type)) { // FIXME should be handled in function call
-      entityDecorator()(Type);
-    }
+  static create(Type, array, isExtensible) {
     let collection = new Collection();
-    typeMap.set(collection, Type);
-    arrayMap.set(collection, array);
+    configMap.set(collection, {
+      Type,
+      array,
+      isExtensible
+    });
     array.forEach(data => {
       let item = collection.create();
       PersistentData.inject(item, data);

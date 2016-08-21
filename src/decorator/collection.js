@@ -2,6 +2,7 @@ import {CollectionFactory} from '../collection';
 import {EntityConfig} from '../entity-config';
 import {PersistentData} from '../persistent-data';
 import {Util} from '../util';
+import {isCollectable} from './collectable';
 
 const collectionsMap = new WeakMap();
 
@@ -16,7 +17,8 @@ function getCollectionFactory(Type, path, getter) {
       if (!Array.isArray(data)) {
         throw new Error('collection data is corrupt');
       }
-      let collection = CollectionFactory.create(Type, data);
+      let collection = CollectionFactory.create(
+          Type, data, Object.isExtensible(target));
       PersistentData.setProperty(target, path, data);
       collections.set(propertyKey, collection);
     }
@@ -27,6 +29,9 @@ function getCollectionFactory(Type, path, getter) {
 export function Collection(Type) {
   if (Util.isPropertyDecorator(...arguments) || !Util.isClass(Type)) {
     throw new Error('@Collection requires a type');
+  }
+  if (!isCollectable(Type)) {
+    throw new Error('@Collection type must be collectable');
   }
   return function(target, propertyKey, descriptor) {
     let config = EntityConfig.get(target).getProperty(propertyKey);

@@ -1,17 +1,17 @@
 import {persistify} from '../persistify';
 import {Util} from '../util';
 
-const embeddables = new WeakSet();
+const collectables = new WeakSet();
 
-export function isEmbeddable(entity) {
+export function isCollectable(entity) {
   let Target = Util.getClass(entity);
-  return embeddables.has(Target);
+  return collectables.has(Target);
 }
 
-export function Embeddable(optTarget) {
+export function Collectable(optTarget) {
   let isDecorator = Util.isClassDecorator(...arguments);
   let deco = function(Target) {
-    embeddables.add(Target);
+    collectables.add(Target);
     return persistify(Target);
   };
   return isDecorator ? deco(optTarget) : deco;

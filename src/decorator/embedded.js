@@ -17,6 +17,9 @@ function getEmbeddedDataFactory(Type, path, getter) {
         throw new Error('embedded data is corrupt');
       }
       let type = new Type();
+      if (!Object.isExtensible(target)) {
+        Object.preventExtensions(type);
+      }
       PersistentData.inject(type, data);
       PersistentData.setProperty(target, path, data);
       embeddedData.set(propertyKey, type);

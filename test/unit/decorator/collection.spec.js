@@ -1,9 +1,11 @@
+import {Collectable} from '../../../src/decorator/collectable';
 import {Collection} from '../../../src/decorator/collection';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PersistentData} from '../../../src/persistent-data';
 import {Stub} from '../stub';
 
+@Collectable
 class Bar {
   baz = undefined;
 }
