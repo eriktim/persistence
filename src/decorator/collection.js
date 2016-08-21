@@ -2,7 +2,7 @@ import {CollectionFactory} from '../collection';
 import {EntityConfig} from '../entity-config';
 import {PersistentData} from '../persistent-data';
 import {Util} from '../util';
-import {isCollectable} from './collectable';
+import {isCollectible} from './collectible';
 
 const collectionsMap = new WeakMap();
 
@@ -30,7 +30,7 @@ export function Collection(Type) {
   if (Util.isPropertyDecorator(...arguments) || !Util.isClass(Type)) {
     throw new Error('@Collection requires a type');
   }
-  if (!isCollectable(Type)) {
+  if (!isCollectible(Type)) {
     throw new Error('@Collection type must be collectable');
   }
   return function(target, propertyKey, descriptor) {

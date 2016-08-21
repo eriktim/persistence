@@ -1,17 +1,17 @@
 import {Persistent} from '../persistent';
 import {Util} from '../util';
 
-const embeddables = new WeakSet();
+const collectibles = new WeakSet();
 
-export function isEmbeddable(entity) {
+export function isCollectible(entity) {
   let Target = Util.getClass(entity);
-  return embeddables.has(Target);
+  return collectibles.has(Target);
 }
 
-export function Embeddable(optTarget) {
+export function Collectible(optTarget) {
   let isDecorator = Util.isClassDecorator(...arguments);
   let deco = function(Target) {
-    embeddables.add(Target);
+    collectibles.add(Target);
     return Persistent.decorate(Target);
   };
   return isDecorator ? deco(optTarget) : deco;

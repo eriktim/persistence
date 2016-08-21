@@ -1,5 +1,3 @@
-import {Entity as entityDecorator} from './decorator/entity';
-import {EntityConfig} from './entity-config';
 import {PersistentData} from './persistent-data';
 
 const configMap = new WeakMap();

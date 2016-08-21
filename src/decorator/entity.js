@@ -1,6 +1,6 @@
 import {EntityConfig} from '../entity-config';
 import {EntityManager} from '../entity-manager';
-import {persistify} from '../persistify';
+import {Persistent} from '../persistent';
 import {Util} from '../util';
 
 export function Entity(pathOrTarget) {
@@ -12,7 +12,7 @@ export function Entity(pathOrTarget) {
     const config = EntityConfig.get(Target);
     config.configure({path});
 
-    return persistify(Target, function(instance, entityManager) {
+    return Persistent.decorate(Target, function(entityManager) {
       if (!(entityManager instanceof EntityManager)) {
         throw new Error(
             `Entity '${Target.name}' must be created by an EntityManager`);
@@ -21,12 +21,6 @@ export function Entity(pathOrTarget) {
         Reflect.apply(entityManager.config.onCreate, null, [this]);
       }
       if (!entityManager.config.extensible) {
-        Object.keys(instance).forEach(propertyKey => {
-          const propConfig = config.getProperty(propertyKey);
-          if (propConfig.transient && !Reflect.has(this, propertyKey)) {
-            this[propertyKey] = undefined;
-          }
-        });
         Object.preventExtensions(this);
       }
     });
