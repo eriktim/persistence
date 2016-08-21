@@ -1,7 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Property} from '../../../src/decorator/property';
-import {EntityData} from '../../../src/entity-data';
+import {PersistentData} from '../../../src/persistent-data';
 import {Stub} from '../stub';
 
 @Entity
@@ -37,7 +37,7 @@ describe('Property', () => {
       for (let prop in foo) {
         foo[prop] = 1;
       }
-      data = EntityData.extract(foo);
+      data = PersistentData.extract(foo);
     });
   });
 

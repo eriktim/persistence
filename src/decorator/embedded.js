@@ -1,6 +1,6 @@
 import {isEmbeddable} from './embeddable';
 import {EntityConfig} from '../entity-config';
-import {EntityData} from '../entity-data';
+import {PersistentData} from '../persistent-data';
 import {Util} from '../util';
 
 const embeddedDataMap = new WeakMap();
@@ -17,8 +17,8 @@ function getEmbeddedDataFactory(Type, path, getter) {
         throw new Error('embedded data is corrupt');
       }
       let type = new Type();
-      EntityData.inject(type, data);
-      EntityData.setProperty(target, path, data);
+      PersistentData.inject(type, data);
+      PersistentData.setProperty(target, path, data);
       embeddedData.set(propertyKey, type);
     }
     return embeddedData.get(propertyKey);

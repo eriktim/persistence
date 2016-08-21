@@ -5,11 +5,11 @@ export const VERSION = '__version__';
 const dataMap = new WeakMap();
 const PATH_SPLITTER = /[.\[)](.+)?/;
 
-function getData(entity) {
-  if (!dataMap.has(entity)) {
-    dataMap.set(entity, {});
+function getData(obj) {
+  if (!dataMap.has(obj)) {
+    dataMap.set(obj, {});
   }
-  return dataMap.get(entity);
+  return dataMap.get(obj);
 }
 
 function nextProperty(path) {
@@ -43,39 +43,36 @@ function writeValue(obj, path, value) {
   return update;
 }
 
-export class EntityData {
-  static getProperty(entity, path) {
-    let data = getData(entity);
+export class PersistentData {
+  static getProperty(obj, path) {
+    let data = getData(obj);
     return readValue(data, path);
   }
 
-  static setProperty(entity, path, value) {
-    let data = getData(entity);
+  static setProperty(obj, path, value) {
+    let data = getData(obj);
     if (writeValue(data, path, value)) {
-      entity[VERSION]++;
+      obj[VERSION]++;
     }
   }
 
-  static extract(entity) {
-    if (!dataMap.has(entity)) {
-      return null;
-    }
-    return dataMap.get(entity);
+  static extract(obj) {
+    return dataMap.has(obj) ? dataMap.get(obj) : null;
   }
 
-  static inject(entity, data) {
+  static inject(obj, data) {
     if (!Util.isObject(data)) {
       throw new Error('injection data must be an object');
     }
-    if (!Reflect.has(entity, VERSION)) {
-      Reflect.defineProperty(entity, VERSION, {
+    if (!Reflect.has(obj, VERSION)) {
+      Reflect.defineProperty(obj, VERSION, {
         configurable: true,
         enumerable: false,
         writable: true,
         value: 1
       });
     }
-    dataMap.set(entity, data);
+    dataMap.set(obj, data);
   }
 }
 

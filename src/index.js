@@ -5,7 +5,7 @@
 // * Symbol('originalData') a.k.a. reset
 
 export {EntityManager} from './entity-manager';
-export {ElementCollection} from './decorator/element-collection';
+export {Collection} from './decorator/collection';
 export {Embeddable} from './decorator/embeddable';
 export {Embedded} from './decorator/embedded';
 export {Entity} from './decorator/entity';

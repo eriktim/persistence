@@ -1,7 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Transient} from '../../../src/decorator/transient';
-import {EntityData} from '../../../src/entity-data';
+import {PersistentData} from '../../../src/persistent-data';
 import {Stub} from '../stub';
 
 @Entity
@@ -26,7 +26,7 @@ describe('Temporal', () => {
     let entityManager = Stub.createEntityManager();
     return entityManager.create(Foo, {}).then(f => {
       foo = f;
-      data = EntityData.extract(foo);
+      data = PersistentData.extract(foo);
     });
   });
 

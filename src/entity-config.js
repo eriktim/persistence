@@ -1,4 +1,4 @@
-import {EntityData} from './entity-data';
+import {PersistentData} from './persistent-data';
 import {Util} from './util';
 
 const configurations = new WeakMap();
@@ -70,10 +70,10 @@ class EntityPropertyConfig {
     const config = this;
     propertyKeys.set(config, propertyKey);
     this.getter = function() {
-      return EntityData.getProperty(this, config.fullPath);
+      return PersistentData.getProperty(this, config.fullPath);
     };
     this.setter = function(value) {
-      return EntityData.setProperty(this, config.fullPath, value);
+      return PersistentData.setProperty(this, config.fullPath, value);
     };
   }
 

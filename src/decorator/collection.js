@@ -1,6 +1,6 @@
 import {CollectionFactory} from '../collection';
 import {EntityConfig} from '../entity-config';
-import {EntityData} from '../entity-data';
+import {PersistentData} from '../persistent-data';
 import {Util} from '../util';
 
 const collectionsMap = new WeakMap();
@@ -17,7 +17,7 @@ function getCollectionFactory(Type, path, getter) {
         throw new Error('collection data is corrupt');
       }
       let collection = CollectionFactory.create(Type, data);
-      EntityData.setProperty(target, path, data);
+      PersistentData.setProperty(target, path, data);
       collections.set(propertyKey, collection);
     }
     return collections.get(propertyKey);

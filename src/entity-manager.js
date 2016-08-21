@@ -1,6 +1,6 @@
 import {Config} from './config';
 import {EntityConfig} from './entity-config';
-import {EntityData} from './entity-data';
+import {PersistentData} from './persistent-data';
 import {Util} from './util';
 
 const servers = new WeakMap();
@@ -76,7 +76,7 @@ export class EntityManager {
         let config = EntityConfig.get(Target);
         let entity = new Target(this);
         return Promise.resolve()
-          .then(() => EntityData.inject(entity, data))
+          .then(() => PersistentData.inject(entity, data))
           .then(() => applyAsPromise(config.postLoad, entity))
           .then(() => entity);
       });
@@ -112,12 +112,12 @@ export class EntityManager {
         let fetch = id ? servers.get(this).put : servers.get(this).post;
         let path = getPath(entity);
         let config = EntityConfig.get(entity);
-        let data = EntityData.extract(entity);
+        let data = PersistentData.extract(entity);
         return Promise.resolve()
           .then(() => applyAsPromise(config.prePersist, entity))
           .then(() => Reflect.apply(fetch, servers.get(this),
               [id ? `${path}/${id}` : path, data]))
-          .then(raw => raw && EntityData.inject(entity, raw))
+          .then(raw => raw && PersistentData.inject(entity, raw))
           .then(() => applyAsPromise(config.postPersist, entity))
           .then(() => entity);
       });
@@ -131,7 +131,7 @@ export class EntityManager {
     return Promise.resolve()
       .then(() => {
         let id = getId(entity);
-        EntityData.inject(entity, {});
+        PersistentData.inject(entity, {});
         return this.findById(Util.getClass(entity), id);
       });
   }

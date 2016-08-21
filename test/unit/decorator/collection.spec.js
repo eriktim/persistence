@@ -1,7 +1,7 @@
 import {Collection} from '../../../src/decorator/collection';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
-import {EntityData} from '../../../src/entity-data';
+import {PersistentData} from '../../../src/persistent-data';
 import {Stub} from '../stub';
 
 class Bar {
@@ -30,7 +30,7 @@ describe('Collection', () => {
       expect(bar).toEqual(jasmine.any(Bar));
       bar.baz = 'boo';
       expect(bar.baz).toEqual('boo');
-      expect(EntityData.extract(foo)).toEqual({bars: [{baz: 'boo'}]});
+      expect(PersistentData.extract(foo)).toEqual({bars: [{baz: 'boo'}]});
     });
   });
 

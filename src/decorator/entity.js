@@ -2,7 +2,7 @@
 
 import {Config} from '../config';
 import {EntityConfig} from '../entity-config';
-import {EntityData} from '../entity-data';
+import {PersistentData} from '../persistent-data';
 import {EntityManager} from '../entity-manager';
 import {Util} from '../util';
 
@@ -43,7 +43,7 @@ export function Entity(pathOrTarget) {
             throw new Error(
                 `Entity '${Target.name}' must be created by an EntityManager`);
           }
-          EntityData.inject(this, {});
+          PersistentData.inject(this, {});
           if (typeof entityManager.config.onCreate === 'function') {
             Reflect.apply(entityManager.config.onCreate, null, [this]);
           }

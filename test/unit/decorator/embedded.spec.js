@@ -2,7 +2,7 @@ import {Embeddable} from '../../../src/decorator/embeddable';
 import {Embedded} from '../../../src/decorator/embedded';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
-import {EntityData} from '../../../src/entity-data';
+import {PersistentData} from '../../../src/persistent-data';
 import {Stub} from '../stub';
 
 @Embeddable class Bar {
@@ -30,7 +30,7 @@ describe('Embeddable', () => {
       expect('baz' in foo.bar).toEqual(true);
       expect(foo.bar.baz).toBeUndefined();
       foo.bar.baz = 'boo';
-      expect(EntityData.extract(foo)).toEqual({bar: {baz: 'boo'}});
+      expect(PersistentData.extract(foo)).toEqual({bar: {baz: 'boo'}});
     });
   });
 

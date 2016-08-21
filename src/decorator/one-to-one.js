@@ -1,5 +1,5 @@
 import {EntityConfig} from '../entity-config';
-import {EntityData} from '../entity-data';
+import {PersistentData} from '../persistent-data';
 import {Util} from '../util';
 
 // TODO fetch=FetchType.LAZY
@@ -13,14 +13,14 @@ export function OneToOne(Type) {
       Type = target.constructor;
     }
     let getter = function() {
-      let id = EntityData.getProperty(this, propertyKey);
+      let id = PersistentData.getProperty(this, propertyKey);
       throw new Error('TODO @OneToOne ' + id);
     };
     let setter = function(value) {
       if (!(value instanceof Type)) {
         throw new Error(`invalid reference for '${propertyKey}':`, value);
       }
-      EntityData.setProperty(this, propertyKey, getId(value));
+      PersistentData.setProperty(this, propertyKey, getId(value));
     };
     EntityConfig.get(target).configureProperty(propertyKey, {setter, getter});
   };

@@ -1,6 +1,6 @@
 import {Entity as entityDecorator} from './decorator/entity';
 import {EntityConfig} from './entity-config';
-import {EntityData} from './entity-data';
+import {PersistentData} from './persistent-data';
 
 const arrayMap = new WeakMap();
 const typeMap = new WeakMap();
@@ -14,7 +14,7 @@ class Collection extends Set {
   add(data) {
     let Type = typeMap.get(this);
     let item = new Type();
-    EntityData.inject(item, data);
+    PersistentData.inject(item, data);
     arrayMap.get(this).push(data);
     super.add(item);
     return this;
@@ -28,7 +28,7 @@ class Collection extends Set {
 
   delete(item) {
     let array = arrayMap.get(this);
-    let data = EntityData.extract(item);
+    let data = PersistentData.extract(item);
     let index = array.indexOf(data);
     array.splice(index, 1);
     return super.delete(item);
@@ -45,7 +45,7 @@ export class CollectionFactory {
     arrayMap.set(collection, array);
     array.forEach(data => {
       let item = collection.create();
-      EntityData.inject(item, data);
+      PersistentData.inject(item, data);
     });
     return collection;
   }

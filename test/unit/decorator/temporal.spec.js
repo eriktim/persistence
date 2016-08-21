@@ -1,7 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Temporal, TemporalFormat} from '../../../src/decorator/temporal';
-import {EntityData} from '../../../src/entity-data';
+import {PersistentData} from '../../../src/persistent-data';
 import {Stub} from '../stub';
 
 const DATE = '2000-01-01';
@@ -49,7 +49,7 @@ describe('Temporal', () => {
     let entityManager = Stub.createEntityManager();
     return entityManager.create(Foo, {}).then(f => {
       foo = f;
-      data = EntityData.extract(foo);
+      data = PersistentData.extract(foo);
     });
   });
 
