@@ -40,7 +40,8 @@ describe('Util', () => {
     expect(Util.getClass(Foo)).toEqual(Foo);
     expect(Util.getClass(foo)).toEqual(Foo);
     expect(Util.getClass(new Proxy(Foo, {}))).toEqual(Foo);
-    expect(() => Util.getClass('Bar')).toThrowError('expected instance or class');
+    expect(() => Util.getClass('Bar')).toThrowError(
+        'target must be an instance or class');
   });
 
   it('is', () => {

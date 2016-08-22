@@ -62,7 +62,7 @@ export class PersistentData {
 
   static inject(obj, data) {
     if (!Util.isObject(data)) {
-      throw new Error('injection data must be an object');
+      throw new TypeError('injection data must be an object');
     }
     if (!Reflect.has(obj, VERSION)) {
       Reflect.defineProperty(obj, VERSION, {

@@ -34,7 +34,7 @@ export function Embedded(Type) {
     throw new Error('@Embedded requires a type');
   }
   if (!isEmbeddable(Type)) {
-    throw new Error('embedded object is not embeddable');
+    throw new TypeError('embedded object is not embeddable');
   }
   return function(target, propertyKey) {
     let config = EntityConfig.get(target).getProperty(propertyKey);

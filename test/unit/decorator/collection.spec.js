@@ -28,7 +28,7 @@ describe('Collection', () => {
   it('Empty', () => {
     return entityManager.create(Foo, {}).then(foo => {
       expect(foo.bars.size).toEqual(0);
-      let bar = foo.bars.create();
+      let bar = foo.bars.newItem();
       expect(bar).toEqual(jasmine.any(Bar));
       bar.baz = 'boo';
       expect(bar.baz).toEqual('boo');
@@ -47,7 +47,7 @@ describe('Collection', () => {
 
   it('Invalid', () => {
     return entityManager.create(Foo, {bars: 'bars'}).then(foo => {
-      expect(() => foo.bars.create()).toThrow();
+      expect(() => foo.bars.newItem()).toThrow();
     });
   });
 

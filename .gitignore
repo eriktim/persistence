@@ -1,4 +1,5 @@
-.idea
-jspm_packages
-node_modules
+.idea/
+coverage/
+jspm_packages/
+node_modules/
 *.iml

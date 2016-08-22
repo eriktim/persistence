@@ -31,7 +31,7 @@ export function Collection(Type) {
     throw new Error('@Collection requires a type');
   }
   if (!isCollectible(Type)) {
-    throw new Error('@Collection type must be collectable');
+    throw new TypeError('@Collection type must be collectable');
   }
   return function(target, propertyKey, descriptor) {
     let config = EntityConfig.get(target).getProperty(propertyKey);

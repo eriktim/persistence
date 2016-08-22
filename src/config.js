@@ -44,7 +44,7 @@ export class Config {
 
   static setPropertyDecorator(decorator) {
     if (typeof decorator !== 'function') {
-      throw new Error('property decorator must be a function');
+      throw new TypeError('property decorator must be a function');
     }
     propertyDecorator = decorator;
   }

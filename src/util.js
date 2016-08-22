@@ -38,7 +38,7 @@ export class Util {
       return target.prototype.constructor;
     }
     if (!Util.isObject(target)) {
-      throw new Error('expected instance or class');
+      throw new TypeError('target must be an instance or class');
     }
     return target.constructor;
   }
