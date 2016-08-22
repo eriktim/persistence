@@ -6,7 +6,7 @@ export function PostPersist(optTarget, optPropertyKey, optDescriptor) {
   let deco = function(target, propertyKey, descriptor) {
     let postPersist = target[propertyKey];
     if (typeof postPersist !== 'function') {
-      throw new Error(`@postPersist ${propertyKey} is not a function`);
+      throw new Error(`@PostPersist ${propertyKey} is not a function`);
     }
     let config = EntityConfig.get(target);
     config.configure({postPersist});

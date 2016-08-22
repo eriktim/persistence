@@ -27,7 +27,6 @@ export class EntityConfig {
   prePersist = undefined;
   preRemove = undefined;
   propertyMap = {};
-  removed = false;
 
   configure(config) {
     Object.keys(config).forEach(key => {

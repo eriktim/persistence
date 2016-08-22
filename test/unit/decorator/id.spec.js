@@ -2,7 +2,7 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Stub} from '../stub';
 
-describe('Id', () => {
+describe('@Id', () => {
   let entityManager;
 
   beforeEach(() => {

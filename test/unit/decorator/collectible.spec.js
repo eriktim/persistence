@@ -2,7 +2,7 @@ import {Collectible, isCollectible} from '../../../src/decorator/collectible';
 import {Entity} from '../../../src/decorator/entity';
 import {Stub} from '../stub';
 
-describe('Collectible', () => {
+describe('@Collectible', () => {
   let entityManager;
 
   beforeEach(() => {

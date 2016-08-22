@@ -18,7 +18,7 @@ class Bar {
   bars;
 }
 
-describe('Collection', () => {
+describe('@Collection', () => {
   let entityManager;
 
   beforeEach(() => {

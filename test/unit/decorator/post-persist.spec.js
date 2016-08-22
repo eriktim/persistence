@@ -15,7 +15,7 @@ class Foo {
   }
 }
 
-describe('PostPersist', () => {
+describe('@PostPersist', () => {
   let entityManager;
   let foo;
 
@@ -33,5 +33,13 @@ describe('PostPersist', () => {
           const request = entityManager.requests.pop();
           expect(request && 'triggered' in request.body).toBeFalsy();
         });
+  });
+
+  it('Invalid usage', () => {
+    expect(() => {
+      @Entity class Bar {
+        @PostPersist prop = 'val';
+      }
+    }).toThrowError('@PostPersist prop is not a function');
   });
 });

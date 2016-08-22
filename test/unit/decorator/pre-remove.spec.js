@@ -2,6 +2,7 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PreRemove} from '../../../src/decorator/pre-remove';
 import {EntityConfig} from '../../../src/entity-config';
+import {REMOVED} from '../../../src/entity-manager';
 import {Stub} from '../stub';
 
 @Entity
@@ -12,11 +13,11 @@ class Foo {
 
   @PreRemove
   trigger() {
-    this.removed = EntityConfig.get(this).removed;
+    this.removed = this[REMOVED];
   }
 }
 
-describe('PreRemove', () => {
+describe('@PreRemove', () => {
   let entityManager;
   let foo;
 
@@ -35,5 +36,13 @@ describe('PreRemove', () => {
         expect(f.trigger).toBeUndefined();
         expect(f.removed).toEqual(false);
       });
+  });
+
+  it('Invalid usage', () => {
+    expect(() => {
+      @Entity class Bar {
+        @PreRemove prop = 'val';
+      }
+    }).toThrowError('@PreRemove prop is not a function');
   });
 });

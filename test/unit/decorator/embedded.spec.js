@@ -17,7 +17,7 @@ import {Stub} from '../stub';
   bar;
 }
 
-describe('Embeddable', () => {
+describe('@Embedded', () => {
   let entityManager;
 
   beforeEach(() => {

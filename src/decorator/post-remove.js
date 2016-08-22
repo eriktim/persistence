@@ -6,7 +6,7 @@ export function PostRemove(optTarget, optPropertyKey, optDescriptor) {
   let deco = function(target, propertyKey, descriptor) {
     let postRemove = target[propertyKey];
     if (typeof postRemove !== 'function') {
-      throw new Error(`@postRemove ${propertyKey} is not a function`);
+      throw new Error(`@PostRemove ${propertyKey} is not a function`);
     }
     let config = EntityConfig.get(target);
     config.configure({postRemove});

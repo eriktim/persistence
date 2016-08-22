@@ -2,6 +2,7 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PostRemove} from '../../../src/decorator/post-remove';
 import {EntityConfig} from '../../../src/entity-config';
+import {REMOVED} from '../../../src/entity-manager';
 import {Stub} from '../stub';
 
 @Entity
@@ -12,11 +13,11 @@ class Foo {
 
   @PostRemove
   trigger() {
-    this.removed = EntityConfig.get(this).removed;
+    this.removed = this[REMOVED];
   }
 }
 
-describe('PostRemove', () => {
+describe('@PostRemove', () => {
   let entityManager;
   let foo;
 
@@ -35,5 +36,13 @@ describe('PostRemove', () => {
         expect(f.trigger).toBeUndefined();
         expect(f.removed).toEqual(true);
       });
+  });
+
+  it('Invalid usage', () => {
+    expect(() => {
+      @Entity class Bar {
+        @PostRemove prop = 'val';
+      }
+    }).toThrowError('@PostRemove prop is not a function');
   });
 });

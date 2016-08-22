@@ -5,6 +5,8 @@ import {Util} from './util';
 
 const servers = new WeakMap();
 
+export const REMOVED = '__removed__';
+
 export function getServerForTesting(entityManager) {
   return servers.get(entityManager);
 }
@@ -15,7 +17,7 @@ function getId(entity) {
   if (!idKey) {
     throw new Error('Entity has no primary key');
   }
-  if (config.removed) {
+  if (entity[REMOVED]) {
     throw new Error('Entity has been deleted');
   }
   return entity[idKey];
@@ -146,7 +148,7 @@ export class EntityManager {
           .then(() => applyAsPromise(config.preRemove, entity))
           .then(() => id ?
               servers.get(this).delete(`${path}/${id}`) : undefined)
-          .then(() => config.configure({removed: true}))
+          .then(() => entity[REMOVED] = true)
           .then(() => applyAsPromise(config.postRemove, entity))
           .then(() => entity);
       });

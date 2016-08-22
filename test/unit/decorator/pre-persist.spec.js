@@ -15,7 +15,7 @@ class Foo {
   }
 }
 
-describe('PrePersist', () => {
+describe('@PrePersist', () => {
   let entityManager;
   let foo;
 
@@ -33,5 +33,13 @@ describe('PrePersist', () => {
           const request = entityManager.requests.pop();
           expect(request && 'triggered' in request.body).toBeTruthy();
         });
+  });
+
+  it('Invalid usage', () => {
+    expect(() => {
+      @Entity class Bar {
+        @PrePersist prop = 'val';
+      }
+    }).toThrowError('@PrePersist prop is not a function');
   });
 });

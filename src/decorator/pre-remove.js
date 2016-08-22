@@ -6,7 +6,7 @@ export function PreRemove(optTarget, optPropertyKey, optDescriptor) {
   let deco = function(target, propertyKey, descriptor) {
     let preRemove = target[propertyKey];
     if (typeof preRemove !== 'function') {
-      throw new Error(`@preRemove ${propertyKey} is not a function`);
+      throw new Error(`@PreRemove ${propertyKey} is not a function`);
     }
     let config = EntityConfig.get(target);
     config.configure({preRemove});

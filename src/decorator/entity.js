@@ -1,5 +1,5 @@
 import {EntityConfig} from '../entity-config';
-import {EntityManager} from '../entity-manager';
+import {EntityManager, REMOVED} from '../entity-manager';
 import {Persistent} from '../persistent';
 import {Util} from '../util';
 
@@ -20,6 +20,12 @@ export function Entity(pathOrTarget) {
       if (typeof entityManager.config.onCreate === 'function') {
         Reflect.apply(entityManager.config.onCreate, null, [this]);
       }
+      Reflect.defineProperty(this, REMOVED, {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: false
+      });
       if (!entityManager.config.extensible) {
         Object.preventExtensions(this);
       }

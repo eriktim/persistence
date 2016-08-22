@@ -5,7 +5,7 @@ import {Stub} from '../stub';
 
 Config.create();
 
-describe('Entity', () => {
+describe('@Entity', () => {
   let entityManager;
 
   beforeEach(() => {

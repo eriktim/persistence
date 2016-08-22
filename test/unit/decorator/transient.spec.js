@@ -18,7 +18,7 @@ class Foo {
   default;
 }
 
-describe('Temporal', () => {
+describe('@Transient', () => {
   let foo;
   let data;
 

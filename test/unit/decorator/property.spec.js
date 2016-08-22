@@ -27,7 +27,7 @@ class Foo {
   array;
 }
 
-describe('Property', () => {
+describe('@Property', () => {
   let entityManager;
   let data;
 

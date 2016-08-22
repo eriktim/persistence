@@ -31,8 +31,7 @@ describe('EntityConfig', () => {
     'postRemove',
     'preLoad',
     'prePersist',
-    'preRemove',
-    'removed'
+    'preRemove'
   ];
   let factory = key => {
     return () => {

@@ -41,7 +41,7 @@ function checkDateTime(entity, data, property) {
   expect(entity[property].second()).toEqual(0);
 }
 
-describe('Temporal', () => {
+describe('@Temporal', () => {
   let foo;
   let data;
 

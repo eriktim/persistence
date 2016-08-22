@@ -15,7 +15,7 @@ class Foo {
   }
 }
 
-describe('PostLoad', () => {
+describe('@PostLoad', () => {
   let entityManager;
 
   beforeEach(() => {
@@ -28,5 +28,13 @@ describe('PostLoad', () => {
           expect(f.trigger).toBeUndefined();
           expect(f.triggered).toBeTruthy();
         });
+  });
+
+  it('Invalid usage', () => {
+    expect(() => {
+      @Entity class Bar {
+        @PostLoad prop = 'val';
+      }
+    }).toThrowError('@PostLoad prop is not a function');
   });
 });

@@ -2,7 +2,7 @@ import {Embeddable, isEmbeddable} from '../../../src/decorator/embeddable';
 import {Entity} from '../../../src/decorator/entity';
 import {Stub} from '../stub';
 
-describe('Embeddable', () => {
+describe('@Embeddable', () => {
   let entityManager;
 
   beforeEach(() => {
