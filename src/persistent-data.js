@@ -1,6 +1,5 @@
+import {VERSION, defineSymbol} from './symbols';
 import {Util} from './util';
-
-export const VERSION = '__version__';
 
 const dataMap = new WeakMap();
 const PATH_SPLITTER = /[.\[)](.+)?/;
@@ -65,14 +64,10 @@ export class PersistentData {
       throw new TypeError('injection data must be an object');
     }
     if (!Reflect.has(obj, VERSION)) {
-      Reflect.defineProperty(obj, VERSION, {
-        configurable: true,
-        enumerable: false,
-        writable: true,
-        value: 1
-      });
+      defineSymbol(obj, VERSION, 0);
     }
     dataMap.set(obj, data);
+    obj[VERSION]++;
   }
 }
 

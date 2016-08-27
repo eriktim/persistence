@@ -2,7 +2,7 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PreRemove} from '../../../src/decorator/pre-remove';
 import {EntityConfig} from '../../../src/entity-config';
-import {REMOVED} from '../../../src/entity-manager';
+import {REMOVED} from '../../../src/symbols';
 import {Stub} from '../stub';
 
 @Entity

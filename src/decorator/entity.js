@@ -1,6 +1,7 @@
 import {EntityConfig} from '../entity-config';
-import {EntityManager, REMOVED} from '../entity-manager';
+import {EntityManager} from '../entity-manager';
 import {Persistent} from '../persistent';
+import {REMOVED, defineSymbol} from '../symbols';
 import {Util} from '../util';
 
 export function Entity(pathOrTarget) {
@@ -20,12 +21,7 @@ export function Entity(pathOrTarget) {
       if (typeof entityManager.config.onCreate === 'function') {
         Reflect.apply(entityManager.config.onCreate, null, [this]);
       }
-      Reflect.defineProperty(this, REMOVED, {
-        configurable: true,
-        enumerable: false,
-        writable: true,
-        value: false
-      });
+      defineSymbol(this, REMOVED, false);
       if (!entityManager.config.extensible) {
         Object.preventExtensions(this);
       }

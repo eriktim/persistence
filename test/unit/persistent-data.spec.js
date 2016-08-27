@@ -1,4 +1,5 @@
-import {PersistentData, VERSION} from '../../src/persistent-data';
+import {PersistentData} from '../../src/persistent-data';
+import {VERSION} from '../../src/symbols';
 
 describe('PersistentData', () => {
   let obj;

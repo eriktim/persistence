@@ -1,11 +1,10 @@
 import {Config} from './config';
 import {EntityConfig} from './entity-config';
 import {PersistentData} from './persistent-data';
+import {REMOVED} from './symbols';
 import {Util} from './util';
 
 const servers = new WeakMap();
-
-export const REMOVED = '__removed__';
 
 export function getServerForTesting(entityManager) {
   return servers.get(entityManager);
