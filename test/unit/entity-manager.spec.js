@@ -17,12 +17,17 @@ function createFoo() {
   return Foo;
 }
 
-function expectRejection(promise) {
+function expectRejection(promise, reason = null) {
   return promise.then(
     () => {
       throw new Error('expected Promise to be rejected');
     },
-    () => undefined
+    err => {
+      if (reason) {
+        expect(err.message).toEqual(reason);
+      }
+      return undefined;
+    }
   );
 }
 
@@ -68,10 +73,10 @@ describe('EntityManager', () => {
       });
   });
 
-  it('findById', () => {
-    return expectRejection(entityManager.findById(Bar, 1))
+  it('find', () => {
+    return expectRejection(entityManager.find(Bar, 1))
       .then(() => {
-        return entityManager.findById(Foo, 1)
+        return entityManager.find(Foo, 1)
           .then(() => {
             expect(server.get).toHaveBeenCalledWith('foo/1');
             expect(server.get).toHaveBeenCalledTimes(1);
@@ -80,10 +85,10 @@ describe('EntityManager', () => {
       });
   });
 
-  it('find', () => {
-    return expectRejection(entityManager.find(Bar))
+  it('query', () => {
+    return expectRejection(entityManager.query(Bar))
       .then(() => {
-        return entityManager.find(Foo)
+        return entityManager.query(Foo)
           .then(() => {
             expect(server.get).toHaveBeenCalledTimes(1);
             expect(server.get).toHaveBeenCalledWith('foo', {});
@@ -92,10 +97,10 @@ describe('EntityManager', () => {
       });
   });
 
-  it('save', () => {
-    return expectRejection(entityManager.save(bar))
+  it('persist', () => {
+    return expectRejection(entityManager.persist(bar))
       .then(() => {
-        return entityManager.save(foo)
+        return entityManager.persist(foo)
           .then(() => {
             expect(server.post).toHaveBeenCalledTimes(1);
             expect(server.post)
@@ -105,7 +110,7 @@ describe('EntityManager', () => {
           });
       })
       .then(() => {
-        return entityManager.save(foo)
+        return entityManager.persist(foo)
           .then(() => {
             expect(server.put).toHaveBeenCalledTimes(1);
             expect(server.put)
@@ -116,30 +121,24 @@ describe('EntityManager', () => {
       });
   });
 
-  it('reload', () => {
-    return expectRejection(entityManager.reload(bar))
+  it('refresh', () => {
+    return expectRejection(entityManager.refresh(bar))
+      .then(() => (foo.id = 1, entityManager.refresh(foo)))
       .then(() => {
-        foo.id = 1;
-        return entityManager.reload(foo)
-          .then(() => {
-            expect(server.get).toHaveBeenCalledTimes(1);
-            expect(server.get).toHaveBeenCalledWith('foo/1');
-            expect(entityConfig.postLoad).toHaveBeenCalledTimes(1);
-          });
+        expect(server.get).toHaveBeenCalledTimes(1);
+        expect(server.get).toHaveBeenCalledWith('foo/1');
+        expect(entityConfig.postLoad).toHaveBeenCalledTimes(1);
       });
   });
 
   it('remove', () => {
     return expectRejection(entityManager.remove(bar))
+      .then(() => (foo.id = 1, entityManager.remove(foo)))
       .then(() => {
-        foo.id = 1;
-        return entityManager.remove(foo)
-          .then(() => {
-            expect(server.delete).toHaveBeenCalledTimes(1);
-            expect(server.delete).toHaveBeenCalledWith('foo/1');
-            expect(entityConfig.preRemove).toHaveBeenCalledTimes(1);
-            expect(entityConfig.postRemove).toHaveBeenCalledTimes(1);
-          });
+        expect(server.delete).toHaveBeenCalledTimes(1);
+        expect(server.delete).toHaveBeenCalledWith('foo/1');
+        expect(entityConfig.preRemove).toHaveBeenCalledTimes(1);
+        expect(entityConfig.postRemove).toHaveBeenCalledTimes(1);
       });
   });
 });
@@ -161,58 +160,58 @@ describe('Server', () => {
     return entityManager.create(Foo, {}).then(f => foo = f);
   });
 
-  it('findById', () => {
-    return entityManager.findById(Foo, 1)
-      .then(() => {
-        expect(interceptor).toHaveBeenCalledTimes(1);
-        expect(interceptor).toHaveBeenCalledWith(
-            new Request(`${URL}/foo/1`, {method: 'GET', headers: HEADERS}));
-      });
-  });
-
   it('find', () => {
-    return entityManager.find(Foo, {type: 'bar'})
+    return entityManager.find(Foo, 1)
       .then(() => {
         expect(interceptor).toHaveBeenCalledTimes(1);
-        expect(interceptor).toHaveBeenCalledWith(
-            new Request(`${URL}/foo?type=bar`, {method: 'GET', headers: HEADERS}));
+        expect(interceptor).toHaveBeenCalledWith(new Request(`${URL}/foo/1`,
+            {method: 'GET', headers: HEADERS}));
       });
   });
 
-  it('save (new)', () => {
-    return entityManager.save(foo)
+  it('query', () => {
+    return entityManager.query(Foo, {type: 'bar'})
       .then(() => {
         expect(interceptor).toHaveBeenCalledTimes(1);
-        expect(interceptor).toHaveBeenCalledWith(
-            new Request(`${URL}/foo`, {body: '{}', method: 'POST', headers: HEADERS}));
+        expect(interceptor).toHaveBeenCalledWith(new Request(
+            `${URL}/foo?type=bar`, {method: 'GET', headers: HEADERS}));
       });
   });
 
-  it('save (update)', () => {
+  it('persist (new)', () => {
+    return entityManager.persist(foo)
+      .then(() => {
+        expect(interceptor).toHaveBeenCalledTimes(1);
+        expect(interceptor).toHaveBeenCalledWith(new Request(`${URL}/foo`,
+            {body: '{}', method: 'POST', headers: HEADERS}));
+      });
+  });
+
+  it('persist (update)', () => {
     foo.id = 1;
-    return entityManager.save(foo)
+    return entityManager.persist(foo)
       .then(() => {
         expect(interceptor).toHaveBeenCalledTimes(1);
-        expect(interceptor).toHaveBeenCalledWith(
-            new Request(`${URL}/foo/1`, {body: '{"id":1}', method: 'PUT', headers: HEADERS}));
+        expect(interceptor).toHaveBeenCalledWith(new Request(`${URL}/foo/1`,
+            {body: '{"id":1}', method: 'PUT', headers: HEADERS}));
       });
   });
 
-  it('reload', () => {
-    foo.id = 1;
-    return entityManager.reload(foo)
+  it('refresh', () => {
+    return (foo.id = 1, entityManager.persist(foo))
+      .then(() => entityManager.refresh(foo))
       .then(() => {
-        expect(interceptor).toHaveBeenCalledTimes(1);
+        expect(interceptor).toHaveBeenCalledTimes(2);
         expect(interceptor).toHaveBeenCalledWith(
             new Request(`${URL}/foo/1`, {method: 'GET', headers: HEADERS}));
       });
   });
 
   it('remove', () => {
-    foo.id = 1;
-    return entityManager.remove(foo)
+    return (foo.id = 1, entityManager.persist(foo))
+      .then(() => entityManager.remove(foo))
       .then(() => {
-        expect(interceptor).toHaveBeenCalledTimes(1);
+        expect(interceptor).toHaveBeenCalledTimes(2);
         expect(interceptor).toHaveBeenCalledWith(
             new Request(`${URL}/foo/1`, {method: 'DELETE', headers: HEADERS}));
       });

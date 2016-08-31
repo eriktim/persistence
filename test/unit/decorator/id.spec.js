@@ -13,7 +13,7 @@ describe('@Id', () => {
     @Entity class Foo {}
 
     return entityManager.create(Foo, {key: 123})
-        .then(foo => entityManager.save(foo))
+        .then(foo => entityManager.persist(foo))
         .then(
           () => {throw new Error();},
           err => expect(err.message).toEqual('Entity has no primary key')
@@ -26,7 +26,7 @@ describe('@Id', () => {
     }
 
     return entityManager.create(Foo, {key: 123})
-        .then(foo => entityManager.save(foo))
+        .then(foo => entityManager.persist(foo))
         .then(foo => expect(foo.key).toEqual(123));
   });
 });

@@ -1,5 +1,6 @@
 import {Collectible, isCollectible} from '../../../src/decorator/collectible';
 import {Entity} from '../../../src/decorator/entity';
+import {Id} from '../../../src/decorator/id';
 import {Stub} from '../stub';
 
 describe('@Collectible', () => {
@@ -16,7 +17,9 @@ describe('@Collectible', () => {
   });
 
   it('Entity', () => {
-    @Entity class Foo {}
+    @Entity class Foo {
+      @Id id;
+    }
     expect(isCollectible(Foo)).toEqual(false);
     return entityManager.create(Foo, {}).then(foo => {
       expect(isCollectible(foo)).toEqual(false);

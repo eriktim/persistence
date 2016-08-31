@@ -26,7 +26,7 @@ describe('@PostPersist', () => {
   });
 
   it('Save', () => {
-    return entityManager.save(foo)
+    return entityManager.persist(foo)
         .then(f => {
           expect(f.trigger).toBeUndefined();
           expect(f.triggered).toBeTruthy();

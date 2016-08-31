@@ -1,5 +1,6 @@
 import {Embeddable, isEmbeddable} from '../../../src/decorator/embeddable';
 import {Entity} from '../../../src/decorator/entity';
+import {Id} from '../../../src/decorator/id';
 import {Stub} from '../stub';
 
 describe('@Embeddable', () => {
@@ -16,7 +17,9 @@ describe('@Embeddable', () => {
   });
 
   it('Entity', () => {
-    @Entity class Foo {}
+    @Entity class Foo {
+      @Id id;
+    }
     expect(isEmbeddable(Foo)).toEqual(false);
     return entityManager.create(Foo, {}).then(foo => {
       expect(isEmbeddable(foo)).toEqual(false);

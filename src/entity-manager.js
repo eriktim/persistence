@@ -4,10 +4,19 @@ import {PersistentData} from './persistent-data';
 import {REMOVED} from './symbols';
 import {Util} from './util';
 
-const servers = new WeakMap();
+const serverMap = new WeakMap();
+const contextMap = new WeakMap();
 
 export function getServerForTesting(entityManager) {
-  return servers.get(entityManager);
+  return serverMap.get(entityManager);
+}
+
+function applyAsPromise(fn, thisObj, args = []) {
+  return Promise.resolve(fn ? Reflect.apply(fn, thisObj, args) : undefined);
+}
+
+function attach(entityManager, entity) {
+  contextMap.get(entityManager).add(entity);
 }
 
 function getId(entity) {
@@ -15,9 +24,6 @@ function getId(entity) {
   let idKey = config.idKey;
   if (!idKey) {
     throw new Error('Entity has no primary key');
-  }
-  if (entity[REMOVED]) {
-    throw new Error('Entity has been deleted');
   }
   return entity[idKey];
 }
@@ -31,8 +37,10 @@ function getPath(entityOrEntity) {
   return path;
 }
 
-function applyAsPromise(fn, thisObj, args = []) {
-  return Promise.resolve(fn ? Reflect.apply(fn, thisObj, args) : undefined);
+function assertEntity(entityManager, entity) {
+  if (!entityManager.contains(entity)) {
+    throw new TypeError('argument is not a valid entity');
+  }
 }
 
 function toParams(...maps) {
@@ -62,28 +70,42 @@ export class EntityManager {
       throw new Error('EntityManager requires a Config');
     }
     this.config = config.current;
-    servers.set(this, new Server(this.config));
+    serverMap.set(this, new Server(this.config));
+    this.clear();
+  }
+
+  clear() {
+    contextMap.set(this, new WeakSet());
+  }
+
+  contains(entity) {
+    return contextMap.get(this).has(entity);
   }
 
   create(Target, data) {
     return Promise.resolve()
       .then(() => {
-        if (!EntityConfig.has(Target)) {
+        let config = EntityConfig.get(Target);
+        if (!config || !config.path) {
           throw new Error('EntityManager expects a valid Entity');
         }
         if (!Util.isObject(data)) {
           return null;
         }
-        let config = EntityConfig.get(Target);
         let entity = new Target(this);
         return Promise.resolve()
           .then(() => PersistentData.inject(entity, data))
           .then(() => applyAsPromise(config.postLoad, entity))
+          .then(() => attach(this, entity))
           .then(() => entity);
       });
   }
 
-  findById(Entity, id) {
+  detach(entity) {
+    return contextMap.get(this).delete(entity);
+  }
+
+  find(Entity, id) {
     return Promise.resolve()
       .then(() => {
         if (typeof id !== 'string' && typeof id !== 'number') {
@@ -91,64 +113,69 @@ export class EntityManager {
               `id must be a 'string' or 'number', not '${typeof id}'`);
         }
         let path = getPath(Entity);
-        return servers.get(this).get(`${path}/${id}`)
+        return serverMap.get(this).get(`${path}/${id}`)
           .then(data => this.create(Entity, data));
       });
   }
 
-  find(Entity, propertyMap = {}) {
+  query(Entity, propertyMap = {}) {
     return Promise.resolve()
       .then(() => {
         let path = getPath(Entity);
-        return servers.get(this).get(path, propertyMap)
-          .then(array => Promise.all(array ? array.map(
+        return serverMap.get(this).get(path, propertyMap)
+          .then(values => Promise.all(values ? values.map(
               data => this.create(Entity, data)) : []));
       });
   }
 
-  save(entity) {
+  persist(entity) {
     return Promise.resolve()
       .then(() => {
+        assertEntity(this, entity);
         let id = getId(entity);
-        let fetch = id ? servers.get(this).put : servers.get(this).post;
+        let fetch = id ? serverMap.get(this).put : serverMap.get(this).post;
         let path = getPath(entity);
         let config = EntityConfig.get(entity);
         let data = PersistentData.extract(entity);
         return Promise.resolve()
           .then(() => applyAsPromise(config.prePersist, entity))
-          .then(() => Reflect.apply(fetch, servers.get(this),
+          .then(() => Reflect.apply(fetch, serverMap.get(this),
               [id ? `${path}/${id}` : path, data]))
           .then(raw => raw && PersistentData.inject(entity, raw))
+          .then(() => attach(this, entity))
           .then(() => applyAsPromise(config.postPersist, entity))
           .then(() => entity);
       });
   }
 
   setInterceptor(requestInterceptor) {
-    servers.get(this).requestInterceptor = requestInterceptor;
+    serverMap.get(this).requestInterceptor = requestInterceptor;
   }
 
-  reload(entity) {
+  refresh(entity, reload = false /* TODO */) {
     return Promise.resolve()
       .then(() => {
+        assertEntity(this, entity);
         let id = getId(entity);
         PersistentData.inject(entity, {});
-        return this.findById(Util.getClass(entity), id);
+        return this.find(Util.getClass(entity), id);
       });
   }
 
   remove(entity) {
     return Promise.resolve()
       .then(() => {
+        assertEntity(this, entity);
         let id = getId(entity);
         let path = getPath(entity);
         let config = EntityConfig.get(entity);
         return Promise.resolve()
           .then(() => applyAsPromise(config.preRemove, entity))
           .then(() => id ?
-              servers.get(this).delete(`${path}/${id}`) : undefined)
+              serverMap.get(this).delete(`${path}/${id}`) : undefined)
           .then(() => entity[REMOVED] = true)
           .then(() => applyAsPromise(config.postRemove, entity))
+          .then(() => this.detach(entity))
           .then(() => entity);
       });
   }

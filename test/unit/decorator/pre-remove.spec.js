@@ -26,7 +26,7 @@ describe('@PreRemove', () => {
     return entityManager.create(Foo, {key: 123})
         .then(f => {
           foo = f;
-          return entityManager.save(foo);
+          return entityManager.persist(foo);
         });
   });
 
