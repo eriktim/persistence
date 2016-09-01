@@ -11,6 +11,15 @@ export function getServerForTesting(entityManager) {
   return serverMap.get(entityManager);
 }
 
+export function getUri(entity) {
+  let parts = [getPath(entity), getId(entity)].filter(v => v);
+  return parts.length === 2 ? parts.join('/') : undefined;
+}
+
+export function idFromUri(uri) {
+  return uri ? uri.split('?')[0].split('/').pop() : undefined;
+}
+
 function applyAsPromise(fn, thisObj, args = []) {
   return Promise.resolve(fn ? Reflect.apply(fn, thisObj, args) : undefined);
 }
@@ -57,7 +66,7 @@ function toParams(...maps) {
     .reduce((flat, map) => Object.assign(flat, map), {});
 
   return Object.keys(flatMap).map(key =>
-      `${encodeURIComponent(key)}=${encodeURIComponent(flatMap[key])}`)
+      encodeURIComponent(key) + '=' + encodeURIComponent(flatMap[key]))
       .join('&');
 }
 

@@ -36,19 +36,19 @@ describe('@OneToOne', () => {
   });
 
   it('initial value', () => {
-    expect(foo.bar).toBeUndefined();
+    return foo.bar.then(b => expect(b).toBeUndefined());
   });
 
   it('invalid reference', () => {
     expect(() => foo.bar = foo).toThrowError('invalid reference object');
   });
 
-//  it('unattached reference', () => {
-//    expect(() => foo.bar = emptyBar)
-//        .toThrowError('unattached reference object');
-//  });
+  it('bad reference', () => {
+    expect(() => foo.bar = emptyBar).toThrowError('bad reference object');
+  });
 
   it('valid reference', () => {
     foo.bar = bar;
+    return foo.bar.then(b => expect(b).toEqual(bar));
   });
 });

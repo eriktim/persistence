@@ -1,6 +1,55 @@
 import {EntityConfig} from '../entity-config';
-import {getIdRef, getReference} from '../references';
+import {getUri, idFromUri} from '../entity-manager';
+import {ENTITY_MANAGER} from '../symbols';
 import {Util} from '../util';
+
+const referencesMap = new WeakMap();
+
+function getAndSetReferenceFactory(Type, getter, setter) {
+  return [
+    function(target, propertyKey) {
+      if (!referencesMap.has(target)) {
+        referencesMap.set(target, new Map());
+      }
+      const references = referencesMap.get(target);
+      const entityManager = target[ENTITY_MANAGER];
+      return Promise.resolve()
+        .then(() => {
+          if (!references.has(propertyKey)) {
+            let uri = Reflect.apply(getter, target, []);
+            let id = idFromUri(uri);
+            if (id) {
+              return entityManager.find(Type, id)
+                .then(entity => references.set(propertyKey, entity));
+            }
+          }
+        })
+        .then(() => references.get(propertyKey))
+        .then(entity => {
+          if (entity && !entityManager.contains(target) &&
+              entityManager.contains(entity)) {
+            entityManager.detach(entity);
+          }
+          return entity;
+        });
+    },
+    function(target, propertyKey, entity) {
+      if (!(entity instanceof Type)) {
+        throw new TypeError('invalid reference object');
+      }
+      let uri = getUri(entity);
+      if (!uri) {
+        throw new TypeError('bad reference object');
+      }
+      Reflect.apply(setter, target, [uri]);
+      if (!referencesMap.has(target)) {
+        referencesMap.set(target, new Map());
+      }
+      const references = referencesMap.get(target);
+      references.set(propertyKey, entity);
+    }
+  ];
+}
 
 export function OneToOne(Type, options = {}) {
   if (Util.isPropertyDecorator(...arguments) ||
@@ -9,19 +58,14 @@ export function OneToOne(Type, options = {}) {
   }
   return function(target, propertyKey) {
     let config = EntityConfig.get(target).getProperty(propertyKey);
-    let getter = config.getter;
-    let setter = config.setter;
+    let [getReference, setReference] = getAndSetReferenceFactory(
+        Type, config.getter, config.setter);
     config.configure({
       getter: function() {
-        let idRef = Reflect.apply(getter, this, []);
-        return getReference(idRef);
+        return getReference(this, propertyKey);
       },
       setter: function(val) {
-        if (!(val instanceof Type)) {
-          throw new Error('invalid reference object');
-        }
-        let idRef = getIdRef(val);
-        Reflect.apply(setter, this, [idRef]);
+        setReference(this, propertyKey, val);
       }
     });
   };
