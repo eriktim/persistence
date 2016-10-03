@@ -1,11 +1,13 @@
 import {Config} from './config';
-import {EntityConfig} from './entity-config';
+import {PersistentConfig} from './persistent-config';
 import {PersistentData} from './persistent-data';
-import {REMOVED} from './symbols';
+import {PersistentObject} from './persistent-object';
+import {ENTITY_MANAGER, REMOVED, defineSymbol} from './symbols';
 import {Util} from './util';
 
 const serverMap = new WeakMap();
 const contextMap = new WeakMap();
+const cacheMap = new WeakMap();
 
 export function getServerForTesting(entityManager) {
   return serverMap.get(entityManager);
@@ -20,16 +22,27 @@ export function idFromUri(uri) {
   return uri ? uri.split('?')[0].split('/').pop() : undefined;
 }
 
-function applyAsPromise(fn, thisObj, args = []) {
-  return Promise.resolve(fn ? Reflect.apply(fn, thisObj, args) : undefined);
+function applySafe(fn, thisObj, args = []) {
+  return fn ? Reflect.apply(fn, thisObj, args) : undefined;
+}
+
+function assertEntity(entityManager, entity) {
+  if (!entityManager.contains(entity)) {
+    throw new TypeError('argument is not a valid entity');
+  }
 }
 
 function attach(entityManager, entity) {
   contextMap.get(entityManager).add(entity);
 }
 
+function cachedEntity(entity, cache, uri) {
+  cache.set(uri, entity);
+  return entity;
+}
+
 function getId(entity) {
-  const config = EntityConfig.get(entity);
+  const config = PersistentConfig.get(entity);
   let idKey = config.idKey;
   if (!idKey) {
     throw new Error('Entity has no primary key');
@@ -37,19 +50,18 @@ function getId(entity) {
   return entity[idKey];
 }
 
+function hasId(entity) {
+  const config = PersistentConfig.get(entity);
+  return !!config.idKey;
+}
+
 function getPath(entityOrEntity) {
   let Entity = Util.getClass(entityOrEntity);
-  let path = EntityConfig.get(Entity).path;
+  let path = PersistentConfig.get(Entity).path;
   if (!path) {
     throw new Error('object is not a valid Entity');
   }
   return path;
-}
-
-function assertEntity(entityManager, entity) {
-  if (!entityManager.contains(entity)) {
-    throw new TypeError('argument is not a valid entity');
-  }
 }
 
 function toParams(...maps) {
@@ -65,9 +77,10 @@ function toParams(...maps) {
     })
     .reduce((flat, map) => Object.assign(flat, map), {});
 
-  return Object.keys(flatMap).map(key =>
+  let params = Object.keys(flatMap).map(key =>
       encodeURIComponent(key) + '=' + encodeURIComponent(flatMap[key]))
       .join('&');
+  return params.length ? '?' + params : '';
 }
 
 export class EntityManager {
@@ -85,6 +98,7 @@ export class EntityManager {
 
   clear() {
     contextMap.set(this, new WeakSet());
+    cacheMap.set(this, new Map());
   }
 
   contains(entity) {
@@ -94,23 +108,26 @@ export class EntityManager {
   create(Target, data) {
     return Promise.resolve()
       .then(() => {
-        let config = EntityConfig.get(Target);
+        let config = PersistentConfig.get(Target);
         if (!config || !config.path) {
           throw new Error('EntityManager expects a valid Entity');
         }
         if (!Util.isObject(data)) {
           return null;
         }
-        let entity = new Target(this);
+        let entity = new Target();
+        defineSymbol(entity, REMOVED, false);
+        defineSymbol(entity, ENTITY_MANAGER, {value: this, writable: false});
         return Promise.resolve()
-          .then(() => PersistentData.inject(entity, data))
-          .then(() => applyAsPromise(config.postLoad, entity))
+          .then(() => PersistentObject.apply(entity, data))
+          .then(() => applySafe(config.postLoad, entity))
           .then(() => attach(this, entity))
           .then(() => entity);
       });
   }
 
   detach(entity) {
+    cacheMap.get(this).delete(getUri(entity));
     return contextMap.get(this).delete(entity);
   }
 
@@ -122,18 +139,38 @@ export class EntityManager {
               `id must be a 'string' or 'number', not '${typeof id}'`);
         }
         let path = getPath(Entity);
-        return serverMap.get(this).get(`${path}/${id}`)
-          .then(data => this.create(Entity, data));
+        let uri = `${path}/${id}`;
+        let cache = cacheMap.get(this);
+        return cache.get(uri) ||
+            serverMap.get(this).get(uri)
+              .then(data => this.create(Entity, data))
+              .then(entity => cachedEntity(entity, cache, uri));
       });
   }
 
   query(Entity, propertyMap = {}) {
     return Promise.resolve()
       .then(() => {
+        let entityMapper = this.config.queryEntityMapperFactory(Entity);
         let path = getPath(Entity);
+        let cache = cacheMap.get(this);
         return serverMap.get(this).get(path, propertyMap)
-          .then(values => Promise.all(values ? values.map(
-              data => this.create(Entity, data)) : []));
+          .then(entityMapper)
+          .then(map => {
+            if (!(map instanceof Map)) {
+              throw new Error('entityMapper must return a Map');
+            }
+            let entries = Array.from(map.entries());
+            return Promise.all(entries.map(entry =>
+                this.create(entry[1], entry[0])));
+          })
+          .then(entities => entities.map(entity => {
+            if (!hasId(entity)) {
+              return entity;
+            }
+            let uri = getUri(entity);
+            return cache.get(uri) || cachedEntity(entity, cache, uri);
+          }));
       });
   }
 
@@ -142,23 +179,21 @@ export class EntityManager {
       .then(() => {
         assertEntity(this, entity);
         let id = getId(entity);
-        let fetch = id ? serverMap.get(this).put : serverMap.get(this).post;
-        let path = getPath(entity);
-        let config = EntityConfig.get(entity);
-        let data = PersistentData.extract(entity);
-        return Promise.resolve()
-          .then(() => applyAsPromise(config.prePersist, entity))
-          .then(() => Reflect.apply(fetch, serverMap.get(this),
-              [id ? `${path}/${id}` : path, data]))
-          .then(raw => raw && PersistentData.inject(entity, raw))
-          .then(() => attach(this, entity))
-          .then(() => applyAsPromise(config.postPersist, entity))
-          .then(() => entity);
-      });
-  }
-
-  setInterceptor(requestInterceptor) {
-    serverMap.get(this).requestInterceptor = requestInterceptor;
+        if (!id || PersistentData.isDirty(entity)) {
+          let fetch = id ? serverMap.get(this).put : serverMap.get(this).post;
+          let path = getPath(entity);
+          let config = PersistentConfig.get(entity);
+          let data = PersistentData.extract(entity);
+          return Promise.resolve()
+            .then(() => applySafe(config.prePersist, entity))
+            .then(() => Reflect.apply(fetch, serverMap.get(this),
+                [id ? `${path}/${id}` : path, data]))
+            .then(raw => raw && PersistentObject.setData(entity, raw))
+            .then(() => attach(this, entity))
+            .then(() => applySafe(config.postPersist, entity));
+        }
+      })
+      .then(() => entity);
   }
 
   refresh(entity, reload = false /* TODO */) {
@@ -166,8 +201,12 @@ export class EntityManager {
       .then(() => {
         assertEntity(this, entity);
         let id = getId(entity);
-        PersistentData.inject(entity, {});
-        return this.find(Util.getClass(entity), id);
+        return this.find(Util.getClass(entity), id)
+          .then(newEntity => {
+            let data = PersistentData.extract(newEntity);
+            PersistentObject.setData(entity, data);
+            return entity;
+          });
       });
   }
 
@@ -177,13 +216,13 @@ export class EntityManager {
         assertEntity(this, entity);
         let id = getId(entity);
         let path = getPath(entity);
-        let config = EntityConfig.get(entity);
+        let config = PersistentConfig.get(entity);
         return Promise.resolve()
-          .then(() => applyAsPromise(config.preRemove, entity))
+          .then(() => applySafe(config.preRemove, entity))
           .then(() => id ?
               serverMap.get(this).delete(`${path}/${id}`) : undefined)
           .then(() => entity[REMOVED] = true)
-          .then(() => applyAsPromise(config.postRemove, entity))
+          .then(() => applySafe(config.postRemove, entity))
           .then(() => this.detach(entity))
           .then(() => entity);
       });
@@ -192,10 +231,11 @@ export class EntityManager {
 
 class Server {
   baseUrl;
-  requestInterceptor;
+  fetchInterceptor;
 
   constructor(config) {
     this.baseUrl = (config.baseUrl || '').replace(/\/$/, '');
+    this.fetchInterceptor = config.fetchInterceptor;
   }
 
   delete(path) {
@@ -224,32 +264,35 @@ class Server {
     });
   }
 
-  fetch(path, init, propertyMap = {}) {
-    let url = `${this.baseUrl}/${path}`;
-    let params = toParams(propertyMap);
+  fetch(uri, init, propertyMap = {}) {
+    let url = this.baseUrl + '/' + uri + toParams(propertyMap);
     init.headers = new Headers({
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     });
-    let request = new Request(`${url}?${params}`, init);
     return Promise.resolve()
       .then(() => {
-        if (typeof this.requestInterceptor === 'function') {
-          return this.requestInterceptor(request);
+        if (typeof this.fetchInterceptor === 'function') {
+          return this.fetchInterceptor(url, init);
         }
+        return new Request(url, init);
       })
-      .then(requestOrResponse => {
-        return requestOrResponse instanceof Response ?
-            requestOrResponse : fetch(requestOrResponse || request);
+      .then(requestResponseOrData => {
+        return requestResponseOrData instanceof Request ?
+            fetch(requestResponseOrData) : requestResponseOrData;
       })
-      .then(response => {
-        if (response.ok) {
-          let contentType = response.headers.get('content-type');
-          if (contentType && contentType.startsWith('application/json')) {
-            return response.json();
+      .then(responseOrData => {
+        if (responseOrData instanceof Response) {
+          let response = responseOrData;
+          if (response.ok) {
+            let contentType = response.headers.get('content-type');
+            if (contentType && contentType.startsWith('application/json')) {
+              return response.json();
+            }
           }
+          return null;
         }
-        return null;
+        return responseOrData;
       })
       .catch(() => {
         return null;

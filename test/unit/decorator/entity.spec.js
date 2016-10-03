@@ -1,8 +1,8 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Config} from '../../../src/config';
-import {EntityConfig} from '../../../src/entity-config';
-import {Stub} from '../stub';
+import {PersistentConfig} from '../../../src/persistent-config';
+import {createEntityManagerStub} from '../helper';
 
 Config.create();
 
@@ -10,18 +10,16 @@ describe('@Entity', () => {
   let entityManager;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
+    entityManager = createEntityManagerStub();
   });
 
   it('@Entity', () => {
     @Entity class Foo {
       @Id id;
     }
-    expect(EntityConfig.has(Foo)).toBeTruthy();
-    expect(EntityConfig.get(Foo).path).toEqual('foo');
+    expect(PersistentConfig.has(Foo)).toBeTruthy();
+    expect(PersistentConfig.get(Foo).path).toEqual('foo');
 
-    expect(() => new Foo())
-        .toThrowError(`Entity 'Foo' must be created by an EntityManager`);
     return entityManager.create(Foo, {})
       .then(foo => expect(foo).toEqual(jasmine.any(Foo)));
   });
@@ -30,11 +28,9 @@ describe('@Entity', () => {
     @Entity() class Foo {
       @Id id;
     }
-    expect(EntityConfig.has(Foo)).toBeTruthy();
-    expect(EntityConfig.get(Foo).path).toEqual('foo');
+    expect(PersistentConfig.has(Foo)).toBeTruthy();
+    expect(PersistentConfig.get(Foo).path).toEqual('foo');
 
-    expect(() => new Foo())
-        .toThrowError(`Entity 'Foo' must be created by an EntityManager`);
     return entityManager.create(Foo, {})
       .then(foo => expect(foo).toEqual(jasmine.any(Foo)));
   });
@@ -43,10 +39,8 @@ describe('@Entity', () => {
     @Entity('bar') class Foo {
       @Id id;
     }
-    expect(EntityConfig.get(Foo).path).toEqual('bar');
+    expect(PersistentConfig.get(Foo).path).toEqual('bar');
 
-    expect(() => new Foo())
-        .toThrowError(`Entity 'Foo' must be created by an EntityManager`);
     return entityManager.create(Foo, {})
       .then(foo => expect(foo).toEqual(jasmine.any(Foo)));
   });
@@ -55,9 +49,8 @@ describe('@Entity', () => {
     class Foo {
       @Id id;
     }
-    expect(EntityConfig.get(Foo).path).toBeUndefined();
+    expect(PersistentConfig.get(Foo).path).toBeUndefined();
 
-    expect(() => new Foo()).not.toThrow();
     return entityManager.create(Foo, {})
       .then(
         () => {throw new Error('created entity');},

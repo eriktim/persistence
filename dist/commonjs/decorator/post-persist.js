@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PostPersist = PostPersist;
 
-var _entityConfig = require('../entity-config');
+var _persistentConfig = require('../persistent-config');
 
 var _util = require('../util');
 
@@ -14,16 +14,16 @@ function PostPersist(optTarget, optPropertyKey, optDescriptor) {
   var deco = function deco(target, propertyKey, descriptor) {
     var postPersist = target[propertyKey];
     if (typeof postPersist !== 'function') {
-      throw new Error('@postPersist ' + propertyKey + ' is not a function');
+      throw new Error('@PostPersist ' + propertyKey + ' is not a function');
     }
-    var config = _entityConfig.EntityConfig.get(target);
+    var config = _persistentConfig.PersistentConfig.get(target);
     config.configure({ postPersist: postPersist });
-    return {
+    return _util.Util.mergeDescriptors(descriptor, {
       configurable: true,
       enumerable: false,
       value: undefined,
       writable: false
-    };
+    });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

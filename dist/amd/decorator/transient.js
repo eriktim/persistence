@@ -1,4 +1,4 @@
-define(['exports', '../entity-config', '../util'], function (exports, _entityConfig, _util) {
+define(['exports', '../persistent-config', '../util'], function (exports, _persistentConfig, _util) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -7,8 +7,10 @@ define(['exports', '../entity-config', '../util'], function (exports, _entityCon
   exports.Transient = Transient;
   function Transient(optTarget, optPropertyKey, optDescriptor) {
     var isDecorator = _util.Util.isPropertyDecorator.apply(_util.Util, arguments);
-    var deco = function deco(target, propertyKey, descriptor) {
-      _entityConfig.EntityConfig.get(target).configureProperty(propertyKey, { transient: true });
+    var deco = function deco(target, propertyKey) {
+      _persistentConfig.PersistentConfig.get(target).configureProperty(propertyKey, {
+        type: _persistentConfig.PropertyType.TRANSIENT
+      });
     };
     return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
   }

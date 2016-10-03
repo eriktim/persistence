@@ -1,4 +1,4 @@
-define(['exports', '../entity-config', '../util'], function (exports, _entityConfig, _util) {
+define(['exports', '../persistent-config', '../util'], function (exports, _persistentConfig, _util) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -10,16 +10,16 @@ define(['exports', '../entity-config', '../util'], function (exports, _entityCon
     var deco = function deco(target, propertyKey, descriptor) {
       var postRemove = target[propertyKey];
       if (typeof postRemove !== 'function') {
-        throw new Error('@postRemove ' + propertyKey + ' is not a function');
+        throw new Error('@PostRemove ' + propertyKey + ' is not a function');
       }
-      var config = _entityConfig.EntityConfig.get(target);
+      var config = _persistentConfig.PersistentConfig.get(target);
       config.configure({ postRemove: postRemove });
-      return {
+      return _util.Util.mergeDescriptors(descriptor, {
         configurable: true,
         enumerable: false,
         value: undefined,
         writable: false
-      };
+      });
     };
     return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
   }

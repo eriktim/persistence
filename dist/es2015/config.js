@@ -1,5 +1,3 @@
-import { Util } from './util';
-
 const configurations = new WeakMap();
 
 let defaultInstance;
@@ -8,9 +6,18 @@ let propertyDecorator;
 export let Config = class Config {
   constructor() {
     const config = {
+      baseUrl: null,
       extensible: false,
-      onCreate: () => undefined,
-      baseUrl: null
+      fetchInterceptor: null,
+      onNewObject: () => undefined,
+      queryEntityMapperFactory: Entity => {
+        return function (values) {
+          let map = new Map();
+          (values || []).forEach(value => map.set(value, Entity));
+          return map;
+        };
+      },
+      set: null
     };
     configurations.set(this, config);
     if (!defaultInstance) {
@@ -18,14 +25,23 @@ export let Config = class Config {
     }
   }
 
-  configure(userConfig) {
-    let config = configurations.get(this);
-    for (let key in userConfig) {
+  configure(userConfig = null) {
+    const config = configurations.get(this);
+    for (let key in userConfig || {}) {
       if (!Reflect.has(config, key)) {
         throw new Error(`unknown configuration key: ${ key }`);
       }
       config[key] = userConfig[key];
     }
+  }
+
+  plugin(plugin) {
+    if (typeof plugin !== 'object' || plugin === null || typeof plugin.getPlugin !== 'function') {
+      throw new Error('invalid plugin');
+    }
+    const config = plugin.getPlugin().config;
+    this.configure(config);
+    return this;
   }
 
   get current() {
@@ -35,7 +51,7 @@ export let Config = class Config {
   }
 
   static create(userConfig) {
-    let config = new Config();
+    const config = new Config();
     config.configure(userConfig);
     return config;
   }
@@ -45,12 +61,18 @@ export let Config = class Config {
   }
 
   static setPropertyDecorator(decorator) {
-    if (!propertyDecorator && Util.isPropertyDecorator(decorator)) {
-      propertyDecorator = decorator;
+    if (typeof decorator !== 'function') {
+      throw new TypeError('property decorator must be a function');
     }
+    propertyDecorator = decorator;
   }
 
   static getDefault() {
     return defaultInstance;
   }
 };
+
+export function resetGlobalConfigForTesting() {
+  defaultInstance = undefined;
+  propertyDecorator = undefined;
+}

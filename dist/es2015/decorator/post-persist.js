@@ -1,4 +1,4 @@
-import { EntityConfig } from '../entity-config';
+import { PersistentConfig } from '../persistent-config';
 import { Util } from '../util';
 
 export function PostPersist(optTarget, optPropertyKey, optDescriptor) {
@@ -6,16 +6,16 @@ export function PostPersist(optTarget, optPropertyKey, optDescriptor) {
   let deco = function (target, propertyKey, descriptor) {
     let postPersist = target[propertyKey];
     if (typeof postPersist !== 'function') {
-      throw new Error(`@postPersist ${ propertyKey } is not a function`);
+      throw new Error(`@PostPersist ${ propertyKey } is not a function`);
     }
-    let config = EntityConfig.get(target);
+    let config = PersistentConfig.get(target);
     config.configure({ postPersist });
-    return {
+    return Util.mergeDescriptors(descriptor, {
       configurable: true,
       enumerable: false,
       value: undefined,
       writable: false
-    };
+    });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

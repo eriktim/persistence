@@ -1,15 +1,17 @@
 'use strict';
 
-System.register(['./entity-manager', './decorator/element-collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-many', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-load', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient'], function (_export, _context) {
+System.register(['./decorator/collectible', './decorator/collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient', './entity-manager'], function (_export, _context) {
+  "use strict";
+
   return {
-    setters: [function (_entityManager) {
+    setters: [function (_decoratorCollectible) {
       var _exportObj = {};
-      _exportObj.EntityManager = _entityManager.EntityManager;
+      _exportObj.Collectible = _decoratorCollectible.Collectible;
 
       _export(_exportObj);
-    }, function (_decoratorElementCollection) {
+    }, function (_decoratorCollection) {
       var _exportObj2 = {};
-      _exportObj2.ElementCollection = _decoratorElementCollection.ElementCollection;
+      _exportObj2.Collection = _decoratorCollection.Collection;
 
       _export(_exportObj2);
     }, function (_decoratorEmbeddable) {
@@ -37,62 +39,57 @@ System.register(['./entity-manager', './decorator/element-collection', './decora
       _exportObj7.ManyToOne = _decoratorManyToOne.ManyToOne;
 
       _export(_exportObj7);
-    }, function (_decoratorOneToMany) {
+    }, function (_decoratorOneToOne) {
       var _exportObj8 = {};
-      _exportObj8.OneToMany = _decoratorOneToMany.OneToMany;
+      _exportObj8.OneToOne = _decoratorOneToOne.OneToOne;
 
       _export(_exportObj8);
-    }, function (_decoratorOneToOne) {
+    }, function (_decoratorPostLoad) {
       var _exportObj9 = {};
-      _exportObj9.OneToOne = _decoratorOneToOne.OneToOne;
+      _exportObj9.PostLoad = _decoratorPostLoad.PostLoad;
 
       _export(_exportObj9);
-    }, function (_decoratorPostLoad) {
+    }, function (_decoratorPostPersist) {
       var _exportObj10 = {};
-      _exportObj10.PostLoad = _decoratorPostLoad.PostLoad;
+      _exportObj10.PostPersist = _decoratorPostPersist.PostPersist;
 
       _export(_exportObj10);
-    }, function (_decoratorPostPersist) {
+    }, function (_decoratorPostRemove) {
       var _exportObj11 = {};
-      _exportObj11.PostPersist = _decoratorPostPersist.PostPersist;
+      _exportObj11.PostRemove = _decoratorPostRemove.PostRemove;
 
       _export(_exportObj11);
-    }, function (_decoratorPostRemove) {
+    }, function (_decoratorPrePersist) {
       var _exportObj12 = {};
-      _exportObj12.PostRemove = _decoratorPostRemove.PostRemove;
+      _exportObj12.PrePersist = _decoratorPrePersist.PrePersist;
 
       _export(_exportObj12);
-    }, function (_decoratorPreLoad) {
+    }, function (_decoratorPreRemove) {
       var _exportObj13 = {};
-      _exportObj13.PreLoad = _decoratorPreLoad.PreLoad;
+      _exportObj13.PreRemove = _decoratorPreRemove.PreRemove;
 
       _export(_exportObj13);
-    }, function (_decoratorPrePersist) {
+    }, function (_decoratorProperty) {
       var _exportObj14 = {};
-      _exportObj14.PrePersist = _decoratorPrePersist.PrePersist;
+      _exportObj14.Property = _decoratorProperty.Property;
 
       _export(_exportObj14);
-    }, function (_decoratorPreRemove) {
+    }, function (_decoratorTemporal) {
       var _exportObj15 = {};
-      _exportObj15.PreRemove = _decoratorPreRemove.PreRemove;
+      _exportObj15.Temporal = _decoratorTemporal.Temporal;
+      _exportObj15.TemporalFormat = _decoratorTemporal.TemporalFormat;
 
       _export(_exportObj15);
-    }, function (_decoratorProperty) {
+    }, function (_decoratorTransient) {
       var _exportObj16 = {};
-      _exportObj16.Property = _decoratorProperty.Property;
+      _exportObj16.Transient = _decoratorTransient.Transient;
 
       _export(_exportObj16);
-    }, function (_decoratorTemporal) {
+    }, function (_entityManager) {
       var _exportObj17 = {};
-      _exportObj17.Temporal = _decoratorTemporal.Temporal;
-      _exportObj17.TemporalType = _decoratorTemporal.TemporalType;
+      _exportObj17.EntityManager = _entityManager.EntityManager;
 
       _export(_exportObj17);
-    }, function (_decoratorTransient) {
-      var _exportObj18 = {};
-      _exportObj18.Transient = _decoratorTransient.Transient;
-
-      _export(_exportObj18);
     }],
     execute: function () {}
   };

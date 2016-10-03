@@ -1,13 +1,13 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PrePersist} from '../../../src/decorator/pre-persist';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 @Entity
 class Foo {
   @Id
   key;
-  triggered = false;
+  triggered = undefined;
 
   @PrePersist
   trigger() {
@@ -20,8 +20,8 @@ describe('@PrePersist', () => {
   let foo;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
-    return entityManager.create(Foo, {key: 123})
+    entityManager = createEntityManagerStub();
+    return entityManager.create(Foo, {})
         .then(f => foo = f);
   });
 
@@ -31,7 +31,7 @@ describe('@PrePersist', () => {
           expect(f.trigger).toBeUndefined();
           expect(f.triggered).toBeTruthy();
           const request = entityManager.requests.pop();
-          expect(request && 'triggered' in request.body).toBeTruthy();
+          expect(request.body.triggered).toBe(true);
         });
   });
 

@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import {EntityConfig} from '../entity-config';
+import {PersistentConfig, PropertyType} from '../persistent-config';
 import {Util} from '../util';
 
 export const TemporalFormat = Object.seal({
@@ -21,10 +21,11 @@ export function Temporal(formatOrTarget, optPropertyKey, optDescriptor) {
     }
   }
   let deco = function(target, propertyKey) {
-    let config = EntityConfig.get(target).getProperty(propertyKey);
+    let config = PersistentConfig.get(target).getProperty(propertyKey);
     let getter = config.getter;
     let setter = config.setter;
     config.configure({
+      type: PropertyType.TEMPORAL,
       getter: function() {
         let value = Reflect.apply(getter, this, []);
         let val = moment(value, format);

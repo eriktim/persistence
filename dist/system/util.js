@@ -1,6 +1,8 @@
 'use strict';
 
 System.register([], function (_export, _context) {
+  "use strict";
+
   var _typeof, _createClass, Util;
 
   function _classCallCheck(instance, Constructor) {
@@ -42,13 +44,43 @@ System.register([], function (_export, _context) {
         }
 
         _createClass(Util, null, [{
+          key: 'mergeDescriptors',
+          value: function mergeDescriptors(infDescriptor, supDescriptor) {
+            var descriptor = {
+              enumerable: 'enumerable' in infDescriptor ? infDescriptor.enumerable : true,
+              configurable: 'configurable' in infDescriptor ? infDescriptor.configurable : true
+            };
+            if ('set' in supDescriptor || 'get' in supDescriptor) {
+              var setter = supDescriptor.set || infDescriptor.set;
+              var getter = supDescriptor.get || supDescriptor.get;
+              if ('set' in infDescriptor && 'set' in supDescriptor) {
+                setter = function setter(value) {
+                  infDescriptor.set(value);
+                  supDescriptor.set(value);
+                };
+              }
+              if ('get' in infDescriptor && 'get' in supDescriptor) {
+                getter = function getter() {
+                  infDescriptor.get();
+                  return supDescriptor.get();
+                };
+              }
+              descriptor.set = setter || undefined;
+              descriptor.get = getter || undefined;
+            } else {
+              descriptor.value = 'value' in supDescriptor ? supDescriptor.value : undefined;
+              descriptor.writable = 'writable' in supDescriptor ? supDescriptor.writable : true;
+            }
+            return descriptor;
+          }
+        }, {
           key: 'getClass',
           value: function getClass(target) {
             if (Util.isClass(target)) {
               return target.prototype.constructor;
             }
             if (!Util.isObject(target)) {
-              throw new Error('expected instance or class');
+              throw new TypeError('target must be an instance or class');
             }
             return target.constructor;
           }

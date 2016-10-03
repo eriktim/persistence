@@ -1,7 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {OneToOne} from '../../../src/decorator/one-to-one';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 @Entity
 class Bar {
@@ -26,7 +26,7 @@ describe('@OneToOne', () => {
   let emptyBar;
 
   beforeEach(() => {
-    let entityManager = Stub.createEntityManager();
+    let entityManager = createEntityManagerStub();
     return Promise.all([
       entityManager.create(Foo, {key: 123}),
       entityManager.create(Bar, {key: 456}),

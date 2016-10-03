@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 var _index = require('./index');
 
 Object.keys(_index).forEach(function (key) {
-  if (key === "default") return;
+  if (key === "default" || key === "__esModule") return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function get() {
@@ -21,17 +21,14 @@ var _aureliaBinding = require('aurelia-binding');
 
 var _config = require('./config');
 
-_config.Config.setPropertyDecorator((0, _aureliaBinding.computedFrom)('__version__'));
+var _symbols = require('./symbols');
+
+_config.Config.setPropertyDecorator((0, _aureliaBinding.computedFrom)(_symbols.VERSION));
 
 var baseConfig = {
   extensible: false,
-  onCreate: function onCreate(instance) {
-    Reflect.defineProperty(instance, '__observers__', {
-      enumerable: false,
-      configurable: true,
-      value: {},
-      writable: true
-    });
+  onNewObject: function onNewObject(object) {
+    (0, _symbols.defineSymbol)(object, '__observers__', {});
   }
 };
 

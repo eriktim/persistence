@@ -1,26 +1,45 @@
-import {CollectionFactory} from '../../src/collection';
 import {Collectible} from '../../src/decorator/collectible';
+import {Entity} from '../../src/decorator/entity';
+import {CollectionFactory, getArrayForTesting} from '../../src/collection';
+import {createEntityManagerStub} from './helper';
 
 describe('Collection', () => {
+  @Entity class Object {}
   @Collectible class Foo {
     prop = undefined;
   }
+  let entity;
   let collection;
   let data;
 
   beforeEach(() => {
     data = [];
-    collection = CollectionFactory.create(Foo, data);
+    let entityManager = createEntityManagerStub();
+    return entityManager.create(Object, {}).then(obj => {
+      entity = obj;
+      collection = CollectionFactory.create(Foo, data, entity);
+    });
   });
 
   it('Collectible', () => {
     class Bar {}
-    expect(() => CollectionFactory.create(Bar, [])).toThrowError(
+    expect(() => CollectionFactory.create(Bar, [], entity)).toThrowError(
         'collection type must be @Collectible');
   });
 
   it('Set', () => {
     expect(collection).toEqual(jasmine.any(Set));
+  });
+
+  it('construction', () => {
+    let a = {prop: 'foo'};
+    let b = {prop: 'bar'};
+    collection = CollectionFactory.create(Foo, [a, b], entity);
+    let data = getArrayForTesting(collection);
+    expect(collection.size).toEqual(2);
+    expect(data.length).toEqual(2);
+    expect(data[0]).toBe(a);
+    expect(data[1]).toBe(b);
   });
 
   it('size', () => {

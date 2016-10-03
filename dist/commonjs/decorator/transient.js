@@ -5,14 +5,16 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Transient = Transient;
 
-var _entityConfig = require('../entity-config');
+var _persistentConfig = require('../persistent-config');
 
 var _util = require('../util');
 
 function Transient(optTarget, optPropertyKey, optDescriptor) {
   var isDecorator = _util.Util.isPropertyDecorator.apply(_util.Util, arguments);
-  var deco = function deco(target, propertyKey, descriptor) {
-    _entityConfig.EntityConfig.get(target).configureProperty(propertyKey, { transient: true });
+  var deco = function deco(target, propertyKey) {
+    _persistentConfig.PersistentConfig.get(target).configureProperty(propertyKey, {
+      type: _persistentConfig.PropertyType.TRANSIENT
+    });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

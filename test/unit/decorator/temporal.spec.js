@@ -2,7 +2,7 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Temporal, TemporalFormat} from '../../../src/decorator/temporal';
 import {PersistentData} from '../../../src/persistent-data';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 const DATE = '2000-01-01';
 const DATETIME = '2000-01-01 12:00:00';
@@ -46,7 +46,7 @@ describe('@Temporal', () => {
   let data;
 
   beforeEach(() => {
-    let entityManager = Stub.createEntityManager();
+    let entityManager = createEntityManagerStub();
     return entityManager.create(Foo, {}).then(f => {
       foo = f;
       data = PersistentData.extract(foo);
@@ -55,7 +55,7 @@ describe('@Temporal', () => {
 
   it('No factory', () => {
     checkDateTime(foo, data, 'noFactory');
-    expect(() => foo.direct = 'some day').toThrow();
+    expect(() => foo.noFactory = 'some day').toThrow();
   });
 
   it('Default', () => {

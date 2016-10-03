@@ -1,4 +1,4 @@
-import {EntityConfig} from '../entity-config';
+import {PersistentConfig} from '../persistent-config';
 import {Util} from '../util';
 
 export function PostLoad(optTarget, optPropertyKey, optDescriptor) {
@@ -8,7 +8,7 @@ export function PostLoad(optTarget, optPropertyKey, optDescriptor) {
     if (typeof postLoad !== 'function') {
       throw new Error(`@PostLoad ${propertyKey} is not a function`);
     }
-    let config = EntityConfig.get(target);
+    let config = PersistentConfig.get(target);
     config.configure({postLoad});
     return Util.mergeDescriptors(descriptor, {
       configurable: true,

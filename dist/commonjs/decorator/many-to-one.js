@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ManyToOne = ManyToOne;
 
-var _entityConfig = require('../entity-config');
-
 var _util = require('../util');
 
 function ManyToOne(TypeOrTarget, optPropertyKey, optDescriptor) {
@@ -14,5 +12,6 @@ function ManyToOne(TypeOrTarget, optPropertyKey, optDescriptor) {
   var deco = function deco(target, propertyKey, descriptor) {
     throw new Error('not yet implemented');
   };
+
   return isDecorator ? deco(TypeOrTarget, optPropertyKey, optDescriptor) : deco;
 }

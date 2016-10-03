@@ -1,4 +1,4 @@
-import {EntityConfig} from '../entity-config';
+import {PersistentConfig} from '../persistent-config';
 import {Util} from '../util';
 
 export function PreRemove(optTarget, optPropertyKey, optDescriptor) {
@@ -8,7 +8,7 @@ export function PreRemove(optTarget, optPropertyKey, optDescriptor) {
     if (typeof preRemove !== 'function') {
       throw new Error(`@PreRemove ${propertyKey} is not a function`);
     }
-    let config = EntityConfig.get(target);
+    let config = PersistentConfig.get(target);
     config.configure({preRemove});
     return Util.mergeDescriptors(descriptor, {
       configurable: true,

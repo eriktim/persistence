@@ -1,19 +1,19 @@
-define(['exports', './entity-manager', './decorator/element-collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-many', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-load', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient'], function (exports, _entityManager, _elementCollection, _embeddable, _embedded, _entity, _id, _manyToOne, _oneToMany, _oneToOne, _postLoad, _postPersist, _postRemove, _preLoad, _prePersist, _preRemove, _property, _temporal, _transient) {
+define(['exports', './decorator/collectible', './decorator/collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient', './entity-manager'], function (exports, _collectible, _collection, _embeddable, _embedded, _entity, _id, _manyToOne, _oneToOne, _postLoad, _postPersist, _postRemove, _prePersist, _preRemove, _property, _temporal, _transient, _entityManager) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  Object.defineProperty(exports, 'EntityManager', {
+  Object.defineProperty(exports, 'Collectible', {
     enumerable: true,
     get: function () {
-      return _entityManager.EntityManager;
+      return _collectible.Collectible;
     }
   });
-  Object.defineProperty(exports, 'ElementCollection', {
+  Object.defineProperty(exports, 'Collection', {
     enumerable: true,
     get: function () {
-      return _elementCollection.ElementCollection;
+      return _collection.Collection;
     }
   });
   Object.defineProperty(exports, 'Embeddable', {
@@ -46,12 +46,6 @@ define(['exports', './entity-manager', './decorator/element-collection', './deco
       return _manyToOne.ManyToOne;
     }
   });
-  Object.defineProperty(exports, 'OneToMany', {
-    enumerable: true,
-    get: function () {
-      return _oneToMany.OneToMany;
-    }
-  });
   Object.defineProperty(exports, 'OneToOne', {
     enumerable: true,
     get: function () {
@@ -74,12 +68,6 @@ define(['exports', './entity-manager', './decorator/element-collection', './deco
     enumerable: true,
     get: function () {
       return _postRemove.PostRemove;
-    }
-  });
-  Object.defineProperty(exports, 'PreLoad', {
-    enumerable: true,
-    get: function () {
-      return _preLoad.PreLoad;
     }
   });
   Object.defineProperty(exports, 'PrePersist', {
@@ -106,16 +94,22 @@ define(['exports', './entity-manager', './decorator/element-collection', './deco
       return _temporal.Temporal;
     }
   });
-  Object.defineProperty(exports, 'TemporalType', {
+  Object.defineProperty(exports, 'TemporalFormat', {
     enumerable: true,
     get: function () {
-      return _temporal.TemporalType;
+      return _temporal.TemporalFormat;
     }
   });
   Object.defineProperty(exports, 'Transient', {
     enumerable: true,
     get: function () {
       return _transient.Transient;
+    }
+  });
+  Object.defineProperty(exports, 'EntityManager', {
+    enumerable: true,
+    get: function () {
+      return _entityManager.EntityManager;
     }
   });
 });

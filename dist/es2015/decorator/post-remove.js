@@ -1,4 +1,4 @@
-import { EntityConfig } from '../entity-config';
+import { PersistentConfig } from '../persistent-config';
 import { Util } from '../util';
 
 export function PostRemove(optTarget, optPropertyKey, optDescriptor) {
@@ -6,16 +6,16 @@ export function PostRemove(optTarget, optPropertyKey, optDescriptor) {
   let deco = function (target, propertyKey, descriptor) {
     let postRemove = target[propertyKey];
     if (typeof postRemove !== 'function') {
-      throw new Error(`@postRemove ${ propertyKey } is not a function`);
+      throw new Error(`@PostRemove ${ propertyKey } is not a function`);
     }
-    let config = EntityConfig.get(target);
+    let config = PersistentConfig.get(target);
     config.configure({ postRemove });
-    return {
+    return Util.mergeDescriptors(descriptor, {
       configurable: true,
       enumerable: false,
       value: undefined,
       writable: false
-    };
+    });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

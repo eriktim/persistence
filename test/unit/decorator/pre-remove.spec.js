@@ -1,9 +1,8 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PreRemove} from '../../../src/decorator/pre-remove';
-import {EntityConfig} from '../../../src/entity-config';
 import {REMOVED} from '../../../src/symbols';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 @Entity
 class Foo {
@@ -22,7 +21,7 @@ describe('@PreRemove', () => {
   let foo;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
+    entityManager = createEntityManagerStub();
     return entityManager.create(Foo, {key: 123})
         .then(f => {
           foo = f;

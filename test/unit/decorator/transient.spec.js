@@ -2,7 +2,7 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Transient} from '../../../src/decorator/transient';
 import {PersistentData} from '../../../src/persistent-data';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 @Entity
 class Foo {
@@ -23,7 +23,7 @@ describe('@Transient', () => {
   let data;
 
   beforeEach(() => {
-    let entityManager = Stub.createEntityManager();
+    let entityManager = createEntityManagerStub();
     return entityManager.create(Foo, {}).then(f => {
       foo = f;
       data = PersistentData.extract(foo);

@@ -3,7 +3,7 @@ import {Embedded} from '../../../src/decorator/embedded';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PersistentData} from '../../../src/persistent-data';
-import {Stub} from '../stub';
+import {createEntityManagerStub, expectRejection} from '../helper';
 
 @Embeddable class Bar {
   baz = undefined;
@@ -21,7 +21,7 @@ describe('@Embedded', () => {
   let entityManager;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
+    entityManager = createEntityManagerStub();
   });
 
   it('Empty', () => {
@@ -43,15 +43,29 @@ describe('@Embedded', () => {
   });
 
   it('Invalid', () => {
-    return entityManager.create(Foo, {bar: 'baa'}).then(foo => {
-      expect(() => foo.bar.baz = 'biz').toThrow();
-    });
+    return expectRejection(entityManager.create(Foo, {bar: 'baa'}),
+        'embedded data is corrupt');
   });
 
   it('Non-writable', () => {
     return entityManager.create(Foo, {}).then(foo => {
       expect(() => foo.bar = 'baz')
           .toThrowError('cannot override embedded object');
+    });
+  });
+
+  it('Keep references', () => {
+    return entityManager.create(Foo, {}).then(foo => {
+      let bar = foo.bar;
+      bar.baz = 'foz';
+      expect(PersistentData.isDirty(foo)).toBe(true);
+      expect(PersistentData.extract(foo).bar)
+        .toBe(PersistentData.extract(foo.bar), 'before persistence');
+      return entityManager.persist(foo).then(() => {
+        expect(PersistentData.extract(foo).bar)
+          .toBe(PersistentData.extract(foo.bar), 'after persistence');
+        expect(foo.bar).toBe(bar);
+      });
     });
   });
 });

@@ -1,7 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PostLoad} from '../../../src/decorator/post-load';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 @Entity
 class Foo {
@@ -19,7 +19,7 @@ describe('@PostLoad', () => {
   let entityManager;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
+    entityManager = createEntityManagerStub();
   });
 
   it('Create', () => {

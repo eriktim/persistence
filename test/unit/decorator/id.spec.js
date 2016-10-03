@@ -1,12 +1,12 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 describe('@Id', () => {
   let entityManager;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
+    entityManager = createEntityManagerStub();
   });
 
   it('Without id', () => {

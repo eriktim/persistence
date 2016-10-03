@@ -1,10 +1,12 @@
-import { EntityConfig } from '../entity-config';
+import { PersistentConfig, PropertyType } from '../persistent-config';
 import { Util } from '../util';
 
 export function Transient(optTarget, optPropertyKey, optDescriptor) {
   let isDecorator = Util.isPropertyDecorator(...arguments);
-  let deco = function (target, propertyKey, descriptor) {
-    EntityConfig.get(target).configureProperty(propertyKey, { transient: true });
+  let deco = function (target, propertyKey) {
+    PersistentConfig.get(target).configureProperty(propertyKey, {
+      type: PropertyType.TRANSIENT
+    });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

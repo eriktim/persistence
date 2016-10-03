@@ -1,22 +1,72 @@
 'use strict';
 
-System.register(['../entity-config', '../util'], function (_export, _context) {
-  var EntityConfig, Util;
+System.register(['./embeddable', '../persistent-config', '../persistent-object', '../util'], function (_export, _context) {
+  "use strict";
+
+  var isEmbeddable, PersistentConfig, PropertyType, PersistentObject, Util, embeddedDataMap;
+
+
+  function getEmbeddedDataFactory(Type, getter, setter) {
+    return function (target, propertyKey) {
+      if (!embeddedDataMap.has(target)) {
+        embeddedDataMap.set(target, new Map());
+      }
+      var embeddedData = embeddedDataMap.get(target);
+      if (!embeddedData.has(propertyKey)) {
+        var data = Reflect.apply(getter, target, []);
+        if (data === undefined) {
+          data = {};
+          Reflect.apply(setter, target, [data]);
+        }
+        if (!Util.isObject(data)) {
+          throw new Error('embedded data is corrupt');
+        }
+        var type = new Type();
+        PersistentObject.apply(type, data, target);
+        embeddedData.set(propertyKey, type);
+      }
+      return embeddedData.get(propertyKey);
+    };
+  }
+
+  function Embedded(Type) {
+    var isDecorator = Util.isPropertyDecorator.apply(Util, arguments);
+    if (isDecorator) {
+      throw new Error('@Embedded requires a type');
+    }
+    if (!isEmbeddable(Type)) {
+      throw new TypeError('embedded object is not embeddable');
+    }
+    return function (target, propertyKey) {
+      var config = PersistentConfig.get(target).getProperty(propertyKey);
+      var getEmbeddedData = getEmbeddedDataFactory(Type, config.getter, config.setter);
+      config.configure({
+        type: PropertyType.EMBEDDED,
+        getter: function getter() {
+          return getEmbeddedData(this, propertyKey);
+        },
+        setter: function setter() {
+          throw new Error('cannot override embedded object');
+        }
+      });
+    };
+  }
+
+  _export('Embedded', Embedded);
+
   return {
-    setters: [function (_entityConfig) {
-      EntityConfig = _entityConfig.EntityConfig;
+    setters: [function (_embeddable) {
+      isEmbeddable = _embeddable.isEmbeddable;
+    }, function (_persistentConfig) {
+      PersistentConfig = _persistentConfig.PersistentConfig;
+      PropertyType = _persistentConfig.PropertyType;
+    }, function (_persistentObject) {
+      PersistentObject = _persistentObject.PersistentObject;
     }, function (_util) {
       Util = _util.Util;
     }],
     execute: function () {
-      function Embedded(Type) {
-        var isDecorator = Util.isPropertyDecorator.apply(Util, arguments);
-        return function (target, propertyKey, descriptor) {
-          throw new Error('not yet implemented');
-        };
-      }
-
-      _export('Embedded', Embedded);
+      embeddedDataMap = new WeakMap();
     }
   };
 });

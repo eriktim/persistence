@@ -1,13 +1,13 @@
 import {Embeddable, isEmbeddable} from '../../../src/decorator/embeddable';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 describe('@Embeddable', () => {
   let entityManager;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
+    entityManager = createEntityManagerStub();
   });
 
   it('Undecorated', () => {

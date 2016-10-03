@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PreRemove = PreRemove;
 
-var _entityConfig = require('../entity-config');
+var _persistentConfig = require('../persistent-config');
 
 var _util = require('../util');
 
@@ -14,16 +14,16 @@ function PreRemove(optTarget, optPropertyKey, optDescriptor) {
   var deco = function deco(target, propertyKey, descriptor) {
     var preRemove = target[propertyKey];
     if (typeof preRemove !== 'function') {
-      throw new Error('@preRemove ' + propertyKey + ' is not a function');
+      throw new Error('@PreRemove ' + propertyKey + ' is not a function');
     }
-    var config = _entityConfig.EntityConfig.get(target);
+    var config = _persistentConfig.PersistentConfig.get(target);
     config.configure({ preRemove: preRemove });
-    return {
+    return _util.Util.mergeDescriptors(descriptor, {
       configurable: true,
       enumerable: false,
       value: undefined,
       writable: false
-    };
+    });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

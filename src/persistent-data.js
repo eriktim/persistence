@@ -2,6 +2,7 @@ import {VERSION, defineSymbol} from './symbols';
 import {Util} from './util';
 
 const dataMap = new WeakMap();
+const serializedDataMap = new WeakMap(); // TODO refer per property
 const PATH_SPLITTER = /[.\[)](.+)?/;
 
 function getData(obj) {
@@ -16,7 +17,7 @@ function nextProperty(path) {
   return [property.replace(']', ''), subpath];
 }
 
-function readValue(obj, path) {
+export function readValue(obj, path) {
   let [property, subpath] = nextProperty(path);
   if (subpath) {
     obj = obj[property];
@@ -40,6 +41,10 @@ function writeValue(obj, path, value) {
     obj[property] = value;
   }
   return update;
+}
+
+function serialize(data) {
+  return JSON.stringify(data || {});
 }
 
 export class PersistentData {
@@ -67,7 +72,13 @@ export class PersistentData {
       defineSymbol(obj, VERSION, 0);
     }
     dataMap.set(obj, data);
+    serializedDataMap.set(obj, serialize(data));
     obj[VERSION]++;
+  }
+
+  static isDirty(obj) {
+    return serializedDataMap.get(obj) !==
+        serialize(PersistentData.extract(obj));
   }
 }
 

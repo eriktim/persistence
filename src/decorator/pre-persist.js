@@ -1,4 +1,4 @@
-import {EntityConfig} from '../entity-config';
+import {PersistentConfig} from '../persistent-config';
 import {Util} from '../util';
 
 export function PrePersist(optTarget, optPropertyKey, optDescriptor) {
@@ -8,7 +8,7 @@ export function PrePersist(optTarget, optPropertyKey, optDescriptor) {
     if (typeof prePersist !== 'function') {
       throw new Error(`@PrePersist ${propertyKey} is not a function`);
     }
-    let config = EntityConfig.get(target);
+    let config = PersistentConfig.get(target);
     config.configure({prePersist});
     return Util.mergeDescriptors(descriptor, {
       configurable: true,

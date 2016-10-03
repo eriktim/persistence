@@ -1,10 +1,10 @@
-define(['exports', './util'], function (exports, _util) {
+define(['exports', './persistent-data', './util'], function (exports, _persistentData, _util) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.EntityConfig = undefined;
+  exports.PersistentConfig = exports.PropertyType = undefined;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -31,10 +31,18 @@ define(['exports', './util'], function (exports, _util) {
   }();
 
   var configurations = new WeakMap();
+  var propertyKeys = new Map();
 
-  var EntityConfig = exports.EntityConfig = function () {
-    function EntityConfig() {
-      _classCallCheck(this, EntityConfig);
+  var PropertyType = exports.PropertyType = Object.freeze({
+    COLLECTION: 'collection',
+    EMBEDDED: 'embedded',
+    TEMPORAL: 'temporal',
+    TRANSIENT: 'transient'
+  });
+
+  var PersistentConfig = exports.PersistentConfig = function () {
+    function PersistentConfig() {
+      _classCallCheck(this, PersistentConfig);
 
       this.idKey = undefined;
       this.path = undefined;
@@ -45,10 +53,9 @@ define(['exports', './util'], function (exports, _util) {
       this.prePersist = undefined;
       this.preRemove = undefined;
       this.propertyMap = {};
-      this.removed = false;
     }
 
-    _createClass(EntityConfig, [{
+    _createClass(PersistentConfig, [{
       key: 'configure',
       value: function configure(config) {
         var _this = this;
@@ -67,43 +74,62 @@ define(['exports', './util'], function (exports, _util) {
       key: 'configureProperty',
       value: function configureProperty(propertyKey, config) {
         if (!(propertyKey in this.propertyMap)) {
-          this.propertyMap[propertyKey] = new EntityPropertyConfig();
+          this.propertyMap[propertyKey] = new EntityPropertyConfig(propertyKey);
         }
         this.propertyMap[propertyKey].configure(config);
       }
     }, {
       key: 'getProperty',
       value: function getProperty(propertyKey) {
+        if (!(propertyKey in this.propertyMap)) {
+          this.configureProperty(propertyKey, {});
+        }
         return this.propertyMap[propertyKey];
       }
     }], [{
       key: 'get',
-      value: function get(target) {
-        var Target = _util.Util.getClass(target);
-        if (!configurations.has(Target)) {
-          configurations.set(Target, new EntityConfig());
+      value: function get(objectOrClass) {
+        var Class = _util.Util.getClass(objectOrClass);
+        if (!configurations.has(Class)) {
+          configurations.set(Class, new PersistentConfig());
         }
-        return configurations.get(Target);
+        return configurations.get(Class);
       }
     }, {
       key: 'has',
-      value: function has(target) {
-        var Target = _util.Util.getClass(target);
-        return configurations.has(Target);
+      value: function has(objectOrClass) {
+        var Class = _util.Util.getClass(objectOrClass);
+        return configurations.has(Class);
       }
     }]);
 
-    return EntityConfig;
+    return PersistentConfig;
   }();
 
   var EntityPropertyConfig = function () {
-    function EntityPropertyConfig() {
+    _createClass(EntityPropertyConfig, [{
+      key: 'fullPath',
+      get: function get() {
+        return this.path || propertyKeys.get(this);
+      }
+    }]);
+
+    function EntityPropertyConfig(propertyKey) {
       _classCallCheck(this, EntityPropertyConfig);
 
       this.getter = undefined;
       this.path = undefined;
       this.setter = undefined;
-      this.transient = undefined;
+      this.type = undefined;
+
+      var config = this;
+      propertyKeys.set(config, propertyKey);
+      this.getter = function () {
+        return _persistentData.PersistentData.getProperty(this, config.fullPath);
+      };
+      this.setter = function (value) {
+        return _persistentData.PersistentData.setProperty(this, config.fullPath, value);
+      };
     }
 
     _createClass(EntityPropertyConfig, [{
@@ -113,10 +139,7 @@ define(['exports', './util'], function (exports, _util) {
 
         Object.keys(config).forEach(function (key) {
           if (!Reflect.has(_this2, key)) {
-            throw new Error('entity property key \'' + key + '\' is not a valid configuration');
-          }
-          if (_this2[key]) {
-            throw new Error('entity property key \'' + key + '\' is already configured');
+            throw new Error('unknown entity property configuration key: ' + key);
           }
           _this2[key] = config[key];
         });

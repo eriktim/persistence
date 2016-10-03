@@ -4,18 +4,25 @@ import {Util} from './util';
 const configurations = new WeakMap();
 const propertyKeys = new Map();
 
-export class EntityConfig {
-  static get(target) {
-    let Target = Util.getClass(target);
-    if (!configurations.has(Target)) {
-      configurations.set(Target, new EntityConfig());
+export const PropertyType = Object.freeze({
+  COLLECTION: 'collection',
+  EMBEDDED: 'embedded',
+  TEMPORAL: 'temporal',
+  TRANSIENT: 'transient'
+});
+
+export class PersistentConfig {
+  static get(objectOrClass) {
+    let Class = Util.getClass(objectOrClass);
+    if (!configurations.has(Class)) {
+      configurations.set(Class, new PersistentConfig());
     }
-    return configurations.get(Target);
+    return configurations.get(Class);
   }
 
-  static has(target) {
-    let Target = Util.getClass(target);
-    return configurations.has(Target);
+  static has(objectOrClass) {
+    let Class = Util.getClass(objectOrClass);
+    return configurations.has(Class);
   }
 
   idKey = undefined;
@@ -59,7 +66,7 @@ class EntityPropertyConfig {
   getter = undefined;
   path = undefined;
   setter = undefined;
-  transient = undefined;
+  type = undefined;
 
   get fullPath() {
     return this.path || propertyKeys.get(this);

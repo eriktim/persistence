@@ -1,4 +1,4 @@
-define(['exports', '../entity-config', '../util'], function (exports, _entityConfig, _util) {
+define(['exports', '../util'], function (exports, _util) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -10,6 +10,7 @@ define(['exports', '../entity-config', '../util'], function (exports, _entityCon
     var deco = function deco(target, propertyKey, descriptor) {
       throw new Error('not yet implemented');
     };
+
     return isDecorator ? deco(TypeOrTarget, optPropertyKey, optDescriptor) : deco;
   }
 });

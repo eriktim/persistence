@@ -1,4 +1,4 @@
-import {Persistent} from '../persistent';
+import {PersistentObject} from '../persistent-object';
 import {Util} from '../util';
 
 const embeddables = new WeakSet();
@@ -12,7 +12,7 @@ export function Embeddable(optTarget) {
   let isDecorator = Util.isClassDecorator(...arguments);
   let deco = function(Target) {
     embeddables.add(Target);
-    return Persistent.decorate(Target);
+    return PersistentObject.byDecoration(Target);
   };
   return isDecorator ? deco(optTarget) : deco;
 }

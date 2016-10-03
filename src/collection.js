@@ -1,13 +1,38 @@
 import {isCollectible} from './decorator/collectible';
+import {PersistentObject} from './persistent-object';
 import {PersistentData} from './persistent-data';
+import {VERSION} from './symbols';
 
 const configMap = new WeakMap();
+
+export function setCollectionData(collection, array) {
+  let config = configMap.get(collection);
+  config.silent = true;
+  if (config.array) {
+    if (config.array === array) {
+      return;
+    }
+    collection.clear();
+  }
+  config.array = array;
+  array.splice(0, array.length).forEach(data => {
+    let item = new config.Type();
+    PersistentData.inject(item, data);
+    collection.add(item);
+  });
+  config.silent = false;
+}
+
+function versionUp(target) {
+  if (target) {
+    target[VERSION]++;
+  }
+}
 
 class Collection extends Set {
   newItem() {
     let config = configMap.get(this);
     let item = new config.Type();
-    PersistentData.inject(item, {});
     this.add(item);
     return item;
   }
@@ -18,12 +43,13 @@ class Collection extends Set {
       throw new TypeError(
           `collection item must be of type '${config.Type.name}'`);
     }
-    let data = PersistentData.extract(item);
+    let data = PersistentData.extract(item) || {};
     config.array.push(data);
-    if (!config.isExtensible) {
-      Object.preventExtensions(item);
-    }
+    PersistentObject.apply(item, data, config.target);
     super.add(item);
+    if (!config.silent) {
+      versionUp(config.target);
+    }
     return this;
   }
 
@@ -31,6 +57,9 @@ class Collection extends Set {
     let config = configMap.get(this);
     config.array.splice(0, config.array.length);
     super.clear();
+    if (!config.silent) {
+      versionUp(config.target);
+    }
   }
 
   delete(item) {
@@ -38,25 +67,29 @@ class Collection extends Set {
     let data = PersistentData.extract(item);
     let index = config.array.indexOf(data);
     config.array.splice(index, 1);
-    return super.delete(item);
+    let deleted = super.delete(item);
+    versionUp(config.target);
+    return deleted;
   }
 }
 
 export class CollectionFactory {
-  static create(Type, array, isExtensible) {
+  static create(Type, array, target) {
     if (!isCollectible(Type)) {
       throw new TypeError(`collection type must be @Collectible`);
     }
     let collection = new Collection();
     configMap.set(collection, {
       Type,
-      array,
-      isExtensible
+      silent: false,
+      target
     });
-    array.forEach(data => {
-      let item = collection.newItem();
-      PersistentData.inject(item, data);
-    });
+    setCollectionData(collection, array);
     return collection;
   }
+}
+
+export function getArrayForTesting(collection) {
+  let config = configMap.get(collection);
+  return config ? config.array : undefined;
 }

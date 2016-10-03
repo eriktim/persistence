@@ -1,4 +1,4 @@
-import {EntityConfig} from '../entity-config';
+import {PersistentConfig} from '../persistent-config';
 import {Util} from '../util';
 
 export function PostRemove(optTarget, optPropertyKey, optDescriptor) {
@@ -8,7 +8,7 @@ export function PostRemove(optTarget, optPropertyKey, optDescriptor) {
     if (typeof postRemove !== 'function') {
       throw new Error(`@PostRemove ${propertyKey} is not a function`);
     }
-    let config = EntityConfig.get(target);
+    let config = PersistentConfig.get(target);
     config.configure({postRemove});
     return Util.mergeDescriptors(descriptor, {
       configurable: true,

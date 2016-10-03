@@ -1,7 +1,9 @@
 'use strict';
 
-System.register(['./util'], function (_export, _context) {
-  var Util, _createClass, configurations, EntityConfig, EntityPropertyConfig;
+System.register(['./persistent-data', './util'], function (_export, _context) {
+  "use strict";
+
+  var PersistentData, Util, _createClass, configurations, propertyKeys, PropertyType, PersistentConfig, EntityPropertyConfig;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -10,7 +12,9 @@ System.register(['./util'], function (_export, _context) {
   }
 
   return {
-    setters: [function (_util) {
+    setters: [function (_persistentData) {
+      PersistentData = _persistentData.PersistentData;
+    }, function (_util) {
       Util = _util.Util;
     }],
     execute: function () {
@@ -33,10 +37,20 @@ System.register(['./util'], function (_export, _context) {
       }();
 
       configurations = new WeakMap();
+      propertyKeys = new Map();
 
-      _export('EntityConfig', EntityConfig = function () {
-        function EntityConfig() {
-          _classCallCheck(this, EntityConfig);
+      _export('PropertyType', PropertyType = Object.freeze({
+        COLLECTION: 'collection',
+        EMBEDDED: 'embedded',
+        TEMPORAL: 'temporal',
+        TRANSIENT: 'transient'
+      }));
+
+      _export('PropertyType', PropertyType);
+
+      _export('PersistentConfig', PersistentConfig = function () {
+        function PersistentConfig() {
+          _classCallCheck(this, PersistentConfig);
 
           this.idKey = undefined;
           this.path = undefined;
@@ -47,10 +61,9 @@ System.register(['./util'], function (_export, _context) {
           this.prePersist = undefined;
           this.preRemove = undefined;
           this.propertyMap = {};
-          this.removed = false;
         }
 
-        _createClass(EntityConfig, [{
+        _createClass(PersistentConfig, [{
           key: 'configure',
           value: function configure(config) {
             var _this = this;
@@ -69,45 +82,64 @@ System.register(['./util'], function (_export, _context) {
           key: 'configureProperty',
           value: function configureProperty(propertyKey, config) {
             if (!(propertyKey in this.propertyMap)) {
-              this.propertyMap[propertyKey] = new EntityPropertyConfig();
+              this.propertyMap[propertyKey] = new EntityPropertyConfig(propertyKey);
             }
             this.propertyMap[propertyKey].configure(config);
           }
         }, {
           key: 'getProperty',
           value: function getProperty(propertyKey) {
+            if (!(propertyKey in this.propertyMap)) {
+              this.configureProperty(propertyKey, {});
+            }
             return this.propertyMap[propertyKey];
           }
         }], [{
           key: 'get',
-          value: function get(target) {
-            var Target = Util.getClass(target);
-            if (!configurations.has(Target)) {
-              configurations.set(Target, new EntityConfig());
+          value: function get(objectOrClass) {
+            var Class = Util.getClass(objectOrClass);
+            if (!configurations.has(Class)) {
+              configurations.set(Class, new PersistentConfig());
             }
-            return configurations.get(Target);
+            return configurations.get(Class);
           }
         }, {
           key: 'has',
-          value: function has(target) {
-            var Target = Util.getClass(target);
-            return configurations.has(Target);
+          value: function has(objectOrClass) {
+            var Class = Util.getClass(objectOrClass);
+            return configurations.has(Class);
           }
         }]);
 
-        return EntityConfig;
+        return PersistentConfig;
       }());
 
-      _export('EntityConfig', EntityConfig);
+      _export('PersistentConfig', PersistentConfig);
 
       EntityPropertyConfig = function () {
-        function EntityPropertyConfig() {
+        _createClass(EntityPropertyConfig, [{
+          key: 'fullPath',
+          get: function get() {
+            return this.path || propertyKeys.get(this);
+          }
+        }]);
+
+        function EntityPropertyConfig(propertyKey) {
           _classCallCheck(this, EntityPropertyConfig);
 
           this.getter = undefined;
           this.path = undefined;
           this.setter = undefined;
-          this.transient = undefined;
+          this.type = undefined;
+
+          var config = this;
+          propertyKeys.set(config, propertyKey);
+          this.getter = function () {
+            return PersistentData.getProperty(this, config.fullPath);
+          };
+          this.setter = function (value) {
+            return PersistentData.setProperty(this, config.fullPath, value);
+          };
         }
 
         _createClass(EntityPropertyConfig, [{
@@ -117,10 +149,7 @@ System.register(['./util'], function (_export, _context) {
 
             Object.keys(config).forEach(function (key) {
               if (!Reflect.has(_this2, key)) {
-                throw new Error('entity property key \'' + key + '\' is not a valid configuration');
-              }
-              if (_this2[key]) {
-                throw new Error('entity property key \'' + key + '\' is already configured');
+                throw new Error('unknown entity property configuration key: ' + key);
               }
               _this2[key] = config[key];
             });

@@ -2,7 +2,7 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Property} from '../../../src/decorator/property';
 import {PersistentData} from '../../../src/persistent-data';
-import {Stub} from '../stub';
+import {createEntityManagerStub} from '../helper';
 
 @Entity
 class Foo {
@@ -32,7 +32,7 @@ describe('@Property', () => {
   let data;
 
   beforeEach(() => {
-    entityManager = Stub.createEntityManager();
+    entityManager = createEntityManagerStub();
     return entityManager.create(Foo, {}).then(foo => {
       for (let prop in foo) {
         foo[prop] = 1;

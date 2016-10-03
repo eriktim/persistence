@@ -3,7 +3,7 @@ Persistence JS
 
 > Inspired by the Java Persistence API
 
-    @isEmbeddable
+    @Embeddable
     class Size {
       x = undefined;
       y = undefined;

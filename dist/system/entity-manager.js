@@ -1,7 +1,9 @@
 'use strict';
 
-System.register(['./config', './entity-config', './entity-data', './util'], function (_export, _context) {
-  var Config, EntityConfig, EntityData, Util, _typeof, _createClass, servers, EntityManager, Server;
+System.register(['./config', './persistent-config', './persistent-data', './persistent-object', './symbols', './util'], function (_export, _context) {
+  "use strict";
+
+  var Config, PersistentConfig, PersistentData, PersistentObject, ENTITY_MANAGER, REMOVED, defineSymbol, Util, _typeof, _createClass, serverMap, contextMap, cacheMap, EntityManager, Server;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -9,21 +11,69 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
     }
   }
 
+  function getServerForTesting(entityManager) {
+    return serverMap.get(entityManager);
+  }
+
+  _export('getServerForTesting', getServerForTesting);
+
+  function getUri(entity) {
+    var parts = [getPath(entity), getId(entity)].filter(function (v) {
+      return v;
+    });
+    return parts.length === 2 ? parts.join('/') : undefined;
+  }
+
+  _export('getUri', getUri);
+
+  function idFromUri(uri) {
+    return uri ? uri.split('?')[0].split('/').pop() : undefined;
+  }
+
+  _export('idFromUri', idFromUri);
+
+  function applySafe(fn, thisObj) {
+    var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+
+    return fn ? Reflect.apply(fn, thisObj, args) : undefined;
+  }
+
+  function assertEntity(entityManager, entity) {
+    if (!entityManager.contains(entity)) {
+      throw new TypeError('argument is not a valid entity');
+    }
+  }
+
+  function attach(entityManager, entity) {
+    contextMap.get(entityManager).add(entity);
+  }
+
+  function cachedEntity(entity, cache, uri) {
+    cache.set(uri, entity);
+    return entity;
+  }
+
   function getId(entity) {
-    return entity[EntityConfig.get(entity).idKey];
+    var config = PersistentConfig.get(entity);
+    var idKey = config.idKey;
+    if (!idKey) {
+      throw new Error('Entity has no primary key');
+    }
+    return entity[idKey];
+  }
+
+  function hasId(entity) {
+    var config = PersistentConfig.get(entity);
+    return !!config.idKey;
   }
 
   function getPath(entityOrEntity) {
     var Entity = Util.getClass(entityOrEntity);
-    var path = EntityConfig.get(Entity).path;
+    var path = PersistentConfig.get(Entity).path;
     if (!path) {
-      throw new Error('object is not a valid entity');
+      throw new Error('object is not a valid Entity');
     }
     return path;
-  }
-
-  function waitForCall(fn, thisObj) {
-    return Promise.resolve(fn ? Reflect.apply(fn, thisObj, []) : undefined);
   }
 
   function toParams() {
@@ -43,18 +93,25 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
       return Object.assign(flat, map);
     }, {});
 
-    return Object.keys(flatMap).map(function (key) {
+    var params = Object.keys(flatMap).map(function (key) {
       return encodeURIComponent(key) + '=' + encodeURIComponent(flatMap[key]);
     }).join('&');
+    return params.length ? '?' + params : '';
   }
 
   return {
     setters: [function (_config) {
       Config = _config.Config;
-    }, function (_entityConfig) {
-      EntityConfig = _entityConfig.EntityConfig;
-    }, function (_entityData) {
-      EntityData = _entityData.EntityData;
+    }, function (_persistentConfig) {
+      PersistentConfig = _persistentConfig.PersistentConfig;
+    }, function (_persistentData) {
+      PersistentData = _persistentData.PersistentData;
+    }, function (_persistentObject) {
+      PersistentObject = _persistentObject.PersistentObject;
+    }, function (_symbols) {
+      ENTITY_MANAGER = _symbols.ENTITY_MANAGER;
+      REMOVED = _symbols.REMOVED;
+      defineSymbol = _symbols.defineSymbol;
     }, function (_util) {
       Util = _util.Util;
     }],
@@ -83,11 +140,9 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
         };
       }();
 
-      servers = new WeakMap();
-      function getServerForTesting(resourceManager) {
-        return servers.get(resourceManager);
-      }
-      _export('getServerForTesting', getServerForTesting);
+      serverMap = new WeakMap();
+      contextMap = new WeakMap();
+      cacheMap = new WeakMap();
 
       _export('EntityManager', EntityManager = function () {
         function EntityManager() {
@@ -97,40 +152,60 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
 
           config = config || Config.getDefault();
           if (!(config instanceof Config)) {
-            throw new Error('EntityManagerFactory requires a Config');
+            throw new Error('EntityManager requires a Config');
           }
           this.config = config.current;
-          servers.set(this, new Server(this.config));
+          serverMap.set(this, new Server(this.config));
+          this.clear();
         }
 
         _createClass(EntityManager, [{
+          key: 'clear',
+          value: function clear() {
+            contextMap.set(this, new WeakSet());
+            cacheMap.set(this, new Map());
+          }
+        }, {
+          key: 'contains',
+          value: function contains(entity) {
+            return contextMap.get(this).has(entity);
+          }
+        }, {
           key: 'create',
           value: function create(Target, data) {
             var _this = this;
 
             return Promise.resolve().then(function () {
-              if (!EntityConfig.has(Target)) {
-                throw new Error('EntityFactory expects a valid Entity');
+              var config = PersistentConfig.get(Target);
+              if (!config || !config.path) {
+                throw new Error('EntityManager expects a valid Entity');
               }
               if (!Util.isObject(data)) {
                 return null;
               }
-              var config = EntityConfig.get(Target);
-              var entity = new Target(_this);
+              var entity = new Target();
+              defineSymbol(entity, REMOVED, false);
+              defineSymbol(entity, ENTITY_MANAGER, { value: _this, writable: false });
               return Promise.resolve().then(function () {
-                return waitForCall(config.preLoad, entity);
+                return PersistentObject.apply(entity, data);
               }).then(function () {
-                return EntityData.inject(entity, data);
+                return applySafe(config.postLoad, entity);
               }).then(function () {
-                return waitForCall(config.postLoad, entity);
+                return attach(_this, entity);
               }).then(function () {
                 return entity;
               });
             });
           }
         }, {
-          key: 'findById',
-          value: function findById(Entity, id) {
+          key: 'detach',
+          value: function detach(entity) {
+            cacheMap.get(this).delete(getUri(entity));
+            return contextMap.get(this).delete(entity);
+          }
+        }, {
+          key: 'find',
+          value: function find(Entity, id) {
             var _this2 = this;
 
             return Promise.resolve().then(function () {
@@ -138,67 +213,95 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
                 throw new TypeError('id must be a \'string\' or \'number\', not \'' + (typeof id === 'undefined' ? 'undefined' : _typeof(id)) + '\'');
               }
               var path = getPath(Entity);
-              return servers.get(_this2).get(path + '/' + id).then(function (data) {
+              var uri = path + '/' + id;
+              var cache = cacheMap.get(_this2);
+              return cache.get(uri) || serverMap.get(_this2).get(uri).then(function (data) {
                 return _this2.create(Entity, data);
+              }).then(function (entity) {
+                return cachedEntity(entity, cache, uri);
               });
             });
           }
         }, {
-          key: 'find',
-          value: function find(Entity) {
+          key: 'query',
+          value: function query(Entity) {
             var _this3 = this;
 
             var propertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
             return Promise.resolve().then(function () {
+              var entityMapper = _this3.config.queryEntityMapperFactory(Entity);
               var path = getPath(Entity);
-              return servers.get(_this3).get(path, propertyMap).then(function (array) {
-                return Promise.all(array ? array.map(function (data) {
-                  return _this3.create(Entity, data);
-                }) : []);
+              var cache = cacheMap.get(_this3);
+              return serverMap.get(_this3).get(path, propertyMap).then(entityMapper).then(function (map) {
+                if (!(map instanceof Map)) {
+                  throw new Error('entityMapper must return a Map');
+                }
+                var entries = Array.from(map.entries());
+                return Promise.all(entries.map(function (entry) {
+                  return _this3.create(entry[1], entry[0]);
+                }));
+              }).then(function (entities) {
+                return entities.map(function (entity) {
+                  if (!hasId(entity)) {
+                    return entity;
+                  }
+                  var uri = getUri(entity);
+                  return cache.get(uri) || cachedEntity(entity, cache, uri);
+                });
               });
             });
           }
         }, {
-          key: 'save',
-          value: function save(entity) {
+          key: 'persist',
+          value: function persist(entity) {
             var _this4 = this;
 
             return Promise.resolve().then(function () {
+              assertEntity(_this4, entity);
               var id = getId(entity);
-              var fetch = id ? servers.get(_this4).put : servers.get(_this4).post;
-              var path = getPath(entity);
-              var config = EntityConfig.get(entity);
-              var data = EntityData.extract(entity);
-              return Promise.resolve().then(function () {
-                return waitForCall(config.prePersist, entity);
-              }).then(function () {
-                return Reflect.apply(fetch, servers.get(_this4), [id ? path + '/' + id : path, data]);
-              }).then(function (raw) {
-                return raw && EntityData.inject(entity, raw);
-              }).then(function () {
-                return waitForCall(config.postPersist, entity);
-              }).then(function () {
-                return entity;
-              });
+              if (!id || PersistentData.isDirty(entity)) {
+                var _ret = function () {
+                  var fetch = id ? serverMap.get(_this4).put : serverMap.get(_this4).post;
+                  var path = getPath(entity);
+                  var config = PersistentConfig.get(entity);
+                  var data = PersistentData.extract(entity);
+                  return {
+                    v: Promise.resolve().then(function () {
+                      return applySafe(config.prePersist, entity);
+                    }).then(function () {
+                      return Reflect.apply(fetch, serverMap.get(_this4), [id ? path + '/' + id : path, data]);
+                    }).then(function (raw) {
+                      return raw && PersistentObject.setData(entity, raw);
+                    }).then(function () {
+                      return attach(_this4, entity);
+                    }).then(function () {
+                      return applySafe(config.postPersist, entity);
+                    })
+                  };
+                }();
+
+                if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+              }
+            }).then(function () {
+              return entity;
             });
           }
         }, {
-          key: 'setInterceptor',
-          value: function setInterceptor(requestInterceptor) {
-            servers.get(this).requestInterceptor = requestInterceptor;
-          }
-        }, {
-          key: 'reload',
-          value: function reload(entity) {
+          key: 'refresh',
+          value: function refresh(entity) {
             var _this5 = this;
 
+            var reload = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
             return Promise.resolve().then(function () {
-              var Entity = Util.getClass(entity);
-              var idKey = EntityConfig.get(Entity).idKey;
-              var id = entity[idKey];
-              EntityData.inject(entity, {});
-              return _this5.findById(Entity, id);
+              assertEntity(_this5, entity);
+              var id = getId(entity);
+              return _this5.find(Util.getClass(entity), id).then(function (newEntity) {
+                var data = PersistentData.extract(newEntity);
+                PersistentObject.setData(entity, data);
+                return entity;
+              });
             });
           }
         }, {
@@ -207,17 +310,20 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
             var _this6 = this;
 
             return Promise.resolve().then(function () {
+              assertEntity(_this6, entity);
               var id = getId(entity);
               var path = getPath(entity);
-              var config = EntityConfig.get(entity);
+              var config = PersistentConfig.get(entity);
               return Promise.resolve().then(function () {
-                return waitForCall(config.preRemove, entity);
+                return applySafe(config.preRemove, entity);
               }).then(function () {
-                return id ? servers.get(_this6).delete(path + '/' + id) : undefined;
+                return id ? serverMap.get(_this6).delete(path + '/' + id) : undefined;
               }).then(function () {
-                return config.configure({ removed: true });
+                return entity[REMOVED] = true;
               }).then(function () {
-                return waitForCall(config.postRemove, entity);
+                return applySafe(config.postRemove, entity);
+              }).then(function () {
+                return _this6.detach(entity);
               }).then(function () {
                 return entity;
               });
@@ -235,6 +341,7 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
           _classCallCheck(this, Server);
 
           this.baseUrl = (config.baseUrl || '').replace(/\/$/, '');
+          this.fetchInterceptor = config.fetchInterceptor;
         }
 
         _createClass(Server, [{
@@ -272,7 +379,7 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
         }, {
           key: 'fetch',
           value: function (_fetch) {
-            function fetch(_x3, _x4) {
+            function fetch(_x5, _x6) {
               return _fetch.apply(this, arguments);
             }
 
@@ -281,34 +388,36 @@ System.register(['./config', './entity-config', './entity-data', './util'], func
             };
 
             return fetch;
-          }(function (path, init) {
+          }(function (uri, init) {
             var _this7 = this;
 
             var propertyMap = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-            var url = this.baseUrl + '/' + path;
-            var params = toParams(propertyMap);
+            var url = this.baseUrl + '/' + uri + toParams(propertyMap);
             init.headers = new Headers({
               'Content-Type': 'application/json',
               'Accept': 'application/json'
             });
-            var request = new Request(url + '?' + params, init);
             return Promise.resolve().then(function () {
-              if (typeof _this7.requestInterceptor === 'function') {
-                return _this7.requestInterceptor(request);
+              if (typeof _this7.fetchInterceptor === 'function') {
+                return _this7.fetchInterceptor(url, init);
               }
-            }).then(function (requestOrResponse) {
-              return requestOrResponse instanceof Response ? requestOrResponse : fetch(requestOrResponse || request);
-            }).then(function (response) {
-              if (response.ok) {
-                var contentType = response.headers.get('content-type');
-                if (contentType && contentType.startsWith('application/json')) {
-                  return response.json();
+              return new Request(url, init);
+            }).then(function (requestResponseOrData) {
+              return requestResponseOrData instanceof Request ? fetch(requestResponseOrData) : requestResponseOrData;
+            }).then(function (responseOrData) {
+              if (responseOrData instanceof Response) {
+                var response = responseOrData;
+                if (response.ok) {
+                  var contentType = response.headers.get('content-type');
+                  if (contentType && contentType.startsWith('application/json')) {
+                    return response.json();
+                  }
                 }
+                return null;
               }
-              return null;
-            }).catch(function (err) {
-              console.error(err.message);
+              return responseOrData;
+            }).catch(function () {
               return null;
             });
           })

@@ -1,27 +1,27 @@
 import {isEmbeddable} from './embeddable';
-import {EntityConfig} from '../entity-config';
-import {PersistentData} from '../persistent-data';
+import {PersistentConfig, PropertyType} from '../persistent-config';
+import {PersistentObject} from '../persistent-object';
 import {Util} from '../util';
 
 const embeddedDataMap = new WeakMap();
 
-function getEmbeddedDataFactory(Type, path, getter) {
+function getEmbeddedDataFactory(Type, getter, setter) {
   return function(target, propertyKey) {
     if (!embeddedDataMap.has(target)) {
       embeddedDataMap.set(target, new Map());
     }
     const embeddedData = embeddedDataMap.get(target);
     if (!embeddedData.has(propertyKey)) {
-      let data = Reflect.apply(getter, target, []) || {};
+      let data = Reflect.apply(getter, target, []);
+      if (data === undefined) {
+        data = {};
+        Reflect.apply(setter, target, [data]);
+      }
       if (!Util.isObject(data)) {
         throw new Error('embedded data is corrupt');
       }
       let type = new Type();
-      if (!Object.isExtensible(target)) {
-        Object.preventExtensions(type);
-      }
-      PersistentData.inject(type, data);
-      PersistentData.setProperty(target, path, data);
+      PersistentObject.apply(type, data, target);
       embeddedData.set(propertyKey, type);
     }
     return embeddedData.get(propertyKey);
@@ -37,10 +37,11 @@ export function Embedded(Type) {
     throw new TypeError('embedded object is not embeddable');
   }
   return function(target, propertyKey) {
-    let config = EntityConfig.get(target).getProperty(propertyKey);
+    let config = PersistentConfig.get(target).getProperty(propertyKey);
     let getEmbeddedData = getEmbeddedDataFactory(
-        Type, config.fullPath, config.getter);
+        Type, config.getter, config.setter);
     config.configure({
+      type: PropertyType.EMBEDDED,
       getter: function() {
         return getEmbeddedData(this, propertyKey);
       },

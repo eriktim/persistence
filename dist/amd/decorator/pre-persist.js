@@ -1,4 +1,4 @@
-define(['exports', '../entity-config', '../util'], function (exports, _entityConfig, _util) {
+define(['exports', '../persistent-config', '../util'], function (exports, _persistentConfig, _util) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -10,16 +10,16 @@ define(['exports', '../entity-config', '../util'], function (exports, _entityCon
     var deco = function deco(target, propertyKey, descriptor) {
       var prePersist = target[propertyKey];
       if (typeof prePersist !== 'function') {
-        throw new Error('@prePersist ' + propertyKey + ' is not a function');
+        throw new Error('@PrePersist ' + propertyKey + ' is not a function');
       }
-      var config = _entityConfig.EntityConfig.get(target);
+      var config = _persistentConfig.PersistentConfig.get(target);
       config.configure({ prePersist: prePersist });
-      return {
+      return _util.Util.mergeDescriptors(descriptor, {
         configurable: true,
         enumerable: false,
         value: undefined,
         writable: false
-      };
+      });
     };
     return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
   }

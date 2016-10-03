@@ -4,21 +4,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _entityManager = require('./entity-manager');
+var _collectible = require('./decorator/collectible');
 
-Object.defineProperty(exports, 'EntityManager', {
+Object.defineProperty(exports, 'Collectible', {
   enumerable: true,
   get: function get() {
-    return _entityManager.EntityManager;
+    return _collectible.Collectible;
   }
 });
 
-var _elementCollection = require('./decorator/element-collection');
+var _collection = require('./decorator/collection');
 
-Object.defineProperty(exports, 'ElementCollection', {
+Object.defineProperty(exports, 'Collection', {
   enumerable: true,
   get: function get() {
-    return _elementCollection.ElementCollection;
+    return _collection.Collection;
   }
 });
 
@@ -67,15 +67,6 @@ Object.defineProperty(exports, 'ManyToOne', {
   }
 });
 
-var _oneToMany = require('./decorator/one-to-many');
-
-Object.defineProperty(exports, 'OneToMany', {
-  enumerable: true,
-  get: function get() {
-    return _oneToMany.OneToMany;
-  }
-});
-
 var _oneToOne = require('./decorator/one-to-one');
 
 Object.defineProperty(exports, 'OneToOne', {
@@ -109,15 +100,6 @@ Object.defineProperty(exports, 'PostRemove', {
   enumerable: true,
   get: function get() {
     return _postRemove.PostRemove;
-  }
-});
-
-var _preLoad = require('./decorator/pre-load');
-
-Object.defineProperty(exports, 'PreLoad', {
-  enumerable: true,
-  get: function get() {
-    return _preLoad.PreLoad;
   }
 });
 
@@ -156,10 +138,10 @@ Object.defineProperty(exports, 'Temporal', {
     return _temporal.Temporal;
   }
 });
-Object.defineProperty(exports, 'TemporalType', {
+Object.defineProperty(exports, 'TemporalFormat', {
   enumerable: true,
   get: function get() {
-    return _temporal.TemporalType;
+    return _temporal.TemporalFormat;
   }
 });
 
@@ -169,5 +151,14 @@ Object.defineProperty(exports, 'Transient', {
   enumerable: true,
   get: function get() {
     return _transient.Transient;
+  }
+});
+
+var _entityManager = require('./entity-manager');
+
+Object.defineProperty(exports, 'EntityManager', {
+  enumerable: true,
+  get: function get() {
+    return _entityManager.EntityManager;
   }
 });

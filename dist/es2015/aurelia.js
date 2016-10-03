@@ -1,18 +1,16 @@
 import { computedFrom } from 'aurelia-binding';
+
 import { Config } from './config';
+import { VERSION, defineSymbol } from './symbols';
+
 export * from './index';
 
-Config.setPropertyDecorator(computedFrom('__version__'));
+Config.setPropertyDecorator(computedFrom(VERSION));
 
 const baseConfig = {
   extensible: false,
-  onCreate: function (instance) {
-    Reflect.defineProperty(instance, '__observers__', {
-      enumerable: false,
-      configurable: true,
-      value: {},
-      writable: true
-    });
+  onNewObject: function (object) {
+    defineSymbol(object, '__observers__', {});
   }
 };
 

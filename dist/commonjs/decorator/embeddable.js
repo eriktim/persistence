@@ -3,13 +3,25 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.isEmbeddable = isEmbeddable;
 exports.Embeddable = Embeddable;
 
-var _entityConfig = require('../entity-config');
+var _persistentObject = require('../persistent-object');
 
 var _util = require('../util');
 
-function Embeddable(Target) {
+var embeddables = new WeakSet();
+
+function isEmbeddable(entity) {
+  var Target = _util.Util.getClass(entity);
+  return embeddables.has(Target);
+}
+
+function Embeddable(optTarget) {
   var isDecorator = _util.Util.isClassDecorator.apply(_util.Util, arguments);
-  throw new Error('not yet implemented');
+  var deco = function deco(Target) {
+    embeddables.add(Target);
+    return _persistentObject.PersistentObject.byDecoration(Target);
+  };
+  return isDecorator ? deco(optTarget) : deco;
 }

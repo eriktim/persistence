@@ -1,11 +1,11 @@
-define(['exports', './index', 'aurelia-binding', './config'], function (exports, _index, _aureliaBinding, _config) {
+define(['exports', './index', 'aurelia-binding', './config', './symbols'], function (exports, _index, _aureliaBinding, _config, _symbols) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
   Object.keys(_index).forEach(function (key) {
-    if (key === "default") return;
+    if (key === "default" || key === "__esModule") return;
     Object.defineProperty(exports, key, {
       enumerable: true,
       get: function () {
@@ -16,17 +16,12 @@ define(['exports', './index', 'aurelia-binding', './config'], function (exports,
   exports.configure = configure;
 
 
-  _config.Config.setPropertyDecorator((0, _aureliaBinding.computedFrom)('__version__'));
+  _config.Config.setPropertyDecorator((0, _aureliaBinding.computedFrom)(_symbols.VERSION));
 
   var baseConfig = {
     extensible: false,
-    onCreate: function onCreate(instance) {
-      Reflect.defineProperty(instance, '__observers__', {
-        enumerable: false,
-        configurable: true,
-        value: {},
-        writable: true
-      });
+    onNewObject: function onNewObject(object) {
+      (0, _symbols.defineSymbol)(object, '__observers__', {});
     }
   };
 

@@ -1,7 +1,9 @@
 'use strict';
 
-System.register(['./util'], function (_export, _context) {
-  var Util, _createClass, configurations, defaultInstance, propertyDecorator, Config;
+System.register([], function (_export, _context) {
+  "use strict";
+
+  var _typeof, _createClass, configurations, defaultInstance, propertyDecorator, Config;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -9,11 +11,22 @@ System.register(['./util'], function (_export, _context) {
     }
   }
 
+  function resetGlobalConfigForTesting() {
+    defaultInstance = undefined;
+    propertyDecorator = undefined;
+  }
+
+  _export('resetGlobalConfigForTesting', resetGlobalConfigForTesting);
+
   return {
-    setters: [function (_util) {
-      Util = _util.Util;
-    }],
+    setters: [],
     execute: function () {
+      _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+        return typeof obj;
+      } : function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+      };
+
       _createClass = function () {
         function defineProperties(target, props) {
           for (var i = 0; i < props.length; i++) {
@@ -41,11 +54,22 @@ System.register(['./util'], function (_export, _context) {
           _classCallCheck(this, Config);
 
           var config = {
+            baseUrl: null,
             extensible: false,
-            onCreate: function onCreate() {
+            fetchInterceptor: null,
+            onNewObject: function onNewObject() {
               return undefined;
             },
-            baseUrl: null
+            queryEntityMapperFactory: function queryEntityMapperFactory(Entity) {
+              return function (values) {
+                var map = new Map();
+                (values || []).forEach(function (value) {
+                  return map.set(value, Entity);
+                });
+                return map;
+              };
+            },
+            set: null
           };
           configurations.set(this, config);
           if (!defaultInstance) {
@@ -55,14 +79,26 @@ System.register(['./util'], function (_export, _context) {
 
         _createClass(Config, [{
           key: 'configure',
-          value: function configure(userConfig) {
+          value: function configure() {
+            var userConfig = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
             var config = configurations.get(this);
-            for (var key in userConfig) {
+            for (var key in userConfig || {}) {
               if (!Reflect.has(config, key)) {
                 throw new Error('unknown configuration key: ' + key);
               }
               config[key] = userConfig[key];
             }
+          }
+        }, {
+          key: 'plugin',
+          value: function plugin(_plugin) {
+            if ((typeof _plugin === 'undefined' ? 'undefined' : _typeof(_plugin)) !== 'object' || _plugin === null || typeof _plugin.getPlugin !== 'function') {
+              throw new Error('invalid plugin');
+            }
+            var config = _plugin.getPlugin().config;
+            this.configure(config);
+            return this;
           }
         }, {
           key: 'current',
@@ -86,9 +122,10 @@ System.register(['./util'], function (_export, _context) {
         }, {
           key: 'setPropertyDecorator',
           value: function setPropertyDecorator(decorator) {
-            if (!propertyDecorator && Util.isPropertyDecorator(decorator)) {
-              propertyDecorator = decorator;
+            if (typeof decorator !== 'function') {
+              throw new TypeError('property decorator must be a function');
             }
+            propertyDecorator = decorator;
           }
         }, {
           key: 'getDefault',

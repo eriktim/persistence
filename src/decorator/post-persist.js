@@ -1,4 +1,4 @@
-import {EntityConfig} from '../entity-config';
+import {PersistentConfig} from '../persistent-config';
 import {Util} from '../util';
 
 export function PostPersist(optTarget, optPropertyKey, optDescriptor) {
@@ -8,7 +8,7 @@ export function PostPersist(optTarget, optPropertyKey, optDescriptor) {
     if (typeof postPersist !== 'function') {
       throw new Error(`@PostPersist ${propertyKey} is not a function`);
     }
-    let config = EntityConfig.get(target);
+    let config = PersistentConfig.get(target);
     config.configure({postPersist});
     return Util.mergeDescriptors(descriptor, {
       configurable: true,

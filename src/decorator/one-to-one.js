@@ -1,13 +1,17 @@
-import {EntityConfig} from '../entity-config';
+import {PersistentConfig} from '../persistent-config';
 import {getUri, idFromUri} from '../entity-manager';
 import {ENTITY_MANAGER} from '../symbols';
 import {Util} from '../util';
 
 const referencesMap = new WeakMap();
+const SELF_REF = 'self';
 
 function getAndSetReferenceFactory(Type, getter, setter) {
   return [
     function(target, propertyKey) {
+      if (Type === SELF_REF) {
+        Type = Object.getPrototypeOf(target).constructor;
+      }
       if (!referencesMap.has(target)) {
         referencesMap.set(target, new Map());
       }
@@ -34,6 +38,9 @@ function getAndSetReferenceFactory(Type, getter, setter) {
         });
     },
     function(target, propertyKey, entity) {
+      if (Type === SELF_REF) {
+        Type = Object.getPrototypeOf(target).constructor;
+      }
       if (!(entity instanceof Type)) {
         throw new TypeError('invalid reference object');
       }
@@ -53,11 +60,11 @@ function getAndSetReferenceFactory(Type, getter, setter) {
 
 export function OneToOne(Type, options = {}) {
   if (Util.isPropertyDecorator(...arguments) ||
-      (Util.is(Type) && !Util.isClass(Type))) {
+      (Util.is(Type) && Type !== SELF_REF && !Util.isClass(Type))) {
     throw new Error('@OneToOne requires a constructor argument');
   }
   return function(target, propertyKey) {
-    let config = EntityConfig.get(target).getProperty(propertyKey);
+    let config = PersistentConfig.get(target).getProperty(propertyKey);
     let [getReference, setReference] = getAndSetReferenceFactory(
         Type, config.getter, config.setter);
     config.configure({

@@ -1,42 +1,66 @@
 'use strict';
 
-System.register(['../entity-config', '../util'], function (_export, _context) {
-  var EntityConfig, Util, TemporalType;
+System.register(['moment', '../persistent-config', '../util'], function (_export, _context) {
+  "use strict";
+
+  var moment, PersistentConfig, PropertyType, Util, TemporalFormat, formats;
+  function Temporal(formatOrTarget, optPropertyKey, optDescriptor) {
+    var isDecorator = Util.isPropertyDecorator.apply(Util, arguments);
+    var format = TemporalFormat.DATETIME;
+    if (!isDecorator) {
+      format = formatOrTarget || TemporalFormat.DATETIME;
+      if (!formats.find(function (f) {
+        return f === format;
+      })) {
+        throw new Error('invalid type for @Temporal() ' + optPropertyKey);
+      }
+    }
+    var deco = function deco(target, propertyKey) {
+      var config = PersistentConfig.get(target).getProperty(propertyKey);
+      var _getter = config.getter;
+      var _setter = config.setter;
+      config.configure({
+        type: PropertyType.TEMPORAL,
+        getter: function getter() {
+          var value = Reflect.apply(_getter, this, []);
+          var val = moment(value, format);
+          return val.isValid() ? val : undefined;
+        },
+        setter: function setter(value) {
+          var val = moment(value, format);
+          if (!val.isValid()) {
+            throw new Error('invalid date: ' + value);
+          }
+          return Reflect.apply(_setter, this, [val.format(format)]);
+        }
+      });
+    };
+    return isDecorator ? deco(formatOrTarget, optPropertyKey, optDescriptor) : deco;
+  }
+
+  _export('Temporal', Temporal);
+
   return {
-    setters: [function (_entityConfig) {
-      EntityConfig = _entityConfig.EntityConfig;
+    setters: [function (_moment) {
+      moment = _moment.default;
+    }, function (_persistentConfig) {
+      PersistentConfig = _persistentConfig.PersistentConfig;
+      PropertyType = _persistentConfig.PropertyType;
     }, function (_util) {
       Util = _util.Util;
     }],
     execute: function () {
-      _export('TemporalType', TemporalType = Object.seal({
+      _export('TemporalFormat', TemporalFormat = Object.seal({
         DATETIME: 'YYYY-MM-DD HH:mm:ss',
         DATE: 'YYYY-MM-DD',
         TIME: 'HH:mm:ss'
       }));
 
-      _export('TemporalType', TemporalType);
+      _export('TemporalFormat', TemporalFormat);
 
-      function Temporal(typeOrTarget, optPropertyKey, optDescriptor) {
-        var isDecorator = Util.isPropertyDecorator.apply(Util, arguments);
-        var type = TemporalType.DATETIME;
-        if (!isDecorator) {
-          type = typeOrTarget || TemporalType.DATETIME;
-        }
-        var deco = function deco(target, propertyKey, descriptor) {
-          if (!Object.keys(TemporalType).map(function (key) {
-            return TemporalType[key];
-          }).find(function (t) {
-            return t === type;
-          })) {
-            throw new Error('invalid type for @Temporal() ' + propertyKey);
-          }
-          throw new Error('not yet implemented');
-        };
-        return isDecorator ? deco(typeOrTarget, optPropertyKey, optDescriptor) : deco;
-      }
-
-      _export('Temporal', Temporal);
+      formats = Object.keys(TemporalFormat).map(function (key) {
+        return TemporalFormat[key];
+      });
     }
   };
 });

@@ -1,26 +1,26 @@
-import {EntityConfig} from '../../src/entity-config';
+import {PersistentConfig} from '../../src/persistent-config';
 
-describe('EntityConfig', () => {
+describe('PersistentConfig', () => {
   class Foo {}
   let foo;
   let config;
 
   beforeEach(() => {
     foo = new Foo();
-    config = EntityConfig.get(foo);
+    config = PersistentConfig.get(foo);
   });
 
   it('get', () => {
-    expect(EntityConfig.get(foo)).toEqual(config);
-    expect(EntityConfig.get(Foo)).toEqual(config);
-    expect(EntityConfig.get(new Proxy(Foo, {}))).toEqual(config);
+    expect(PersistentConfig.get(foo)).toEqual(config);
+    expect(PersistentConfig.get(Foo)).toEqual(config);
+    expect(PersistentConfig.get(new Proxy(Foo, {}))).toEqual(config);
   });
 
   it('has', () => {
-    expect(EntityConfig.has(foo)).toBeTruthy();
-    expect(EntityConfig.has(Foo)).toBeTruthy();
-    expect(EntityConfig.has(new Proxy(Foo, {}))).toBeTruthy();
-    expect(EntityConfig.has({})).toBeFalsy();
+    expect(PersistentConfig.has(foo)).toBeTruthy();
+    expect(PersistentConfig.has(Foo)).toBeTruthy();
+    expect(PersistentConfig.has(new Proxy(Foo, {}))).toBeTruthy();
+    expect(PersistentConfig.has({})).toBeFalsy();
   });
 
   let keys = [
@@ -35,7 +35,7 @@ describe('EntityConfig', () => {
   ];
   let factory = key => {
     return () => {
-      let configure = () => EntityConfig.get(foo).configure({[key]: 'foo'});
+      let configure = () => PersistentConfig.get(foo).configure({[key]: 'foo'});
       configure();
       expect(configure).toThrow();
     };
@@ -45,12 +45,12 @@ describe('EntityConfig', () => {
   }
 
   it(`configure 'propertyMap'`, () => {
-    let configure = () => EntityConfig.get(foo).configure({propertyMap: {}});
+    let configure = () => PersistentConfig.get(foo).configure({propertyMap: {}});
     expect(configure).toThrow();
   });
 
   it(`configure 'foo'`, () => {
-    let configure = () => EntityConfig.get(foo).configure({foo: 'bar'});
+    let configure = () => PersistentConfig.get(foo).configure({foo: 'bar'});
     expect(configure).toThrow();
   });
 
@@ -58,11 +58,11 @@ describe('EntityConfig', () => {
     'getter',
     'path',
     'setter',
-    'transient'
+    'type'
   ];
   let propFactory = key => {
     return () => {
-      let configure = () => EntityConfig.get(foo).configureProperty(
+      let configure = () => PersistentConfig.get(foo).configureProperty(
           key, {[key]: 'bar'});
       configure();
     };
@@ -72,7 +72,7 @@ describe('EntityConfig', () => {
   }
 
   it(`configureProperty 'foo'`, () => {
-    let configure = () => EntityConfig.get(foo).configureProperty(
+    let configure = () => PersistentConfig.get(foo).configureProperty(
         'foo', {foo: 'bar'});
     expect(configure).toThrow();
   });

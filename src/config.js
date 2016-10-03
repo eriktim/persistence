@@ -6,9 +6,18 @@ let propertyDecorator;
 export class Config {
   constructor() {
     const config = {
+      baseUrl: null,
       extensible: false,
-      onCreate: () => undefined,
-      baseUrl: null
+      fetchInterceptor: null,
+      onNewObject: () => undefined,
+      queryEntityMapperFactory: Entity => {
+        return function(values) {
+          let map = new Map();
+          (values || []).forEach(value => map.set(value, Entity));
+          return map;
+        };
+      },
+      set: null
     };
     configurations.set(this, config);
     if (!defaultInstance) {
@@ -16,7 +25,7 @@ export class Config {
     }
   }
 
-  configure(userConfig) {
+  configure(userConfig = null) {
     const config = configurations.get(this);
     for (let key in userConfig || {}) {
       if (!Reflect.has(config, key)) {
@@ -24,6 +33,17 @@ export class Config {
       }
       config[key] = userConfig[key];
     }
+  }
+
+  plugin(plugin) {
+    if (typeof plugin !== 'object' ||
+        plugin === null ||
+        typeof plugin.getPlugin !== 'function') {
+      throw new Error('invalid plugin');
+    }
+    const config = plugin.getPlugin().config;
+    this.configure(config);
+    return this;
   }
 
   get current() {
