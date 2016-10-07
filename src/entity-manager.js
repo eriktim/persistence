@@ -148,13 +148,13 @@ export class EntityManager {
       });
   }
 
-  query(Entity, propertyMap = {}) {
+  query(Entity, stringOrPropertyMap = {}) {
     return Promise.resolve()
       .then(() => {
         let entityMapper = this.config.queryEntityMapperFactory(Entity);
         let path = getPath(Entity);
         let cache = cacheMap.get(this);
-        return serverMap.get(this).get(path, propertyMap)
+        return serverMap.get(this).get(path, stringOrPropertyMap)
           .then(entityMapper)
           .then(map => {
             if (!(map instanceof Map)) {
@@ -244,10 +244,10 @@ class Server {
     });
   }
 
-  get(path, propertyMap = {}) {
+  get(path, stringOrPropertyMap = {}) {
     return this.fetch(path, {
       method: 'GET'
-    }, propertyMap);
+    }, stringOrPropertyMap);
   }
 
   post(path, data) {
@@ -264,8 +264,10 @@ class Server {
     });
   }
 
-  fetch(uri, init, propertyMap = {}) {
-    let url = this.baseUrl + '/' + uri + toParams(propertyMap);
+  fetch(uri, init, stringOrPropertyMap = {}) {
+    let params = typeof stringOrPropertyMap === 'string' ?
+        '?' + stringOrPropertyMap : toParams(stringOrPropertyMap);
+    let url = this.baseUrl + '/' + uri + params;
     init.headers = new Headers({
       'Content-Type': 'application/json',
       'Accept': 'application/json'

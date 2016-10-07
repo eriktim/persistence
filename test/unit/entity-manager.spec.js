@@ -207,12 +207,21 @@ describe('Server', () => {
       });
   });
 
-  it('query', () => {
+  it('query (propertyMap)', () => {
     return entityManager.query(Foo, {type: 'bar'})
       .then(() => {
         expect(interceptor).toHaveBeenCalledTimes(1);
         expect(interceptor).toHaveBeenCalledWith(
             `${URL}/foo?type=bar`, {method: 'GET', headers: HEADERS});
+      });
+  });
+
+  it('query (string)', () => {
+    return entityManager.query(Foo, 'type=bar')
+      .then(() => {
+        expect(interceptor).toHaveBeenCalledTimes(1);
+        expect(interceptor).toHaveBeenCalledWith(
+          `${URL}/foo?type=bar`, {method: 'GET', headers: HEADERS});
       });
   });
 
