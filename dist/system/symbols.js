@@ -5,7 +5,7 @@ System.register(['./util'], function (_export, _context) {
 
   var Util, ENTITY_MANAGER, REMOVED, VERSION;
   function defineSymbol(obj, symbol) {
-    var descriptor = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var descriptor = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     if (!Util.isObject(descriptor)) {
       descriptor = { value: descriptor };

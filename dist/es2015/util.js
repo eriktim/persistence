@@ -50,6 +50,11 @@ export let Util = class Util {
     return Util.isClass(Target) && arguments.length === 1;
   }
 
+  static isInt(value) {
+    let num = Number.parseInt(value, 10);
+    return String(num) === value;
+  }
+
   static isObject(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
   }

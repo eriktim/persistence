@@ -3,7 +3,6 @@ import { Util } from './util';
 
 const dataMap = new WeakMap();
 const serializedDataMap = new WeakMap();
-const PATH_SPLITTER = /[.\[)](.+)?/;
 
 function getData(obj) {
   if (!dataMap.has(obj)) {
@@ -12,33 +11,92 @@ function getData(obj) {
   return dataMap.get(obj);
 }
 
-function nextProperty(path) {
-  let [property, subpath] = path.split(PATH_SPLITTER);
-  return [property.replace(']', ''), subpath];
+function keyToObject(key) {
+  let keyObj = {};
+  key.split(/\s*,\s*/).forEach(tuple => {
+    let [p, v] = tuple.split(/\s*=\s*/);
+    keyObj[p] = v;
+  });
+  return keyObj;
 }
 
-export function readValue(obj, path) {
-  let [property, subpath] = nextProperty(path);
-  if (subpath) {
-    obj = obj[property];
-    return obj ? readValue(obj, subpath) : undefined;
-  }
-  return obj[property];
-}
-
-function writeValue(obj, path, value) {
-  let [property, subpath] = nextProperty(path);
-  if (subpath) {
-    if (!(property in obj)) {
-      let [nextProp] = subpath.split(PATH_SPLITTER);
-      obj[property] = nextProp.endsWith(']') ? [] : {};
+function getObjectFromArray(baseObj, path, allowCreation) {
+  let keys = path.match(/\[[^\]]+\]/g).map(k => k.substring(1, k.length - 1));
+  let prop = path.substring(0, path.indexOf('['));
+  if (!(prop in baseObj)) {
+    if (!allowCreation) {
+      return undefined;
     }
-    obj = obj[property];
-    return obj ? writeValue(obj, subpath, value) : false;
+    baseObj[prop] = [];
   }
-  let update = obj[property] !== value;
+  let obj = baseObj[prop];
+  if (!Array.isArray(obj)) {
+    return undefined;
+  }
+  for (let key of keys) {
+    let lastKey = keys.indexOf(key) === keys.length - 1;
+    if (Util.isInt(key)) {
+      if (!(key in obj)) {
+        if (!allowCreation) {
+          obj = undefined;
+          break;
+        }
+        obj[key] = lastKey ? {} : [];
+      }
+      obj = obj[key];
+    } else {
+      if (!lastKey) {
+        throw Error(`invalid array index: ${ path }`);
+      }
+      let keyObj = keyToObject(key);
+      obj = obj.find(o => {
+        for (let p in keyObj) {
+          if (o[p] !== keyObj[p]) {
+            return false;
+          }
+        }
+        return true;
+      });
+      if (!obj && allowCreation) {
+        obj = keyObj;
+      }
+    }
+  }
+  return obj;
+}
+
+export function readValue(baseObj, fullPath) {
+  let obj = baseObj;
+  for (let prop of fullPath.split('.')) {
+    if (prop.charAt(prop.length - 1) === ']') {
+      obj = getObjectFromArray(obj, prop);
+    } else {
+      obj = obj[prop];
+    }
+    if (typeof obj !== 'object' || obj === null) {
+      break;
+    }
+  }
+  return obj;
+}
+
+function writeValue(baseObj, fullPath, value) {
+  let obj = baseObj;
+  let props = fullPath.split('.');
+  let lastProp = props.pop();
+  for (let prop of props) {
+    if (prop.charAt(prop.length - 1) === ']') {
+      obj = getObjectFromArray(obj, prop, true);
+    } else {
+      if (!(prop in obj)) {
+        obj[prop] = {};
+      }
+      obj = obj[prop];
+    }
+  }
+  let update = obj ? obj[lastProp] !== value : false;
   if (update) {
-    obj[property] = value;
+    obj[lastProp] = value;
   }
   return update;
 }

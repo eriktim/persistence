@@ -17,7 +17,7 @@ System.register([], function (_export, _context) {
       _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
       } : function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
 
       _createClass = function () {
@@ -98,6 +98,12 @@ System.register([], function (_export, _context) {
           key: 'isClassDecorator',
           value: function isClassDecorator(Target) {
             return Util.isClass(Target) && arguments.length === 1;
+          }
+        }, {
+          key: 'isInt',
+          value: function isInt(value) {
+            var num = Number.parseInt(value, 10);
+            return String(num) === value;
           }
         }, {
           key: 'isObject',

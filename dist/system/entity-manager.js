@@ -33,7 +33,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
   _export('idFromUri', idFromUri);
 
   function applySafe(fn, thisObj) {
-    var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+    var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
     return fn ? Reflect.apply(fn, thisObj, args) : undefined;
   }
@@ -119,7 +119,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
       _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
       } : function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
 
       _createClass = function () {
@@ -146,7 +146,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
 
       _export('EntityManager', EntityManager = function () {
         function EntityManager() {
-          var config = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+          var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
           _classCallCheck(this, EntityManager);
 
@@ -227,13 +227,13 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
           value: function query(Entity) {
             var _this3 = this;
 
-            var propertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+            var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
             return Promise.resolve().then(function () {
               var entityMapper = _this3.config.queryEntityMapperFactory(Entity);
               var path = getPath(Entity);
               var cache = cacheMap.get(_this3);
-              return serverMap.get(_this3).get(path, propertyMap).then(entityMapper).then(function (map) {
+              return serverMap.get(_this3).get(path, stringOrPropertyMap).then(entityMapper).then(function (map) {
                 if (!(map instanceof Map)) {
                   throw new Error('entityMapper must return a Map');
                 }
@@ -292,7 +292,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
           value: function refresh(entity) {
             var _this5 = this;
 
-            var reload = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+            var reload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
             return Promise.resolve().then(function () {
               assertEntity(_this5, entity);
@@ -354,11 +354,11 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
         }, {
           key: 'get',
           value: function get(path) {
-            var propertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+            var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
             return this.fetch(path, {
               method: 'GET'
-            }, propertyMap);
+            }, stringOrPropertyMap);
           }
         }, {
           key: 'post',
@@ -391,9 +391,10 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
           }(function (uri, init) {
             var _this7 = this;
 
-            var propertyMap = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+            var stringOrPropertyMap = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-            var url = this.baseUrl + '/' + uri + toParams(propertyMap);
+            var params = typeof stringOrPropertyMap === 'string' ? '?' + stringOrPropertyMap : toParams(stringOrPropertyMap);
+            var url = this.baseUrl + '/' + uri + params;
             init.headers = new Headers({
               'Content-Type': 'application/json',
               'Accept': 'application/json'

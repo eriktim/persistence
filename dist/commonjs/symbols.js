@@ -13,7 +13,7 @@ var REMOVED = exports.REMOVED = '__removed__';
 var VERSION = exports.VERSION = '__version__';
 
 function defineSymbol(obj, symbol) {
-  var descriptor = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+  var descriptor = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   if (!_util.Util.isObject(descriptor)) {
     descriptor = { value: descriptor };

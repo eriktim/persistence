@@ -96,7 +96,7 @@ define(['exports', '../persistent-config', '../entity-manager', '../symbols', '.
   }
 
   function OneToOne(Type) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     if (_util.Util.isPropertyDecorator.apply(_util.Util, arguments) || _util.Util.is(Type) && Type !== SELF_REF && !_util.Util.isClass(Type)) {
       throw new Error('@OneToOne requires a constructor argument');
