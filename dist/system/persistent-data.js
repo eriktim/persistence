@@ -3,7 +3,7 @@
 System.register(['./symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var VERSION, defineSymbol, Util, _createClass, _typeof, _slicedToArray, dataMap, serializedDataMap, PersistentData;
+  var VERSION, defineSymbol, Util, _createClass, _typeof, _slicedToArray, dataMap, serializedDataMap, COMMA_WITH_SPACE, DOT_OUTSIDE_BRACKETS, EQUAL_SIGN_WITH_SPACE, ALL_BRACKETS, PersistentData;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -20,8 +20,8 @@ System.register(['./symbols', './util'], function (_export, _context) {
 
   function keyToObject(key) {
     var keyObj = {};
-    key.split(/\s*,\s*/).forEach(function (tuple) {
-      var _tuple$split = tuple.split(/\s*=\s*/);
+    key.split(COMMA_WITH_SPACE).forEach(function (tuple) {
+      var _tuple$split = tuple.split(EQUAL_SIGN_WITH_SPACE);
 
       var _tuple$split2 = _slicedToArray(_tuple$split, 2);
 
@@ -34,7 +34,7 @@ System.register(['./symbols', './util'], function (_export, _context) {
   }
 
   function getObjectFromArray(baseObj, path, allowCreation) {
-    var keys = path.match(/\[[^\]]+\]/g).map(function (k) {
+    var keys = path.match(ALL_BRACKETS).map(function (k) {
       return k.substring(1, k.length - 1);
     });
     var prop = path.substring(0, path.indexOf('['));
@@ -111,7 +111,7 @@ System.register(['./symbols', './util'], function (_export, _context) {
     var _iteratorError2 = undefined;
 
     try {
-      for (var _iterator2 = fullPath.split('.')[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      for (var _iterator2 = fullPath.split(DOT_OUTSIDE_BRACKETS)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
         var prop = _step2.value;
 
         if (prop.charAt(prop.length - 1) === ']') {
@@ -145,7 +145,7 @@ System.register(['./symbols', './util'], function (_export, _context) {
 
   function writeValue(baseObj, fullPath, value) {
     var obj = baseObj;
-    var props = fullPath.split('.');
+    var props = fullPath.split(DOT_OUTSIDE_BRACKETS);
     var lastProp = props.pop();
     var _iteratorNormalCompletion3 = true;
     var _didIteratorError3 = false;
@@ -262,6 +262,10 @@ System.register(['./symbols', './util'], function (_export, _context) {
 
       dataMap = new WeakMap();
       serializedDataMap = new WeakMap();
+      COMMA_WITH_SPACE = /\s*,\s*/;
+      DOT_OUTSIDE_BRACKETS = /\.(?=(?:[^\]]|\[[^\]]*\])*$)/;
+      EQUAL_SIGN_WITH_SPACE = /\s*=\s*/;
+      ALL_BRACKETS = /\[[^\]]+\]/g;
 
       _export('PersistentData', PersistentData = function () {
         function PersistentData() {

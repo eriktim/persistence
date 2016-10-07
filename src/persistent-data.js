@@ -4,6 +4,11 @@ import {Util} from './util';
 const dataMap = new WeakMap();
 const serializedDataMap = new WeakMap(); // TODO refer per property
 
+const COMMA_WITH_SPACE = /\s*,\s*/;
+const DOT_OUTSIDE_BRACKETS = /\.(?=(?:[^\]]|\[[^\]]*\])*$)/;
+const EQUAL_SIGN_WITH_SPACE = /\s*=\s*/;
+const ALL_BRACKETS = /\[[^\]]+\]/g;
+
 function getData(obj) {
   if (!dataMap.has(obj)) {
     dataMap.set(obj, {});
@@ -13,15 +18,15 @@ function getData(obj) {
 
 function keyToObject(key) {
   let keyObj = {};
-  key.split(/\s*,\s*/).forEach(tuple => {
-    let [p, v] = tuple.split(/\s*=\s*/);
+  key.split(COMMA_WITH_SPACE).forEach(tuple => {
+    let [p, v] = tuple.split(EQUAL_SIGN_WITH_SPACE);
     keyObj[p] = v;
   });
   return keyObj;
 }
 
 function getObjectFromArray(baseObj, path, allowCreation) {
-  let keys = path.match(/\[[^\]]+\]/g).map(k => k.substring(1, k.length - 1));
+  let keys = path.match(ALL_BRACKETS).map(k => k.substring(1, k.length - 1));
   let prop = path.substring(0, path.indexOf('['));
   if (!(prop in baseObj)) {
     if (!allowCreation) {
@@ -68,7 +73,7 @@ function getObjectFromArray(baseObj, path, allowCreation) {
 
 export function readValue(baseObj, fullPath) {
   let obj = baseObj;
-  for (let prop of fullPath.split('.')) {
+  for (let prop of fullPath.split(DOT_OUTSIDE_BRACKETS)) {
     if (prop.charAt(prop.length - 1) === ']') {
       obj = getObjectFromArray(obj, prop);
     } else {
@@ -83,7 +88,7 @@ export function readValue(baseObj, fullPath) {
 
 function writeValue(baseObj, fullPath, value) {
   let obj = baseObj;
-  let props = fullPath.split('.');
+  let props = fullPath.split(DOT_OUTSIDE_BRACKETS);
   let lastProp = props.pop();
   for (let prop of props) {
     if (prop.charAt(prop.length - 1) === ']') {

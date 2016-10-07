@@ -78,6 +78,9 @@ describe('@Property', () => {
 
       @Property('elements[key=code4,value=four].value')
       property4;
+
+      @Property('elements[key=code.5].value')
+      property5;
     }
     let elements = [{
       key: 'code1',
@@ -91,20 +94,25 @@ describe('@Property', () => {
     }, {
       key: 'code4',
       value: 'four'
+    }, {
+      key: 'code.5',
+      value: 'five'
     }];
     return entityManager.create(Bar, {elements}).then(bar => {
       let data = PersistentData.extract(bar);
       expect(() => bar.badProperty)
           .toThrowError('invalid array index: elements[key=bad][0]');
-      expect(data.elements.length).toBe(4);
+      expect(data.elements.length).toBe(5);
       expect(data.elements[0].key).toBe('code1');
       expect(data.elements[1].key).toBe('code2');
       expect(data.elements[2].key).toBe('code3');
       expect(data.elements[3].key).toBe('code4');
+      expect(data.elements[4].key).toBe('code.5');
       expect(bar.property1).toBe('one');
       expect(bar.property2).toBe('two');
       expect(bar.property3).toBe('three');
       expect(bar.property4).toBe('four');
+      expect(bar.property5).toBe('five');
     });
   });
 });

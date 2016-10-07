@@ -22,6 +22,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var dataMap = new WeakMap();
 var serializedDataMap = new WeakMap();
 
+var COMMA_WITH_SPACE = /\s*,\s*/;
+var DOT_OUTSIDE_BRACKETS = /\.(?=(?:[^\]]|\[[^\]]*\])*$)/;
+var EQUAL_SIGN_WITH_SPACE = /\s*=\s*/;
+var ALL_BRACKETS = /\[[^\]]+\]/g;
+
 function getData(obj) {
   if (!dataMap.has(obj)) {
     dataMap.set(obj, {});
@@ -31,8 +36,8 @@ function getData(obj) {
 
 function keyToObject(key) {
   var keyObj = {};
-  key.split(/\s*,\s*/).forEach(function (tuple) {
-    var _tuple$split = tuple.split(/\s*=\s*/);
+  key.split(COMMA_WITH_SPACE).forEach(function (tuple) {
+    var _tuple$split = tuple.split(EQUAL_SIGN_WITH_SPACE);
 
     var _tuple$split2 = _slicedToArray(_tuple$split, 2);
 
@@ -45,7 +50,7 @@ function keyToObject(key) {
 }
 
 function getObjectFromArray(baseObj, path, allowCreation) {
-  var keys = path.match(/\[[^\]]+\]/g).map(function (k) {
+  var keys = path.match(ALL_BRACKETS).map(function (k) {
     return k.substring(1, k.length - 1);
   });
   var prop = path.substring(0, path.indexOf('['));
@@ -122,7 +127,7 @@ function readValue(baseObj, fullPath) {
   var _iteratorError2 = undefined;
 
   try {
-    for (var _iterator2 = fullPath.split('.')[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+    for (var _iterator2 = fullPath.split(DOT_OUTSIDE_BRACKETS)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
       var prop = _step2.value;
 
       if (prop.charAt(prop.length - 1) === ']') {
@@ -154,7 +159,7 @@ function readValue(baseObj, fullPath) {
 
 function writeValue(baseObj, fullPath, value) {
   var obj = baseObj;
-  var props = fullPath.split('.');
+  var props = fullPath.split(DOT_OUTSIDE_BRACKETS);
   var lastProp = props.pop();
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
