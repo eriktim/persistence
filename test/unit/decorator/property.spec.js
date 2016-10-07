@@ -25,6 +25,9 @@ class Foo {
 
   @Property('array[1].item')
   array;
+
+  @Property('arrayInArray[0][0].obj')
+  arrayInArray;
 }
 
 describe('@Property', () => {
@@ -42,16 +45,66 @@ describe('@Property', () => {
   });
 
   it('Save', () => {
-    expect('undecorated' in data).toBeTruthy();
-    expect('unnamed' in data).toBeTruthy();
-    expect('empty' in data).toBeTruthy();
-    expect('named' in data).toBeFalsy();
-    expect('nameOfNamed' in data).toBeTruthy();
-    expect('some' in data).toBeTruthy();
-    expect('path' in data.some).toBeTruthy();
-    expect('array' in data).toBeTruthy();
+    expect('undecorated' in data).toBeTruthy('undecorated');
+    expect('unnamed' in data).toBeTruthy('unnamed');
+    expect('empty' in data).toBeTruthy('empty');
+    expect('named' in data).toBeFalsy('named');
+    expect('nameOfNamed' in data).toBeTruthy('nameOfNamed');
+    expect('some' in data).toBeTruthy('some');
+    expect('path' in data.some).toBeTruthy('path');
+    expect('array' in data).toBeTruthy('array');
     expect(data.array.length).toEqual(2);
     expect(data.array[0]).toBeUndefined();
-    expect('item' in data.array[1]).toBeTruthy();
+    expect('item' in data.array[1]).toBeTruthy('item');
+    expect('arrayInArray' in data).toBeTruthy('arrayInArray');
+    expect(data.arrayInArray.length).toEqual(1);
+    expect(data.arrayInArray[0].length).toEqual(1);
+    expect('obj' in data.arrayInArray[0][0]).toBeTruthy('obj');
+  });
+
+  it('Advanced indices', () => {
+    @Entity class Bar {
+      @Property('elements[key=bad][0]')
+      badProperty;
+
+      @Property('elements[0].value')
+      property1;
+
+      @Property('elements[key=code2].value')
+      property2;
+
+      @Property('elements[value=three].value')
+      property3;
+
+      @Property('elements[key=code4,value=four].value')
+      property4;
+    }
+    let elements = [{
+      key: 'code1',
+      value: 'one'
+    }, {
+      key: 'code2',
+      value: 'two'
+    }, {
+      key: 'code3',
+      value: 'three'
+    }, {
+      key: 'code4',
+      value: 'four'
+    }];
+    return entityManager.create(Bar, {elements}).then(bar => {
+      let data = PersistentData.extract(bar);
+      expect(() => bar.badProperty)
+          .toThrowError('invalid array index: elements[key=bad][0]');
+      expect(data.elements.length).toBe(4);
+      expect(data.elements[0].key).toBe('code1');
+      expect(data.elements[1].key).toBe('code2');
+      expect(data.elements[2].key).toBe('code3');
+      expect(data.elements[3].key).toBe('code4');
+      expect(bar.property1).toBe('one');
+      expect(bar.property2).toBe('two');
+      expect(bar.property3).toBe('three');
+      expect(bar.property4).toBe('four');
+    });
   });
 });
