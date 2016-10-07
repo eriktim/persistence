@@ -54,7 +54,8 @@ function getObjectFromArray(baseObj, path, allowCreation) {
         throw Error(`invalid array index: ${ path }`);
       }
       let keyObj = keyToObject(key);
-      obj = obj.find(o => {
+      let arr = obj;
+      obj = arr.find(o => {
         for (let p in keyObj) {
           if (o[p] !== keyObj[p]) {
             return false;
@@ -64,6 +65,7 @@ function getObjectFromArray(baseObj, path, allowCreation) {
       });
       if (!obj && allowCreation) {
         obj = keyObj;
+        arr.push(obj);
       }
     }
   }

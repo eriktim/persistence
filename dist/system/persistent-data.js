@@ -72,7 +72,8 @@ System.register(['./symbols', './util'], function (_export, _context) {
               throw Error('invalid array index: ' + path);
             }
             var keyObj = keyToObject(key);
-            obj = obj.find(function (o) {
+            var arr = obj;
+            obj = arr.find(function (o) {
               for (var p in keyObj) {
                 if (o[p] !== keyObj[p]) {
                   return false;
@@ -82,6 +83,7 @@ System.register(['./symbols', './util'], function (_export, _context) {
             });
             if (!obj && allowCreation) {
               obj = keyObj;
+              arr.push(obj);
             }
           })();
         }

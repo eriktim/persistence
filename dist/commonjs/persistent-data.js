@@ -88,7 +88,8 @@ function getObjectFromArray(baseObj, path, allowCreation) {
             throw Error('invalid array index: ' + path);
           }
           var keyObj = keyToObject(key);
-          obj = obj.find(function (o) {
+          var arr = obj;
+          obj = arr.find(function (o) {
             for (var p in keyObj) {
               if (o[p] !== keyObj[p]) {
                 return false;
@@ -98,6 +99,7 @@ function getObjectFromArray(baseObj, path, allowCreation) {
           });
           if (!obj && allowCreation) {
             obj = keyObj;
+            arr.push(obj);
           }
         })();
       }

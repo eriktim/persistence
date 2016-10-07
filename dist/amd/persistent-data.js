@@ -144,7 +144,8 @@ define(['exports', './symbols', './util'], function (exports, _symbols, _util) {
               throw Error('invalid array index: ' + path);
             }
             var keyObj = keyToObject(key);
-            obj = obj.find(function (o) {
+            var arr = obj;
+            obj = arr.find(function (o) {
               for (var p in keyObj) {
                 if (o[p] !== keyObj[p]) {
                   return false;
@@ -154,6 +155,7 @@ define(['exports', './symbols', './util'], function (exports, _symbols, _util) {
             });
             if (!obj && allowCreation) {
               obj = keyObj;
+              arr.push(obj);
             }
           })();
         }
