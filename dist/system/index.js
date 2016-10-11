@@ -1,8 +1,6 @@
 'use strict';
 
 System.register(['./decorator/collectible', './decorator/collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient', './entity-manager'], function (_export, _context) {
-  "use strict";
-
   return {
     setters: [function (_decoratorCollectible) {
       var _exportObj = {};

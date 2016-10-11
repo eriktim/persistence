@@ -1,8 +1,6 @@
 'use strict';
 
 System.register(['./persistent-data', './util'], function (_export, _context) {
-  "use strict";
-
   var PersistentData, Util, _createClass, configurations, propertyKeys, PropertyType, PersistentConfig, EntityPropertyConfig;
 
   function _classCallCheck(instance, Constructor) {
@@ -99,7 +97,15 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
           value: function get(objectOrClass) {
             var Class = Util.getClass(objectOrClass);
             if (!configurations.has(Class)) {
-              configurations.set(Class, new PersistentConfig());
+              var config = new PersistentConfig();
+              var SuperClass = Object.getPrototypeOf(Class);
+              if (configurations.has(SuperClass)) {
+                var superConfig = configurations.get(SuperClass);
+                for (var key in superConfig) {
+                  config[key] = superConfig[key];
+                }
+              }
+              configurations.set(Class, config);
             }
             return configurations.get(Class);
           }

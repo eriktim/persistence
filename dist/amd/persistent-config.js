@@ -91,7 +91,15 @@ define(['exports', './persistent-data', './util'], function (exports, _persisten
       value: function get(objectOrClass) {
         var Class = _util.Util.getClass(objectOrClass);
         if (!configurations.has(Class)) {
-          configurations.set(Class, new PersistentConfig());
+          var config = new PersistentConfig();
+          var SuperClass = Object.getPrototypeOf(Class);
+          if (configurations.has(SuperClass)) {
+            var superConfig = configurations.get(SuperClass);
+            for (var key in superConfig) {
+              config[key] = superConfig[key];
+            }
+          }
+          configurations.set(Class, config);
         }
         return configurations.get(Class);
       }

@@ -4,37 +4,51 @@ import {PreRemove} from '../../../src/decorator/pre-remove';
 import {REMOVED} from '../../../src/symbols';
 import {createEntityManagerStub} from '../helper';
 
-@Entity
-class Foo {
-  @Id
-  key;
-  removed = undefined;
-
-  @PreRemove
-  trigger() {
-    this.removed = this[REMOVED];
-  }
-}
-
 describe('@PreRemove', () => {
   let entityManager;
-  let foo;
+  let test = function(Class) {
+    return entityManager.create(Class, {key: 123})
+      .then(entity => entityManager.persist(entity))
+      .then(entity => entityManager.remove(entity))
+      .then(entity => {
+        expect(entity.trigger).toBeUndefined();
+        expect(entity.removed).toEqual(false);
+      });
+  };
 
   beforeEach(() => {
     entityManager = createEntityManagerStub();
-    return entityManager.create(Foo, {key: 123})
-        .then(f => {
-          foo = f;
-          return entityManager.persist(foo);
-        });
   });
 
   it('Remove', () => {
-    return entityManager.remove(foo)
-      .then(f => {
-        expect(f.trigger).toBeUndefined();
-        expect(f.removed).toEqual(false);
-      });
+    @Entity
+    class Foo {
+      @Id
+      key;
+      removed = undefined;
+
+      @PreRemove
+      trigger() {
+        this.removed = this[REMOVED];
+      }
+    }
+    return test(Foo);
+  });
+
+  it('Inheritance', () => {
+    class Foo {
+      @Id
+      key;
+      removed = undefined;
+
+      @PreRemove
+      trigger() {
+        this.removed = this[REMOVED];
+      }
+    }
+    @Entity
+    class Bar extends Foo {}
+    return test(Bar);
   });
 
   it('Invalid usage', () => {

@@ -5,7 +5,7 @@ define(['exports', './index', 'aurelia-binding', './config', './symbols'], funct
     value: true
   });
   Object.keys(_index).forEach(function (key) {
-    if (key === "default" || key === "__esModule") return;
+    if (key === "default") return;
     Object.defineProperty(exports, key, {
       enumerable: true,
       get: function () {

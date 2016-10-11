@@ -27,7 +27,15 @@ export let PersistentConfig = class PersistentConfig {
   static get(objectOrClass) {
     let Class = Util.getClass(objectOrClass);
     if (!configurations.has(Class)) {
-      configurations.set(Class, new PersistentConfig());
+      let config = new PersistentConfig();
+      let SuperClass = Object.getPrototypeOf(Class);
+      if (configurations.has(SuperClass)) {
+        let superConfig = configurations.get(SuperClass);
+        for (let key in superConfig) {
+          config[key] = superConfig[key];
+        }
+      }
+      configurations.set(Class, config);
     }
     return configurations.get(Class);
   }

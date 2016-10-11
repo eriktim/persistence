@@ -3,36 +3,52 @@ import {Id} from '../../../src/decorator/id';
 import {PrePersist} from '../../../src/decorator/pre-persist';
 import {createEntityManagerStub} from '../helper';
 
-@Entity
-class Foo {
-  @Id
-  key;
-  triggered = undefined;
-
-  @PrePersist
-  trigger() {
-    this.triggered = true;
-  }
-}
-
 describe('@PrePersist', () => {
   let entityManager;
-  let foo;
+  let test = function(Class) {
+    return entityManager.create(Class, {})
+      .then(entity => entityManager.persist(entity))
+      .then(entity => {
+        expect(entity.trigger).toBeUndefined();
+        expect(entity.triggered).toBeTruthy();
+        const request = entityManager.requests.pop();
+        expect(request.body.triggered).toBe(true);
+      });
+  };
 
   beforeEach(() => {
     entityManager = createEntityManagerStub();
-    return entityManager.create(Foo, {})
-        .then(f => foo = f);
   });
 
   it('Save', () => {
-    return entityManager.persist(foo)
-        .then(f => {
-          expect(f.trigger).toBeUndefined();
-          expect(f.triggered).toBeTruthy();
-          const request = entityManager.requests.pop();
-          expect(request.body.triggered).toBe(true);
-        });
+    @Entity
+    class Foo {
+      @Id
+      key;
+      triggered = undefined;
+
+      @PrePersist
+      trigger() {
+        this.triggered = true;
+      }
+    }
+    return test(Foo);
+  });
+
+  it('Inheritance', () => {
+    class Foo {
+      @Id
+      key;
+      triggered = undefined;
+
+      @PrePersist
+      trigger() {
+        this.triggered = true;
+      }
+    }
+    @Entity
+    class Bar extends Foo {}
+    return test(Bar);
   });
 
   it('Invalid usage', () => {

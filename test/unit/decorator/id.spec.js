@@ -4,6 +4,11 @@ import {createEntityManagerStub} from '../helper';
 
 describe('@Id', () => {
   let entityManager;
+  let test = function(Class) {
+    return entityManager.create(Class, {key: 123})
+      .then(entity => entityManager.persist(entity))
+      .then(entity => expect(entity.key).toEqual(123));
+  };
 
   beforeEach(() => {
     entityManager = createEntityManagerStub();
@@ -24,9 +29,14 @@ describe('@Id', () => {
     @Entity class Foo {
       @Id key;
     }
+    return test(Foo);
+  });
 
-    return entityManager.create(Foo, {key: 123})
-        .then(foo => entityManager.persist(foo))
-        .then(foo => expect(foo.key).toEqual(123));
+  it('Inheritance', () => {
+    class Foo {
+      @Id key;
+    }
+    @Entity class Bar extends Foo {}
+    return test(Bar);
   });
 });

@@ -1,8 +1,6 @@
 'use strict';
 
 System.register(['./collection', './config', './persistent-config', './persistent-data', './symbols', './util'], function (_export, _context) {
-  "use strict";
-
   var setCollectionData, Config, PersistentConfig, PropertyType, PersistentData, readValue, ENTITY_MANAGER, Util, _createClass, propertyDecorator, parentMap, PersistentObject;
 
   function _classCallCheck(instance, Constructor) {

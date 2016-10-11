@@ -1,8 +1,6 @@
 'use strict';
 
 System.register(['./config', './persistent-config', './persistent-data', './persistent-object', './symbols', './util'], function (_export, _context) {
-  "use strict";
-
   var Config, PersistentConfig, PersistentData, PersistentObject, ENTITY_MANAGER, REMOVED, defineSymbol, Util, _typeof, _createClass, serverMap, contextMap, cacheMap, EntityManager, Server;
 
   function _classCallCheck(instance, Constructor) {
@@ -10,27 +8,6 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
       throw new TypeError("Cannot call a class as a function");
     }
   }
-
-  function getServerForTesting(entityManager) {
-    return serverMap.get(entityManager);
-  }
-
-  _export('getServerForTesting', getServerForTesting);
-
-  function getUri(entity) {
-    var parts = [getPath(entity), getId(entity)].filter(function (v) {
-      return v;
-    });
-    return parts.length === 2 ? parts.join('/') : undefined;
-  }
-
-  _export('getUri', getUri);
-
-  function idFromUri(uri) {
-    return uri ? uri.split('?')[0].split('/').pop() : undefined;
-  }
-
-  _export('idFromUri', idFromUri);
 
   function applySafe(fn, thisObj) {
     var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
@@ -143,6 +120,25 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
       serverMap = new WeakMap();
       contextMap = new WeakMap();
       cacheMap = new WeakMap();
+      function getServerForTesting(entityManager) {
+        return serverMap.get(entityManager);
+      }
+
+      _export('getServerForTesting', getServerForTesting);
+
+      function getUri(entity) {
+        var parts = [getPath(entity), getId(entity)].filter(function (v) {
+          return v;
+        });
+        return parts.length === 2 ? parts.join('/') : undefined;
+      }
+
+      _export('getUri', getUri);
+
+      function idFromUri(uri) {
+        return uri ? uri.split('?')[0].split('/').pop() : undefined;
+      }
+      _export('idFromUri', idFromUri);
 
       _export('EntityManager', EntityManager = function () {
         function EntityManager() {
