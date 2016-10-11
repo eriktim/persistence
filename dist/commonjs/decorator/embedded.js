@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Embedded = Embedded;
 
-var _embeddable = require('./embeddable');
-
 var _persistentConfig = require('../persistent-config');
 
 var _persistentObject = require('../persistent-object');
@@ -43,8 +41,8 @@ function Embedded(Type) {
   if (isDecorator) {
     throw new Error('@Embedded requires a type');
   }
-  if (!(0, _embeddable.isEmbeddable)(Type)) {
-    throw new TypeError('embedded object is not embeddable');
+  if (!Type.isEmbeddable) {
+    throw new TypeError('@Embedded type must be @Embeddable');
   }
   return function (target, propertyKey) {
     var config = _persistentConfig.PersistentConfig.get(target).getProperty(propertyKey);

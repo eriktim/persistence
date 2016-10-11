@@ -1,4 +1,4 @@
-define(['exports', './embeddable', '../persistent-config', '../persistent-object', '../util'], function (exports, _embeddable, _persistentConfig, _persistentObject, _util) {
+define(['exports', '../persistent-config', '../persistent-object', '../util'], function (exports, _persistentConfig, _persistentObject, _util) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -37,8 +37,8 @@ define(['exports', './embeddable', '../persistent-config', '../persistent-object
     if (isDecorator) {
       throw new Error('@Embedded requires a type');
     }
-    if (!(0, _embeddable.isEmbeddable)(Type)) {
-      throw new TypeError('embedded object is not embeddable');
+    if (!Type.isEmbeddable) {
+      throw new TypeError('@Embedded type must be @Embeddable');
     }
     return function (target, propertyKey) {
       var config = _persistentConfig.PersistentConfig.get(target).getProperty(propertyKey);

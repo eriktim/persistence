@@ -1,7 +1,6 @@
 import {CollectionFactory} from '../collection';
 import {PersistentConfig, PropertyType} from '../persistent-config';
 import {Util} from '../util';
-import {isCollectible} from './collectible';
 
 const collectionsMap = new WeakMap();
 
@@ -31,8 +30,8 @@ export function Collection(Type) {
   if (Util.isPropertyDecorator(...arguments) || !Util.isClass(Type)) {
     throw new Error('@Collection requires a type');
   }
-  if (!isCollectible(Type)) {
-    throw new TypeError('@Collection type must be collectable');
+  if (!Type.isCollectible) {
+    throw new TypeError('@Collection type must be @Collectible');
   }
   return function(target, propertyKey, descriptor) {
     let config = PersistentConfig.get(target).getProperty(propertyKey);

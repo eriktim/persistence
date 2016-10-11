@@ -54,7 +54,7 @@ System.register(['../persistent-config', '../entity-manager', '../symbols', '../
   }
 
   function OneToOne(Type) {
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
     if (Util.isPropertyDecorator.apply(Util, arguments) || Util.is(Type) && Type !== SELF_REF && !Util.isClass(Type)) {
       throw new Error('@OneToOne requires a constructor argument');

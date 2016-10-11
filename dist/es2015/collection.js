@@ -23,7 +23,6 @@ function _extendableBuiltin(cls) {
   return ExtendableBuiltin;
 }
 
-import { isCollectible } from './decorator/collectible';
 import { PersistentObject } from './persistent-object';
 import { PersistentData } from './persistent-data';
 import { VERSION } from './symbols';
@@ -100,7 +99,7 @@ let Collection = class Collection extends _extendableBuiltin(Set) {
 
 export let CollectionFactory = class CollectionFactory {
   static create(Type, array, target) {
-    if (!isCollectible(Type)) {
+    if (!Type.isCollectible) {
       throw new TypeError(`collection type must be @Collectible`);
     }
     let collection = new Collection();

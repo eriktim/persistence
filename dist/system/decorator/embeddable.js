@@ -3,18 +3,11 @@
 System.register(['../persistent-object', '../util'], function (_export, _context) {
   "use strict";
 
-  var PersistentObject, Util, embeddables;
-  function isEmbeddable(entity) {
-    var Target = Util.getClass(entity);
-    return embeddables.has(Target);
-  }
-
-  _export('isEmbeddable', isEmbeddable);
-
+  var PersistentObject, Util;
   function Embeddable(optTarget) {
     var isDecorator = Util.isClassDecorator.apply(Util, arguments);
     var deco = function deco(Target) {
-      embeddables.add(Target);
+      Target.isEmbeddable = true;
       return PersistentObject.byDecoration(Target);
     };
     return isDecorator ? deco(optTarget) : deco;
@@ -28,8 +21,6 @@ System.register(['../persistent-object', '../util'], function (_export, _context
     }, function (_util) {
       Util = _util.Util;
     }],
-    execute: function () {
-      embeddables = new WeakSet();
-    }
+    execute: function () {}
   };
 });

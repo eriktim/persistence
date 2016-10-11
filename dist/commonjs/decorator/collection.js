@@ -11,8 +11,6 @@ var _persistentConfig = require('../persistent-config');
 
 var _util = require('../util');
 
-var _collectible = require('./collectible');
-
 var collectionsMap = new WeakMap();
 
 function getCollectionFactory(Type, getter, setter) {
@@ -41,8 +39,8 @@ function Collection(Type) {
   if (_util.Util.isPropertyDecorator.apply(_util.Util, arguments) || !_util.Util.isClass(Type)) {
     throw new Error('@Collection requires a type');
   }
-  if (!(0, _collectible.isCollectible)(Type)) {
-    throw new TypeError('@Collection type must be collectable');
+  if (!Type.isCollectible) {
+    throw new TypeError('@Collection type must be @Collectible');
   }
   return function (target, propertyKey, descriptor) {
     var config = _persistentConfig.PersistentConfig.get(target).getProperty(propertyKey);

@@ -12,29 +12,24 @@ describe('@Embeddable', () => {
 
   it('Undecorated', () => {
     class Foo {}
-    expect(isEmbeddable(Foo)).toEqual(false);
-    expect(isEmbeddable(new Foo())).toEqual(false);
+    expect(Foo.isEmbeddable).toBeFalsy();
   });
 
   it('Entity', () => {
     @Entity class Foo {
       @Id id;
     }
-    expect(isEmbeddable(Foo)).toEqual(false);
-    return entityManager.create(Foo, {}).then(foo => {
-      expect(isEmbeddable(foo)).toEqual(false);
-    });
+    expect(Foo.isEmbeddable).toBeFalsy();
+    return entityManager.create(Foo, {});
   });
 
   it('noFactory', () => {
     @Embeddable class Foo {}
-    expect(isEmbeddable(Foo)).toEqual(true);
-    expect(isEmbeddable(new Foo())).toEqual(true);
+    expect(Foo.isEmbeddable).toEqual(true);
   });
 
   it('default', () => {
     @Embeddable() class Foo {}
-    expect(isEmbeddable(Foo)).toEqual(true);
-    expect(isEmbeddable(new Foo())).toEqual(true);
+    expect(Foo.isEmbeddable).toEqual(true);
   });
 });

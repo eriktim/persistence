@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['./decorator/collectible', './persistent-object', './persistent-data', './symbols'], function (_export, _context) {
+System.register(['./persistent-object', './persistent-data', './symbols'], function (_export, _context) {
   "use strict";
 
-  var isCollectible, PersistentObject, PersistentData, VERSION, _createClass, _get, configMap, Collection, CollectionFactory;
+  var PersistentObject, PersistentData, VERSION, _createClass, _get, configMap, Collection, CollectionFactory;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -94,9 +94,7 @@ System.register(['./decorator/collectible', './persistent-object', './persistent
   _export('getArrayForTesting', getArrayForTesting);
 
   return {
-    setters: [function (_decoratorCollectible) {
-      isCollectible = _decoratorCollectible.isCollectible;
-    }, function (_persistentObject) {
+    setters: [function (_persistentObject) {
       PersistentObject = _persistentObject.PersistentObject;
     }, function (_persistentData) {
       PersistentData = _persistentData.PersistentData;
@@ -216,7 +214,7 @@ System.register(['./decorator/collectible', './persistent-object', './persistent
         _createClass(CollectionFactory, null, [{
           key: 'create',
           value: function create(Type, array, target) {
-            if (!isCollectible(Type)) {
+            if (!Type.isCollectible) {
               throw new TypeError('collection type must be @Collectible');
             }
             var collection = new Collection();

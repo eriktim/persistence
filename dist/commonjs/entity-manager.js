@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.EntityManager = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -47,7 +47,7 @@ function idFromUri(uri) {
 }
 
 function applySafe(fn, thisObj) {
-  var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
 
   return fn ? Reflect.apply(fn, thisObj, args) : undefined;
 }
@@ -115,7 +115,7 @@ function toParams() {
 
 var EntityManager = exports.EntityManager = function () {
   function EntityManager() {
-    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    var config = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
     _classCallCheck(this, EntityManager);
 
@@ -196,7 +196,7 @@ var EntityManager = exports.EntityManager = function () {
     value: function query(Entity) {
       var _this3 = this;
 
-      var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       return Promise.resolve().then(function () {
         var entityMapper = _this3.config.queryEntityMapperFactory(Entity);
@@ -261,7 +261,7 @@ var EntityManager = exports.EntityManager = function () {
     value: function refresh(entity) {
       var _this5 = this;
 
-      var reload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var reload = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
       return Promise.resolve().then(function () {
         assertEntity(_this5, entity);
@@ -321,7 +321,7 @@ var Server = function () {
   }, {
     key: 'get',
     value: function get(path) {
-      var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       return this.fetch(path, {
         method: 'GET'
@@ -358,7 +358,7 @@ var Server = function () {
     }(function (uri, init) {
       var _this7 = this;
 
-      var stringOrPropertyMap = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var stringOrPropertyMap = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
       var params = typeof stringOrPropertyMap === 'string' ? '?' + stringOrPropertyMap : toParams(stringOrPropertyMap);
       var url = this.baseUrl + '/' + uri + params;

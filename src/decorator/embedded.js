@@ -1,4 +1,3 @@
-import {isEmbeddable} from './embeddable';
 import {PersistentConfig, PropertyType} from '../persistent-config';
 import {PersistentObject} from '../persistent-object';
 import {Util} from '../util';
@@ -33,8 +32,8 @@ export function Embedded(Type) {
   if (isDecorator) {
     throw new Error('@Embedded requires a type');
   }
-  if (!isEmbeddable(Type)) {
-    throw new TypeError('embedded object is not embeddable');
+  if (!Type.isEmbeddable) {
+    throw new TypeError('@Embedded type must be @Embeddable');
   }
   return function(target, propertyKey) {
     let config = PersistentConfig.get(target).getProperty(propertyKey);

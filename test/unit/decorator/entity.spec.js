@@ -1,3 +1,7 @@
+import {Collectible} from '../../../src/decorator/collectible';
+import {Collection} from '../../../src/decorator/collection';
+import {Embeddable} from '../../../src/decorator/embeddable';
+import {Embedded} from '../../../src/decorator/embedded';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Config} from '../../../src/config';
@@ -56,5 +60,32 @@ describe('@Entity', () => {
         () => {throw new Error('created entity');},
         err => expect(err.message).toEqual('EntityManager expects a valid Entity')
       );
+  });
+
+  it('Collectible & Embeddable', () => {
+    @Collectible
+    @Embeddable
+    class Bar {
+      prop = undefined;
+    }
+
+    @Entity
+    class Foo {
+      @Collection(Bar)
+      bars;
+
+      @Embedded(Bar)
+      bar;
+    }
+    let data = {bars: [{prop: 'A'}, {prop: 'B'}], bar: {prop: 'C'}};
+    expect(Bar.isCollectible).toBe(true);
+    expect(Bar.isEmbeddable).toBe(true);
+    return entityManager.create(Foo, data).then(foo => {
+      let bars = Array.from(foo.bars);
+      expect(bars.length).toBe(2);
+      expect(bars[0].prop).toBe('A');
+      expect(bars[1].prop).toBe('B');
+      expect(foo.bar.prop).toBe('C');
+    });
   });
 });

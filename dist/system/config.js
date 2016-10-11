@@ -24,7 +24,7 @@ System.register([], function (_export, _context) {
       _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
       } : function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
       };
 
       _createClass = function () {
@@ -80,7 +80,7 @@ System.register([], function (_export, _context) {
         _createClass(Config, [{
           key: 'configure',
           value: function configure() {
-            var userConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+            var userConfig = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
             var config = configurations.get(this);
             for (var key in userConfig || {}) {

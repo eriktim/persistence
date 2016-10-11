@@ -1,4 +1,4 @@
-define(['exports', './decorator/collectible', './persistent-object', './persistent-data', './symbols'], function (exports, _collectible, _persistentObject, _persistentData, _symbols) {
+define(['exports', './persistent-object', './persistent-data', './symbols'], function (exports, _persistentObject, _persistentData, _symbols) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -199,7 +199,7 @@ define(['exports', './decorator/collectible', './persistent-object', './persiste
     _createClass(CollectionFactory, null, [{
       key: 'create',
       value: function create(Type, array, target) {
-        if (!(0, _collectible.isCollectible)(Type)) {
+        if (!Type.isCollectible) {
           throw new TypeError('collection type must be @Collectible');
         }
         var collection = new Collection();

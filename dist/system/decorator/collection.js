@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['../collection', '../persistent-config', '../util', './collectible'], function (_export, _context) {
+System.register(['../collection', '../persistent-config', '../util'], function (_export, _context) {
   "use strict";
 
-  var CollectionFactory, PersistentConfig, PropertyType, Util, isCollectible, collectionsMap;
+  var CollectionFactory, PersistentConfig, PropertyType, Util, collectionsMap;
 
 
   function getCollectionFactory(Type, getter, setter) {
@@ -32,8 +32,8 @@ System.register(['../collection', '../persistent-config', '../util', './collecti
     if (Util.isPropertyDecorator.apply(Util, arguments) || !Util.isClass(Type)) {
       throw new Error('@Collection requires a type');
     }
-    if (!isCollectible(Type)) {
-      throw new TypeError('@Collection type must be collectable');
+    if (!Type.isCollectible) {
+      throw new TypeError('@Collection type must be @Collectible');
     }
     return function (target, propertyKey, descriptor) {
       var config = PersistentConfig.get(target).getProperty(propertyKey);
@@ -60,8 +60,6 @@ System.register(['../collection', '../persistent-config', '../util', './collecti
       PropertyType = _persistentConfig.PropertyType;
     }, function (_util) {
       Util = _util.Util;
-    }, function (_collectible) {
-      isCollectible = _collectible.isCollectible;
     }],
     execute: function () {
       collectionsMap = new WeakMap();

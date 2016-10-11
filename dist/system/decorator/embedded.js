@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['./embeddable', '../persistent-config', '../persistent-object', '../util'], function (_export, _context) {
+System.register(['../persistent-config', '../persistent-object', '../util'], function (_export, _context) {
   "use strict";
 
-  var isEmbeddable, PersistentConfig, PropertyType, PersistentObject, Util, embeddedDataMap;
+  var PersistentConfig, PropertyType, PersistentObject, Util, embeddedDataMap;
 
 
   function getEmbeddedDataFactory(Type, getter, setter) {
@@ -34,8 +34,8 @@ System.register(['./embeddable', '../persistent-config', '../persistent-object',
     if (isDecorator) {
       throw new Error('@Embedded requires a type');
     }
-    if (!isEmbeddable(Type)) {
-      throw new TypeError('embedded object is not embeddable');
+    if (!Type.isEmbeddable) {
+      throw new TypeError('@Embedded type must be @Embeddable');
     }
     return function (target, propertyKey) {
       var config = PersistentConfig.get(target).getProperty(propertyKey);
@@ -55,9 +55,7 @@ System.register(['./embeddable', '../persistent-config', '../persistent-object',
   _export('Embedded', Embedded);
 
   return {
-    setters: [function (_embeddable) {
-      isEmbeddable = _embeddable.isEmbeddable;
-    }, function (_persistentConfig) {
+    setters: [function (_persistentConfig) {
       PersistentConfig = _persistentConfig.PersistentConfig;
       PropertyType = _persistentConfig.PropertyType;
     }, function (_persistentObject) {

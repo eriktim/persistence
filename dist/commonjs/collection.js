@@ -12,8 +12,6 @@ var _get = function get(object, property, receiver) { if (object === null) objec
 exports.setCollectionData = setCollectionData;
 exports.getArrayForTesting = getArrayForTesting;
 
-var _collectible = require('./decorator/collectible');
-
 var _persistentObject = require('./persistent-object');
 
 var _persistentData = require('./persistent-data');
@@ -144,7 +142,7 @@ var CollectionFactory = exports.CollectionFactory = function () {
   _createClass(CollectionFactory, null, [{
     key: 'create',
     value: function create(Type, array, target) {
-      if (!(0, _collectible.isCollectible)(Type)) {
+      if (!Type.isCollectible) {
         throw new TypeError('collection type must be @Collectible');
       }
       var collection = new Collection();

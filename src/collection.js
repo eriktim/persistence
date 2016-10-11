@@ -1,4 +1,3 @@
-import {isCollectible} from './decorator/collectible';
 import {PersistentObject} from './persistent-object';
 import {PersistentData} from './persistent-data';
 import {VERSION} from './symbols';
@@ -75,7 +74,7 @@ class Collection extends Set {
 
 export class CollectionFactory {
   static create(Type, array, target) {
-    if (!isCollectible(Type)) {
+    if (!Type.isCollectible) {
       throw new TypeError(`collection type must be @Collectible`);
     }
     let collection = new Collection();
