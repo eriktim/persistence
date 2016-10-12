@@ -34,6 +34,9 @@ class Foo {
 
   @Property('arrayInArrayValue[0][0]')
   arrayInArrayValue;
+
+  @Property('arrayAndArrayValue[0].arrayKey[0]')
+  arrayAndArrayValue;
 }
 
 describe('@Property', () => {
@@ -44,33 +47,24 @@ describe('@Property', () => {
     entityManager = createEntityManagerStub();
     return entityManager.create(Foo, {}).then(foo => {
       for (let prop in foo) {
-        foo[prop] = 1;
+        foo[prop] = prop;
       }
       data = PersistentData.extract(foo);
     });
   });
 
   it('Save', () => {
-    expect('undecorated' in data).toBeTruthy('undecorated');
-    expect('unnamed' in data).toBeTruthy('unnamed');
-    expect('empty' in data).toBeTruthy('empty');
-    expect('named' in data).toBeFalsy('named');
-    expect('nameOfNamed' in data).toBeTruthy('nameOfNamed');
-    expect('some' in data).toBeTruthy('some');
-    expect('path' in data.some).toBeTruthy('path');
-    expect('array' in data).toBeTruthy('array');
-    expect(data.array.length).toEqual(2);
-    expect(data.array[0]).toBeUndefined();
-    expect('item' in data.array[1]).toBeTruthy('item');
-    expect('arrayInArray' in data).toBeTruthy('arrayInArray');
-    expect(data.arrayInArray.length).toEqual(1);
-    expect(data.arrayInArray[0].length).toEqual(1);
-    expect('obj' in data.arrayInArray[0][0]).toBeTruthy('obj');
-    expect('arrayValue' in data).toBeTruthy('arrayValue');
-    expect(data.arrayValue.length).toEqual(1);
-    expect('arrayInArrayValue' in data).toBeTruthy('arrayInArrayValue');
-    expect(data.arrayInArrayValue.length).toEqual(1);
-    expect(data.arrayInArrayValue[0].length).toEqual(1);
+    expect(data.key).toEqual('key');
+    expect(data.undecorated).toEqual('undecorated');
+    expect(data.unnamed).toEqual('unnamed');
+    expect(data.empty).toEqual('empty');
+    expect(data.nameOfNamed).toEqual('named');
+    expect(data.some).toEqual({path: 'path'});
+    expect(data.array).toEqual([undefined, {item: 'array'}]);
+    expect(data.arrayInArray).toEqual([[{obj: 'arrayInArray'}]]);
+    expect(data.arrayValue).toEqual(['arrayValue']);
+    expect(data.arrayInArrayValue).toEqual([['arrayInArrayValue']]);
+    expect(data.arrayAndArrayValue).toEqual([{arrayKey: ['arrayAndArrayValue']}]);
   });
 
   it('Advanced indices', () => {

@@ -124,6 +124,7 @@ define(['exports', './symbols', './util'], function (exports, _symbols, _util) {
     if (!Array.isArray(obj)) {
       return undefined;
     }
+    var index = 0;
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
@@ -132,7 +133,7 @@ define(['exports', './symbols', './util'], function (exports, _symbols, _util) {
       for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var key = _step.value;
 
-        var lastKey = keys.indexOf(key) === keys.length - 1;
+        var lastKey = index++ === keys.length - 1;
         if (_util.Util.isInt(key)) {
           if (!(key in obj)) {
             if (!allowCreation) {
@@ -230,14 +231,15 @@ define(['exports', './symbols', './util'], function (exports, _symbols, _util) {
       lastProp = lastProp.substring(index + 1, lastProp.length - 1);
     }
     props.forEach(function (prop, index) {
+      var endWithArray = isArrayElement && index === props.length - 1;
       if (prop.endsWith(']')) {
         obj = getObjectFromArray(obj, prop, {
           allowCreation: true,
-          isArray: isArrayElement
+          isArray: endWithArray
         });
       } else {
         if (!(prop in obj)) {
-          obj[prop] = isArrayElement && index === props.length - 1 ? [] : {};
+          obj[prop] = endWithArray ? [] : {};
         }
         obj = obj[prop];
       }

@@ -40,8 +40,9 @@ function getObjectFromArray(baseObj, path, options = {}) {
   if (!Array.isArray(obj)) {
     return undefined;
   }
+  let index = 0;
   for (let key of keys) {
-    let lastKey = keys.indexOf(key) === keys.length - 1;
+    let lastKey = index++ === keys.length - 1;
     if (Util.isInt(key)) {
       if (!(key in obj)) {
         if (!allowCreation) {
@@ -101,14 +102,15 @@ function writeValue(baseObj, fullPath, value) {
     lastProp = lastProp.substring(index + 1, lastProp.length - 1);
   }
   props.forEach((prop, index) => {
+    let endWithArray = isArrayElement && index === props.length - 1;
     if (prop.endsWith(']')) {
       obj = getObjectFromArray(obj, prop, {
         allowCreation: true,
-        isArray: isArrayElement
+        isArray: endWithArray
       });
     } else {
       if (!(prop in obj)) {
-        obj[prop] = isArrayElement && index === props.length - 1 ? [] : {};
+        obj[prop] = endWithArray ? [] : {};
       }
       obj = obj[prop];
     }
