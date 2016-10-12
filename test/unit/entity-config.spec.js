@@ -37,7 +37,11 @@ describe('PersistentConfig', () => {
     return () => {
       let configure = () => PersistentConfig.get(foo).configure({[key]: 'foo'});
       configure();
-      expect(configure).toThrow();
+      if (/^(pre|post)/.test(key)) {
+        expect(configure).not.toThrow();
+      } else {
+        expect(configure).toThrow();
+      }
     };
   };
   for (let key of keys) {

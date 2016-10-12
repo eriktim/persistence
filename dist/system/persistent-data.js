@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['./symbols', './util'], function (_export, _context) {
+  "use strict";
+
   var VERSION, defineSymbol, Util, _createClass, _typeof, _slicedToArray, dataMap, serializedDataMap, COMMA_WITH_SPACE, DOT_OUTSIDE_BRACKETS, EQUAL_SIGN_WITH_SPACE, ALL_BRACKETS, PersistentData;
 
   function _classCallCheck(instance, Constructor) {
@@ -103,6 +105,45 @@ System.register(['./symbols', './util'], function (_export, _context) {
 
     return obj;
   }
+
+  function readValue(baseObj, fullPath) {
+    var obj = baseObj;
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = fullPath.split(DOT_OUTSIDE_BRACKETS)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var prop = _step2.value;
+
+        if (prop.charAt(prop.length - 1) === ']') {
+          obj = getObjectFromArray(obj, prop);
+        } else {
+          obj = obj[prop];
+        }
+        if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj === null) {
+          break;
+        }
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+
+    return obj;
+  }
+
+  _export('readValue', readValue);
 
   function writeValue(baseObj, fullPath, value) {
     var obj = baseObj;
@@ -227,43 +268,6 @@ System.register(['./symbols', './util'], function (_export, _context) {
       DOT_OUTSIDE_BRACKETS = /\.(?=(?:[^\]]|\[[^\]]*\])*$)/;
       EQUAL_SIGN_WITH_SPACE = /\s*=\s*/;
       ALL_BRACKETS = /\[[^\]]+\]/g;
-      function readValue(baseObj, fullPath) {
-        var obj = baseObj;
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = fullPath.split(DOT_OUTSIDE_BRACKETS)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var prop = _step2.value;
-
-            if (prop.charAt(prop.length - 1) === ']') {
-              obj = getObjectFromArray(obj, prop);
-            } else {
-              obj = obj[prop];
-            }
-            if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object' || obj === null) {
-              break;
-            }
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
-
-        return obj;
-      }
-      _export('readValue', readValue);
 
       _export('PersistentData', PersistentData = function () {
         function PersistentData() {

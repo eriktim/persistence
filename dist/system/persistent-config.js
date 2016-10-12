@@ -1,7 +1,9 @@
 'use strict';
 
 System.register(['./persistent-data', './util'], function (_export, _context) {
-  var PersistentData, Util, _createClass, configurations, propertyKeys, PropertyType, PersistentConfig, EntityPropertyConfig;
+  "use strict";
+
+  var PersistentData, Util, _typeof, _createClass, configurations, propertyKeys, PropertyType, PersistentConfig, EntityPropertyConfig;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -16,6 +18,12 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
       Util = _util.Util;
     }],
     execute: function () {
+      _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+        return typeof obj;
+      } : function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+      };
+
       _createClass = function () {
         function defineProperties(target, props) {
           for (var i = 0; i < props.length; i++) {
@@ -71,6 +79,21 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
                 throw new Error('entity key \'' + key + '\' is not a valid configuration');
               }
               if (_this[key]) {
+                if (/^(pre|post)/.test(key)) {
+                  var _ret = function () {
+                    var cb1 = _this[key];
+                    var cb2 = config[key];
+                    _this[key] = function () {
+                      Reflect.apply(cb1, this, []);
+                      Reflect.apply(cb2, this, []);
+                    };
+                    return {
+                      v: void 0
+                    };
+                  }();
+
+                  if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+                }
                 throw new Error('entity key \'' + key + '\' cannot be re-configured');
               }
               _this[key] = config[key];

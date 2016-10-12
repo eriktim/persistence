@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['../persistent-config', '../persistent-object', '../util'], function (_export, _context) {
+  "use strict";
+
   var PersistentConfig, PropertyType, PersistentObject, Util, embeddedDataMap;
 
 
@@ -27,6 +29,31 @@ System.register(['../persistent-config', '../persistent-object', '../util'], fun
     };
   }
 
+  function Embedded(Type) {
+    var isDecorator = Util.isPropertyDecorator.apply(Util, arguments);
+    if (isDecorator) {
+      throw new Error('@Embedded requires a type');
+    }
+    if (!Type.isEmbeddable) {
+      throw new TypeError('@Embedded type must be @Embeddable');
+    }
+    return function (target, propertyKey) {
+      var config = PersistentConfig.get(target).getProperty(propertyKey);
+      var getEmbeddedData = getEmbeddedDataFactory(Type, config.getter, config.setter);
+      config.configure({
+        type: PropertyType.EMBEDDED,
+        getter: function getter() {
+          return getEmbeddedData(this, propertyKey);
+        },
+        setter: function setter() {
+          throw new Error('cannot override embedded object');
+        }
+      });
+    };
+  }
+
+  _export('Embedded', Embedded);
+
   return {
     setters: [function (_persistentConfig) {
       PersistentConfig = _persistentConfig.PersistentConfig;
@@ -38,30 +65,6 @@ System.register(['../persistent-config', '../persistent-object', '../util'], fun
     }],
     execute: function () {
       embeddedDataMap = new WeakMap();
-      function Embedded(Type) {
-        var isDecorator = Util.isPropertyDecorator.apply(Util, arguments);
-        if (isDecorator) {
-          throw new Error('@Embedded requires a type');
-        }
-        if (!Type.isEmbeddable) {
-          throw new TypeError('@Embedded type must be @Embeddable');
-        }
-        return function (target, propertyKey) {
-          var config = PersistentConfig.get(target).getProperty(propertyKey);
-          var getEmbeddedData = getEmbeddedDataFactory(Type, config.getter, config.setter);
-          config.configure({
-            type: PropertyType.EMBEDDED,
-            getter: function getter() {
-              return getEmbeddedData(this, propertyKey);
-            },
-            setter: function setter() {
-              throw new Error('cannot override embedded object');
-            }
-          });
-        };
-      }
-
-      _export('Embedded', Embedded);
     }
   };
 });

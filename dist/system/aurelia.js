@@ -1,7 +1,19 @@
 'use strict';
 
 System.register(['aurelia-binding', './config', './symbols', './index'], function (_export, _context) {
+  "use strict";
+
   var computedFrom, Config, VERSION, defineSymbol, baseConfig;
+  function configure(aurelia, callback) {
+    var config = new Config();
+    config.configure(baseConfig);
+    if (typeof callback === 'function') {
+      callback(config);
+    }
+  }
+
+  _export('configure', configure);
+
   return {
     setters: [function (_aureliaBinding) {
       computedFrom = _aureliaBinding.computedFrom;
@@ -14,7 +26,7 @@ System.register(['aurelia-binding', './config', './symbols', './index'], functio
       var _exportObj = {};
 
       for (var _key in _index) {
-        if (_key !== "default") _exportObj[_key] = _index[_key];
+        if (_key !== "default" && _key !== "__esModule") _exportObj[_key] = _index[_key];
       }
 
       _export(_exportObj);
@@ -29,15 +41,6 @@ System.register(['aurelia-binding', './config', './symbols', './index'], functio
           defineSymbol(object, '__observers__', {});
         }
       };
-      function configure(aurelia, callback) {
-        var config = new Config();
-        config.configure(baseConfig);
-        if (typeof callback === 'function') {
-          callback(config);
-        }
-      }
-
-      _export('configure', configure);
     }
   };
 });

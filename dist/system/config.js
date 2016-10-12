@@ -1,6 +1,8 @@
 'use strict';
 
 System.register([], function (_export, _context) {
+  "use strict";
+
   var _typeof, _createClass, configurations, defaultInstance, propertyDecorator, Config;
 
   function _classCallCheck(instance, Constructor) {
@@ -8,6 +10,13 @@ System.register([], function (_export, _context) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
+
+  function resetGlobalConfigForTesting() {
+    defaultInstance = undefined;
+    propertyDecorator = undefined;
+  }
+
+  _export('resetGlobalConfigForTesting', resetGlobalConfigForTesting);
 
   return {
     setters: [],
@@ -129,13 +138,6 @@ System.register([], function (_export, _context) {
       }());
 
       _export('Config', Config);
-
-      function resetGlobalConfigForTesting() {
-        defaultInstance = undefined;
-        propertyDecorator = undefined;
-      }
-
-      _export('resetGlobalConfigForTesting', resetGlobalConfigForTesting);
     }
   };
 });

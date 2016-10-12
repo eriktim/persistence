@@ -4,10 +4,11 @@ import {createEntityManagerStub} from '../helper';
 
 describe('@PostLoad', () => {
   let entityManager;
-  let test = function(Class) {
+  let test = function(Class, ...properties) {
+    expect(properties.length > 0).toBe(true);
     return entityManager.create(Class, {}).then(entity => {
       expect(entity.trigger).toBeUndefined();
-      expect(entity.triggered).toBe(true);
+      properties.forEach(p => expect(entity[p]).toBe(true, p));
     });
   };
 
@@ -15,7 +16,7 @@ describe('@PostLoad', () => {
     entityManager = createEntityManagerStub();
   });
 
-  it('Create', () => {
+  it('Default', () => {
     @Entity
     class Foo {
       triggered = undefined;
@@ -25,7 +26,7 @@ describe('@PostLoad', () => {
         this.triggered = true;
       }
     }
-    return test(Foo);
+    return test(Foo, 'triggered');
   });
 
   it('Inheritance', () => {
@@ -39,7 +40,28 @@ describe('@PostLoad', () => {
     }
     @Entity
     class Bar extends Foo {}
-    return test(Bar);
+    return test(Bar, 'triggered');
+  });
+
+  it('Inheritance & default', () => {
+    class Foo {
+      triggeredSuper = undefined;
+
+      @PostLoad
+      trigger() {
+        this.triggeredSuper = true;
+      }
+    }
+    @Entity
+    class Bar extends Foo {
+      triggeredSub = undefined;
+
+      @PostLoad
+      trigger() {
+        this.triggeredSub = true;
+      }
+    }
+    return test(Bar, 'triggeredSuper', 'triggeredSub');
   });
 
   it('Invalid usage', () => {

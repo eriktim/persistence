@@ -49,6 +49,15 @@ export class PersistentConfig {
         throw new Error(`entity key '${key}' is not a valid configuration`);
       }
       if (this[key]) {
+        if (/^(pre|post)/.test(key)) {
+          let cb1 = this[key];
+          let cb2 = config[key];
+          this[key] = function() {
+            Reflect.apply(cb1, this, []);
+            Reflect.apply(cb2, this, []);
+          };
+          return;
+        }
         throw new Error(`entity key '${key}' cannot be re-configured`);
       }
       this[key] = config[key];

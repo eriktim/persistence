@@ -81,7 +81,7 @@ var Collection = function (_extendableBuiltin2) {
   function Collection() {
     _classCallCheck(this, Collection);
 
-    return _possibleConstructorReturn(this, Object.getPrototypeOf(Collection).apply(this, arguments));
+    return _possibleConstructorReturn(this, (Collection.__proto__ || Object.getPrototypeOf(Collection)).apply(this, arguments));
   }
 
   _createClass(Collection, [{
@@ -102,7 +102,7 @@ var Collection = function (_extendableBuiltin2) {
       var data = _persistentData.PersistentData.extract(item) || {};
       config.array.push(data);
       _persistentObject.PersistentObject.apply(item, data, config.target);
-      _get(Object.getPrototypeOf(Collection.prototype), 'add', this).call(this, item);
+      _get(Collection.prototype.__proto__ || Object.getPrototypeOf(Collection.prototype), 'add', this).call(this, item);
       if (!config.silent) {
         versionUp(config.target);
       }
@@ -113,7 +113,7 @@ var Collection = function (_extendableBuiltin2) {
     value: function clear() {
       var config = configMap.get(this);
       config.array.splice(0, config.array.length);
-      _get(Object.getPrototypeOf(Collection.prototype), 'clear', this).call(this);
+      _get(Collection.prototype.__proto__ || Object.getPrototypeOf(Collection.prototype), 'clear', this).call(this);
       if (!config.silent) {
         versionUp(config.target);
       }
@@ -125,7 +125,7 @@ var Collection = function (_extendableBuiltin2) {
       var data = _persistentData.PersistentData.extract(item);
       var index = config.array.indexOf(data);
       config.array.splice(index, 1);
-      var deleted = _get(Object.getPrototypeOf(Collection.prototype), 'delete', this).call(this, item);
+      var deleted = _get(Collection.prototype.__proto__ || Object.getPrototypeOf(Collection.prototype), 'delete', this).call(this, item);
       versionUp(config.target);
       return deleted;
     }

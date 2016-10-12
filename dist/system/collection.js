@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['./persistent-object', './persistent-data', './symbols'], function (_export, _context) {
+  "use strict";
+
   var PersistentObject, PersistentData, VERSION, _createClass, _get, configMap, Collection, CollectionFactory;
 
   function _classCallCheck(instance, Constructor) {
@@ -58,11 +60,38 @@ System.register(['./persistent-object', './persistent-data', './symbols'], funct
     return ExtendableBuiltin;
   }
 
+  function setCollectionData(collection, array) {
+    var config = configMap.get(collection);
+    config.silent = true;
+    if (config.array) {
+      if (config.array === array) {
+        return;
+      }
+      collection.clear();
+    }
+    config.array = array;
+    array.splice(0, array.length).forEach(function (data) {
+      var item = new config.Type();
+      PersistentData.inject(item, data);
+      collection.add(item);
+    });
+    config.silent = false;
+  }
+
+  _export('setCollectionData', setCollectionData);
+
   function versionUp(target) {
     if (target) {
       target[VERSION]++;
     }
   }
+
+  function getArrayForTesting(collection) {
+    var config = configMap.get(collection);
+    return config ? config.array : undefined;
+  }
+
+  _export('getArrayForTesting', getArrayForTesting);
 
   return {
     setters: [function (_persistentObject) {
@@ -117,24 +146,6 @@ System.register(['./persistent-object', './persistent-data', './symbols'], funct
       };
 
       configMap = new WeakMap();
-      function setCollectionData(collection, array) {
-        var config = configMap.get(collection);
-        config.silent = true;
-        if (config.array) {
-          if (config.array === array) {
-            return;
-          }
-          collection.clear();
-        }
-        config.array = array;
-        array.splice(0, array.length).forEach(function (data) {
-          var item = new config.Type();
-          PersistentData.inject(item, data);
-          collection.add(item);
-        });
-        config.silent = false;
-      }
-      _export('setCollectionData', setCollectionData);
 
       Collection = function (_extendableBuiltin2) {
         _inherits(Collection, _extendableBuiltin2);
@@ -142,7 +153,7 @@ System.register(['./persistent-object', './persistent-data', './symbols'], funct
         function Collection() {
           _classCallCheck(this, Collection);
 
-          return _possibleConstructorReturn(this, Object.getPrototypeOf(Collection).apply(this, arguments));
+          return _possibleConstructorReturn(this, (Collection.__proto__ || Object.getPrototypeOf(Collection)).apply(this, arguments));
         }
 
         _createClass(Collection, [{
@@ -163,7 +174,7 @@ System.register(['./persistent-object', './persistent-data', './symbols'], funct
             var data = PersistentData.extract(item) || {};
             config.array.push(data);
             PersistentObject.apply(item, data, config.target);
-            _get(Object.getPrototypeOf(Collection.prototype), 'add', this).call(this, item);
+            _get(Collection.prototype.__proto__ || Object.getPrototypeOf(Collection.prototype), 'add', this).call(this, item);
             if (!config.silent) {
               versionUp(config.target);
             }
@@ -174,7 +185,7 @@ System.register(['./persistent-object', './persistent-data', './symbols'], funct
           value: function clear() {
             var config = configMap.get(this);
             config.array.splice(0, config.array.length);
-            _get(Object.getPrototypeOf(Collection.prototype), 'clear', this).call(this);
+            _get(Collection.prototype.__proto__ || Object.getPrototypeOf(Collection.prototype), 'clear', this).call(this);
             if (!config.silent) {
               versionUp(config.target);
             }
@@ -186,7 +197,7 @@ System.register(['./persistent-object', './persistent-data', './symbols'], funct
             var data = PersistentData.extract(item);
             var index = config.array.indexOf(data);
             config.array.splice(index, 1);
-            var deleted = _get(Object.getPrototypeOf(Collection.prototype), 'delete', this).call(this, item);
+            var deleted = _get(Collection.prototype.__proto__ || Object.getPrototypeOf(Collection.prototype), 'delete', this).call(this, item);
             versionUp(config.target);
             return deleted;
           }
@@ -221,13 +232,6 @@ System.register(['./persistent-object', './persistent-data', './symbols'], funct
       }());
 
       _export('CollectionFactory', CollectionFactory);
-
-      function getArrayForTesting(collection) {
-        var config = configMap.get(collection);
-        return config ? config.array : undefined;
-      }
-
-      _export('getArrayForTesting', getArrayForTesting);
     }
   };
 });

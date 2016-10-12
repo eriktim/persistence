@@ -6,6 +6,12 @@ define(['exports', './persistent-data', './util'], function (exports, _persisten
   });
   exports.PersistentConfig = exports.PropertyType = undefined;
 
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+  };
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -65,6 +71,21 @@ define(['exports', './persistent-data', './util'], function (exports, _persisten
             throw new Error('entity key \'' + key + '\' is not a valid configuration');
           }
           if (_this[key]) {
+            if (/^(pre|post)/.test(key)) {
+              var _ret = function () {
+                var cb1 = _this[key];
+                var cb2 = config[key];
+                _this[key] = function () {
+                  Reflect.apply(cb1, this, []);
+                  Reflect.apply(cb2, this, []);
+                };
+                return {
+                  v: void 0
+                };
+              }();
+
+              if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+            }
             throw new Error('entity key \'' + key + '\' cannot be re-configured');
           }
           _this[key] = config[key];

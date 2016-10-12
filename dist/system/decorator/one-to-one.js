@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['../persistent-config', '../entity-manager', '../symbols', '../util'], function (_export, _context) {
+  "use strict";
+
   var PersistentConfig, getUri, idFromUri, ENTITY_MANAGER, Util, _slicedToArray, referencesMap, SELF_REF;
 
   function getAndSetReferenceFactory(Type, getter, setter) {
@@ -50,6 +52,35 @@ System.register(['../persistent-config', '../entity-manager', '../symbols', '../
       references.set(propertyKey, entity);
     }];
   }
+
+  function OneToOne(Type) {
+    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    if (Util.isPropertyDecorator.apply(Util, arguments) || Util.is(Type) && Type !== SELF_REF && !Util.isClass(Type)) {
+      throw new Error('@OneToOne requires a constructor argument');
+    }
+    return function (target, propertyKey) {
+      var config = PersistentConfig.get(target).getProperty(propertyKey);
+
+      var _getAndSetReferenceFa = getAndSetReferenceFactory(Type, config.getter, config.setter);
+
+      var _getAndSetReferenceFa2 = _slicedToArray(_getAndSetReferenceFa, 2);
+
+      var getReference = _getAndSetReferenceFa2[0];
+      var setReference = _getAndSetReferenceFa2[1];
+
+      config.configure({
+        getter: function getter() {
+          return getReference(this, propertyKey);
+        },
+        setter: function setter(val) {
+          setReference(this, propertyKey, val);
+        }
+      });
+    };
+  }
+
+  _export('OneToOne', OneToOne);
 
   return {
     setters: [function (_persistentConfig) {
@@ -103,34 +134,6 @@ System.register(['../persistent-config', '../entity-manager', '../symbols', '../
 
       referencesMap = new WeakMap();
       SELF_REF = 'self';
-      function OneToOne(Type) {
-        var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-        if (Util.isPropertyDecorator.apply(Util, arguments) || Util.is(Type) && Type !== SELF_REF && !Util.isClass(Type)) {
-          throw new Error('@OneToOne requires a constructor argument');
-        }
-        return function (target, propertyKey) {
-          var config = PersistentConfig.get(target).getProperty(propertyKey);
-
-          var _getAndSetReferenceFa = getAndSetReferenceFactory(Type, config.getter, config.setter);
-
-          var _getAndSetReferenceFa2 = _slicedToArray(_getAndSetReferenceFa, 2);
-
-          var getReference = _getAndSetReferenceFa2[0];
-          var setReference = _getAndSetReferenceFa2[1];
-
-          config.configure({
-            getter: function getter() {
-              return getReference(this, propertyKey);
-            },
-            setter: function setter(val) {
-              setReference(this, propertyKey, val);
-            }
-          });
-        };
-      }
-
-      _export('OneToOne', OneToOne);
     }
   };
 });

@@ -6,13 +6,14 @@ import {createEntityManagerStub} from '../helper';
 
 describe('@PreRemove', () => {
   let entityManager;
-  let test = function(Class) {
+  let test = function(Class, ...properties) {
+    expect(properties.length > 0).toBe(true);
     return entityManager.create(Class, {key: 123})
       .then(entity => entityManager.persist(entity))
       .then(entity => entityManager.remove(entity))
       .then(entity => {
         expect(entity.trigger).toBeUndefined();
-        expect(entity.removed).toEqual(false);
+        properties.forEach(p => expect(entity[p]).toBe(false, p));
       });
   };
 
@@ -20,7 +21,7 @@ describe('@PreRemove', () => {
     entityManager = createEntityManagerStub();
   });
 
-  it('Remove', () => {
+  it('Default', () => {
     @Entity
     class Foo {
       @Id
@@ -32,7 +33,7 @@ describe('@PreRemove', () => {
         this.removed = this[REMOVED];
       }
     }
-    return test(Foo);
+    return test(Foo, 'removed');
   });
 
   it('Inheritance', () => {
@@ -48,7 +49,30 @@ describe('@PreRemove', () => {
     }
     @Entity
     class Bar extends Foo {}
-    return test(Bar);
+    return test(Bar, 'removed');
+  });
+
+  it('Inheritance & default', () => {
+    class Foo {
+      @Id
+      key;
+      removedSuper = undefined;
+
+      @PreRemove
+      trigger() {
+        this.removedSuper = this[REMOVED];
+      }
+    }
+    @Entity
+    class Bar extends Foo {
+      removedSub = undefined;
+
+      @PreRemove
+      trigger() {
+        this.removedSub = this[REMOVED];
+      }
+    }
+    return test(Bar, 'removedSuper', 'removedSub');
   });
 
   it('Invalid usage', () => {

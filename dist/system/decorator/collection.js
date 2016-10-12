@@ -1,6 +1,8 @@
 'use strict';
 
 System.register(['../collection', '../persistent-config', '../util'], function (_export, _context) {
+  "use strict";
+
   var CollectionFactory, PersistentConfig, PropertyType, Util, collectionsMap;
 
 
@@ -26,6 +28,30 @@ System.register(['../collection', '../persistent-config', '../util'], function (
     };
   }
 
+  function Collection(Type) {
+    if (Util.isPropertyDecorator.apply(Util, arguments) || !Util.isClass(Type)) {
+      throw new Error('@Collection requires a type');
+    }
+    if (!Type.isCollectible) {
+      throw new TypeError('@Collection type must be @Collectible');
+    }
+    return function (target, propertyKey, descriptor) {
+      var config = PersistentConfig.get(target).getProperty(propertyKey);
+      var getCollection = getCollectionFactory(Type, config.getter, config.setter);
+      config.configure({
+        type: PropertyType.COLLECTION,
+        getter: function getter() {
+          return getCollection(this, propertyKey);
+        },
+        setter: function setter() {
+          throw new Error('cannot override collection');
+        }
+      });
+    };
+  }
+
+  _export('Collection', Collection);
+
   return {
     setters: [function (_collection) {
       CollectionFactory = _collection.CollectionFactory;
@@ -37,29 +63,6 @@ System.register(['../collection', '../persistent-config', '../util'], function (
     }],
     execute: function () {
       collectionsMap = new WeakMap();
-      function Collection(Type) {
-        if (Util.isPropertyDecorator.apply(Util, arguments) || !Util.isClass(Type)) {
-          throw new Error('@Collection requires a type');
-        }
-        if (!Type.isCollectible) {
-          throw new TypeError('@Collection type must be @Collectible');
-        }
-        return function (target, propertyKey, descriptor) {
-          var config = PersistentConfig.get(target).getProperty(propertyKey);
-          var getCollection = getCollectionFactory(Type, config.getter, config.setter);
-          config.configure({
-            type: PropertyType.COLLECTION,
-            getter: function getter() {
-              return getCollection(this, propertyKey);
-            },
-            setter: function setter() {
-              throw new Error('cannot override collection');
-            }
-          });
-        };
-      }
-
-      _export('Collection', Collection);
     }
   };
 });

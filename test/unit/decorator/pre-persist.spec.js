@@ -5,14 +5,17 @@ import {createEntityManagerStub} from '../helper';
 
 describe('@PrePersist', () => {
   let entityManager;
-  let test = function(Class) {
+  let test = function(Class, ...properties) {
+    expect(properties.length > 0).toBe(true);
     return entityManager.create(Class, {})
       .then(entity => entityManager.persist(entity))
       .then(entity => {
         expect(entity.trigger).toBeUndefined();
-        expect(entity.triggered).toBeTruthy();
         const request = entityManager.requests.pop();
-        expect(request.body.triggered).toBe(true);
+        properties.forEach(p => {
+          expect(entity[p]).toBe(true, p);
+          expect(request.body[p]).toBe(true, p);
+        });
       });
   };
 
@@ -20,7 +23,7 @@ describe('@PrePersist', () => {
     entityManager = createEntityManagerStub();
   });
 
-  it('Save', () => {
+  it('Default', () => {
     @Entity
     class Foo {
       @Id
@@ -32,7 +35,7 @@ describe('@PrePersist', () => {
         this.triggered = true;
       }
     }
-    return test(Foo);
+    return test(Foo, 'triggered');
   });
 
   it('Inheritance', () => {
@@ -48,7 +51,30 @@ describe('@PrePersist', () => {
     }
     @Entity
     class Bar extends Foo {}
-    return test(Bar);
+    return test(Bar, 'triggered');
+  });
+
+  it('Inheritance & default', () => {
+    class Foo {
+      @Id
+      key;
+      triggeredSuper = undefined;
+
+      @PrePersist
+      trigger() {
+        this.triggeredSuper = true;
+      }
+    }
+    @Entity
+    class Bar extends Foo {
+      triggeredSub = undefined;
+
+      @PrePersist
+      trigger() {
+        this.triggeredSub = true;
+      }
+    }
+    return test(Bar, 'triggeredSuper', 'triggeredSub');
   });
 
   it('Invalid usage', () => {
