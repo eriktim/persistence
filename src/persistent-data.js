@@ -25,7 +25,9 @@ function keyToObject(key) {
   return keyObj;
 }
 
-function getObjectFromArray(baseObj, path, allowCreation) {
+function getObjectFromArray(baseObj, path, options = {}) {
+  let allowCreation = options.allowCreation || false;
+  let isArray = options.isArray || false;
   let keys = path.match(ALL_BRACKETS).map(k => k.substring(1, k.length - 1));
   let prop = path.substring(0, path.indexOf('['));
   if (!(prop in baseObj)) {
@@ -46,7 +48,7 @@ function getObjectFromArray(baseObj, path, allowCreation) {
           obj = undefined;
           break;
         }
-        obj[key] = lastKey ? {} : [];
+        obj[key] = lastKey && !isArray ? {} : [];
       }
       obj = obj[key];
     } else {
@@ -92,16 +94,25 @@ function writeValue(baseObj, fullPath, value) {
   let obj = baseObj;
   let props = fullPath.split(DOT_OUTSIDE_BRACKETS);
   let lastProp = props.pop();
-  for (let prop of props) {
-    if (prop.charAt(prop.length - 1) === ']') {
-      obj = getObjectFromArray(obj, prop, true);
+  let isArrayElement = lastProp.endsWith(']');
+  if (isArrayElement) {
+    let index = lastProp.lastIndexOf('[');
+    props.push(lastProp.substring(0, index));
+    lastProp = lastProp.substring(index + 1, lastProp.length - 1);
+  }
+  props.forEach((prop, index) => {
+    if (prop.endsWith(']')) {
+      obj = getObjectFromArray(obj, prop, {
+        allowCreation: true,
+        isArray: isArrayElement
+      });
     } else {
       if (!(prop in obj)) {
-        obj[prop] = {};
+        obj[prop] = isArrayElement && index === props.length - 1 ? [] : {};
       }
       obj = obj[prop];
     }
-  }
+  });
   let update = obj ? obj[lastProp] !== value : false;
   if (update) {
     obj[lastProp] = value;

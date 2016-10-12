@@ -33,7 +33,11 @@ System.register(['./symbols', './util'], function (_export, _context) {
     return keyObj;
   }
 
-  function getObjectFromArray(baseObj, path, allowCreation) {
+  function getObjectFromArray(baseObj, path) {
+    var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+    var allowCreation = options.allowCreation || false;
+    var isArray = options.isArray || false;
     var keys = path.match(ALL_BRACKETS).map(function (k) {
       return k.substring(1, k.length - 1);
     });
@@ -63,7 +67,7 @@ System.register(['./symbols', './util'], function (_export, _context) {
               obj = undefined;
               break;
             }
-            obj[key] = lastKey ? {} : [];
+            obj[key] = lastKey && !isArray ? {} : [];
           }
           obj = obj[key];
         } else {
@@ -149,38 +153,25 @@ System.register(['./symbols', './util'], function (_export, _context) {
     var obj = baseObj;
     var props = fullPath.split(DOT_OUTSIDE_BRACKETS);
     var lastProp = props.pop();
-    var _iteratorNormalCompletion3 = true;
-    var _didIteratorError3 = false;
-    var _iteratorError3 = undefined;
-
-    try {
-      for (var _iterator3 = props[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var prop = _step3.value;
-
-        if (prop.charAt(prop.length - 1) === ']') {
-          obj = getObjectFromArray(obj, prop, true);
-        } else {
-          if (!(prop in obj)) {
-            obj[prop] = {};
-          }
-          obj = obj[prop];
-        }
-      }
-    } catch (err) {
-      _didIteratorError3 = true;
-      _iteratorError3 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-          _iterator3.return();
-        }
-      } finally {
-        if (_didIteratorError3) {
-          throw _iteratorError3;
-        }
-      }
+    var isArrayElement = lastProp.endsWith(']');
+    if (isArrayElement) {
+      var index = lastProp.lastIndexOf('[');
+      props.push(lastProp.substring(0, index));
+      lastProp = lastProp.substring(index + 1, lastProp.length - 1);
     }
-
+    props.forEach(function (prop, index) {
+      if (prop.endsWith(']')) {
+        obj = getObjectFromArray(obj, prop, {
+          allowCreation: true,
+          isArray: isArrayElement
+        });
+      } else {
+        if (!(prop in obj)) {
+          obj[prop] = isArrayElement && index === props.length - 1 ? [] : {};
+        }
+        obj = obj[prop];
+      }
+    });
     var update = obj ? obj[lastProp] !== value : false;
     if (update) {
       obj[lastProp] = value;

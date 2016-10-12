@@ -28,6 +28,12 @@ class Foo {
 
   @Property('arrayInArray[0][0].obj')
   arrayInArray;
+
+  @Property('arrayValue[0]')
+  arrayValue;
+
+  @Property('arrayInArrayValue[0][0]')
+  arrayInArrayValue;
 }
 
 describe('@Property', () => {
@@ -60,6 +66,11 @@ describe('@Property', () => {
     expect(data.arrayInArray.length).toEqual(1);
     expect(data.arrayInArray[0].length).toEqual(1);
     expect('obj' in data.arrayInArray[0][0]).toBeTruthy('obj');
+    expect('arrayValue' in data).toBeTruthy('arrayValue');
+    expect(data.arrayValue.length).toEqual(1);
+    expect('arrayInArrayValue' in data).toBeTruthy('arrayInArrayValue');
+    expect(data.arrayInArrayValue.length).toEqual(1);
+    expect(data.arrayInArrayValue[0].length).toEqual(1);
   });
 
   it('Advanced indices', () => {
