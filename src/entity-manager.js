@@ -5,9 +5,15 @@ import {PersistentObject} from './persistent-object';
 import {ENTITY_MANAGER, REMOVED, defineSymbol} from './symbols';
 import {Util} from './util';
 
+const LOCATION = Symbol('location');
+
 const serverMap = new WeakMap();
 const contextMap = new WeakMap();
 const cacheMap = new WeakMap();
+
+export function getLocationSymbolForTesting() {
+  return LOCATION;
+}
 
 export function getServerForTesting(entityManager) {
   return serverMap.get(entityManager);
@@ -179,16 +185,33 @@ export class EntityManager {
       .then(() => {
         assertEntity(this, entity);
         let id = getId(entity);
-        if (!id || PersistentData.isDirty(entity)) {
-          let fetch = id ? serverMap.get(this).put : serverMap.get(this).post;
+        let noId = !id;
+        if (noId || PersistentData.isDirty(entity)) {
+          let server = serverMap.get(this);
+          let fetch = noId ? server.post : server.put;
           let path = getPath(entity);
           let config = PersistentConfig.get(entity);
           let data = PersistentData.extract(entity);
           return Promise.resolve()
             .then(() => applySafe(config.prePersist, entity))
-            .then(() => Reflect.apply(fetch, serverMap.get(this),
-                [id ? `${path}/${id}` : path, data]))
-            .then(raw => raw && PersistentObject.setData(entity, raw))
+            .then(() => Reflect.apply(fetch, server,
+                [noId ? path : `${path}/${id}`, data]))
+            .then(raw => {
+              if (noId) {
+                let location = raw[LOCATION];
+                if (!location) {
+                  throw new Error('REST server should return'
+                      + ' the location of the new entity');
+                }
+                let idPath = location.substring(
+                    location.lastIndexOf(path) + path.length + 1);
+                // remove additional slashes
+                let index = idPath.indexOf('/');
+                let newId = index > 0 ? idPath.substring(0, index) : idPath;
+                PersistentData.setProperty(entity, config.idKey, newId);
+                PersistentData.setNotDirty(entity);
+              }
+            })
             .then(() => attach(this, entity))
             .then(() => applySafe(config.postPersist, entity));
         }
@@ -289,7 +312,12 @@ class Server {
           if (response.ok) {
             let contentType = response.headers.get('content-type');
             if (contentType && contentType.startsWith('application/json')) {
-              return response.json();
+              let location = response.headers.get('location');
+              let promise = response.json();
+              return location ? promise.then(obj => {
+                obj[LOCATION] = location;
+                return obj;
+              }) : promise;
             }
           }
           return null;

@@ -2,14 +2,17 @@ import {Entity} from '../../src/decorator/entity';
 import {Id} from '../../src/decorator/id';
 import {Config} from '../../src/config';
 import {PersistentConfig} from '../../src/persistent-config';
-import {EntityManager, getServerForTesting} from '../../src/entity-manager';
-import {expectRejection} from './helper';
+import {EntityManager, getLocationSymbolForTesting, getServerForTesting}
+    from '../../src/entity-manager';
+import {asJasmineValue, expectRejection} from './helper';
 
 const URL = 'mock://no-url';
 const HEADERS = new Headers({
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 });
+
+const LOCATION = getLocationSymbolForTesting();
 
 function createFoo() {
   @Entity class Foo {
@@ -38,9 +41,11 @@ describe('EntityManager', () => {
       let data = {id: 1};
       return Promise.resolve(path.includes('/1') ? data : [data, {id: 2}]);
     });
-    spyOn(server, 'post').and.callFake(function() {
-      return Promise.resolve({id: 1});
-    });
+    spyOn(server, 'post').and.callFake(function(path) {
+      let data = {id: 1};
+      data[LOCATION] = path + (path.endsWith('/') ? '' : '/') + data.id;
+      return Promise.resolve(data);
+    }).calls.saveArgumentsByValue(); // make copy of arguments
     spyOn(server, 'put').and.callFake(function() {
       return Promise.resolve({id: 1});
     });
@@ -108,10 +113,10 @@ describe('EntityManager', () => {
         return entityManager.persist(foo)
           .then(f => {
             expect(f).toBe(foo);
-            expect(f.id).toEqual(1);
+            expect(f.id).toEqual('1');
             expect(server.post).toHaveBeenCalledTimes(1);
             expect(server.post)
-                .toHaveBeenCalledWith('foo', {});
+                .toHaveBeenCalledWith(asJasmineValue('foo'), {});
             expect(entityConfig.prePersist).toHaveBeenCalledTimes(1);
             expect(entityConfig.postPersist).toHaveBeenCalledTimes(1);
           });
@@ -119,6 +124,7 @@ describe('EntityManager', () => {
       .then(() => {
         // not dirty
         return entityManager.persist(foo)
+          .then(() => entityManager.persist(foo))
           .then(() => {
             expect(server.put).not.toHaveBeenCalled();
           });
@@ -137,8 +143,9 @@ describe('EntityManager', () => {
   });
 
   it('refresh', () => {
+    foo.id = 1;
     return expectRejection(entityManager.refresh(bar))
-      .then(() => (foo.id = 1, entityManager.refresh(foo)))
+      .then(() => entityManager.refresh(foo))
       .then(f => {
         expect(f).toBe(foo);
         expect(f.id).toEqual(1);
@@ -149,8 +156,9 @@ describe('EntityManager', () => {
   });
 
   it('remove', () => {
+    foo.id = 1;
     return expectRejection(entityManager.remove(bar))
-      .then(() => (foo.id = 1, entityManager.remove(foo)))
+      .then(() => entityManager.remove(foo))
       .then(f => {
         expect(f).toBe(foo);
         expect(f.id).toEqual(1);
@@ -189,9 +197,18 @@ describe('Server', () => {
   let interceptor;
 
   beforeEach(() => {
-    interceptor = jasmine.createSpy('interceptor').and.callFake(
-      (url, init) => Promise.resolve(init.method === 'GET' &&
-          !url.endsWith('/1') ? [] : {id: 1}));
+    interceptor = jasmine.createSpy('interceptor').and.callFake((url, init) => {
+      let data = {id: 1};
+      switch(init.method) {
+        case 'GET':
+          data = url.endsWith('/1') ? data : [data];
+          break;
+        case 'POST':
+          data[LOCATION] = url + (url.endsWith('/') ? '' : '/') + '1';
+          break;
+      }
+      return Promise.resolve(data);
+    });
     let config = Config.create({baseUrl: URL, fetchInterceptor: interceptor});
     entityManager = new EntityManager(config);
     Foo = createFoo();

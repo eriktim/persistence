@@ -1,5 +1,19 @@
 import {Config} from '../../src/config';
-import {EntityManager, getServerForTesting} from '../../src/entity-manager';
+import {EntityManager, getLocationSymbolForTesting, getServerForTesting}
+    from '../../src/entity-manager';
+
+const LOCATION = getLocationSymbolForTesting();
+
+export function asJasmineValue(value) {
+  if (typeof value === 'string') {
+    let obj = {};
+    for (let i in value) {
+      obj[i] = value[i];
+    }
+    return obj;
+  }
+  return value;
+}
 
 export function createEntityManagerStub() {
   let config = Config.create();
@@ -16,6 +30,7 @@ export function createEntityManagerStub() {
       path,
       body: Object.assign({}, body)
     });
+    body[LOCATION] = (path.endsWith('/') ? '' : '/') + (body.id || 1);
     return Promise.resolve(body);
   };
   return entityManager;

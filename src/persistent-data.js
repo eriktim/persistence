@@ -151,13 +151,18 @@ export class PersistentData {
       defineSymbol(obj, VERSION, 0);
     }
     dataMap.set(obj, data);
-    serializedDataMap.set(obj, serialize(data));
+    this.setNotDirty(obj);
     obj[VERSION]++;
   }
 
   static isDirty(obj) {
     return serializedDataMap.get(obj) !==
-        serialize(PersistentData.extract(obj));
+      serialize(PersistentData.extract(obj));
+  }
+
+  static setNotDirty(obj) {
+    let data = PersistentData.extract(obj);
+    serializedDataMap.set(obj, serialize(data));
   }
 }
 
