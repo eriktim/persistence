@@ -60,8 +60,7 @@ define(['exports'], function (exports) {
             });
             return map;
           };
-        },
-        set: null
+        }
       };
       configurations.set(this, config);
       if (!defaultInstance) {

@@ -289,13 +289,19 @@ define(['exports', './symbols', './util'], function (exports, _symbols, _util) {
           (0, _symbols.defineSymbol)(obj, _symbols.VERSION, 0);
         }
         dataMap.set(obj, data);
-        serializedDataMap.set(obj, serialize(data));
+        this.setNotDirty(obj);
         obj[_symbols.VERSION]++;
       }
     }, {
       key: 'isDirty',
       value: function isDirty(obj) {
         return serializedDataMap.get(obj) !== serialize(PersistentData.extract(obj));
+      }
+    }, {
+      key: 'setNotDirty',
+      value: function setNotDirty(obj) {
+        var data = PersistentData.extract(obj);
+        serializedDataMap.set(obj, serialize(data));
       }
     }]);
 

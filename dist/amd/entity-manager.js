@@ -5,6 +5,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
     value: true
   });
   exports.EntityManager = undefined;
+  exports.getLocationSymbolForTesting = getLocationSymbolForTesting;
   exports.getServerForTesting = getServerForTesting;
   exports.getUri = getUri;
   exports.idFromUri = idFromUri;
@@ -39,9 +40,15 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
     };
   }();
 
+  var LOCATION = Symbol('location');
+
   var serverMap = new WeakMap();
   var contextMap = new WeakMap();
   var cacheMap = new WeakMap();
+
+  function getLocationSymbolForTesting() {
+    return LOCATION;
+  }
 
   function getServerForTesting(entityManager) {
     return serverMap.get(entityManager);
@@ -241,9 +248,11 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
         return Promise.resolve().then(function () {
           assertEntity(_this4, entity);
           var id = getId(entity);
-          if (!id || _persistentData.PersistentData.isDirty(entity)) {
+          var noId = !id;
+          if (noId || _persistentData.PersistentData.isDirty(entity)) {
             var _ret = function () {
-              var fetch = id ? serverMap.get(_this4).put : serverMap.get(_this4).post;
+              var server = serverMap.get(_this4);
+              var fetch = noId ? server.post : server.put;
               var path = getPath(entity);
               var config = _persistentConfig.PersistentConfig.get(entity);
               var data = _persistentData.PersistentData.extract(entity);
@@ -251,9 +260,20 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
                 v: Promise.resolve().then(function () {
                   return applySafe(config.prePersist, entity);
                 }).then(function () {
-                  return Reflect.apply(fetch, serverMap.get(_this4), [id ? path + '/' + id : path, data]);
+                  return Reflect.apply(fetch, server, [noId ? path : path + '/' + id, data]);
                 }).then(function (raw) {
-                  return raw && _persistentObject.PersistentObject.setData(entity, raw);
+                  if (noId) {
+                    var location = raw[LOCATION];
+                    if (!location) {
+                      throw new Error('REST server should return' + ' the location of the new entity');
+                    }
+                    var idPath = location.substring(location.lastIndexOf(path) + path.length + 1);
+
+                    var index = idPath.indexOf('/');
+                    var newId = index > 0 ? idPath.substring(0, index) : idPath;
+                    _persistentData.PersistentData.setProperty(entity, config.idKey, newId);
+                    _persistentData.PersistentData.setNotDirty(entity);
+                  }
                 }).then(function () {
                   return attach(_this4, entity);
                 }).then(function () {
@@ -391,7 +411,18 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
             if (response.ok) {
               var contentType = response.headers.get('content-type');
               if (contentType && contentType.startsWith('application/json')) {
-                return response.json();
+                var _ret2 = function () {
+                  var location = response.headers.get('location');
+                  var promise = response.json();
+                  return {
+                    v: location ? promise.then(function (obj) {
+                      obj[LOCATION] = location;
+                      return obj;
+                    }) : promise
+                  };
+                }();
+
+                if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
               }
             }
             return null;

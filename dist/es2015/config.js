@@ -16,8 +16,7 @@ export let Config = class Config {
           (values || []).forEach(value => map.set(value, Entity));
           return map;
         };
-      },
-      set: null
+      }
     };
     configurations.set(this, config);
     if (!defaultInstance) {

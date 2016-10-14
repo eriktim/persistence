@@ -32,7 +32,11 @@ export let PersistentConfig = class PersistentConfig {
       if (configurations.has(SuperClass)) {
         let superConfig = configurations.get(SuperClass);
         for (let key in superConfig) {
-          config[key] = superConfig[key];
+          if (key === 'propertyMap') {
+            Object.assign(config[key], superConfig[key]);
+          } else {
+            config[key] = superConfig[key];
+          }
         }
       }
       configurations.set(Class, config);

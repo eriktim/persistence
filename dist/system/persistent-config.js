@@ -125,7 +125,11 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
               if (configurations.has(SuperClass)) {
                 var superConfig = configurations.get(SuperClass);
                 for (var key in superConfig) {
-                  config[key] = superConfig[key];
+                  if (key === 'propertyMap') {
+                    Object.assign(config[key], superConfig[key]);
+                  } else {
+                    config[key] = superConfig[key];
+                  }
                 }
               }
               configurations.set(Class, config);

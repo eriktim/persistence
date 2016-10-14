@@ -296,13 +296,19 @@ System.register(['./symbols', './util'], function (_export, _context) {
               defineSymbol(obj, VERSION, 0);
             }
             dataMap.set(obj, data);
-            serializedDataMap.set(obj, serialize(data));
+            this.setNotDirty(obj);
             obj[VERSION]++;
           }
         }, {
           key: 'isDirty',
           value: function isDirty(obj) {
             return serializedDataMap.get(obj) !== serialize(PersistentData.extract(obj));
+          }
+        }, {
+          key: 'setNotDirty',
+          value: function setNotDirty(obj) {
+            var data = PersistentData.extract(obj);
+            serializedDataMap.set(obj, serialize(data));
           }
         }]);
 

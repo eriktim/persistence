@@ -36,8 +36,7 @@ var Config = function () {
           });
           return map;
         };
-      },
-      set: null
+      }
     };
     configurations.set(this, config);
     if (!defaultInstance) {

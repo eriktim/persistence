@@ -68,8 +68,7 @@ System.register([], function (_export, _context) {
                 });
                 return map;
               };
-            },
-            set: null
+            }
           };
           configurations.set(this, config);
           if (!defaultInstance) {

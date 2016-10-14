@@ -3,13 +3,19 @@
 System.register(['./config', './persistent-config', './persistent-data', './persistent-object', './symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var Config, PersistentConfig, PersistentData, PersistentObject, ENTITY_MANAGER, REMOVED, defineSymbol, Util, _typeof, _createClass, serverMap, contextMap, cacheMap, EntityManager, Server;
+  var Config, PersistentConfig, PersistentData, PersistentObject, ENTITY_MANAGER, REMOVED, defineSymbol, Util, _typeof, _createClass, LOCATION, serverMap, contextMap, cacheMap, EntityManager, Server;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
+
+  function getLocationSymbolForTesting() {
+    return LOCATION;
+  }
+
+  _export('getLocationSymbolForTesting', getLocationSymbolForTesting);
 
   function getServerForTesting(entityManager) {
     return serverMap.get(entityManager);
@@ -140,6 +146,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
         };
       }();
 
+      LOCATION = Symbol('location');
       serverMap = new WeakMap();
       contextMap = new WeakMap();
       cacheMap = new WeakMap();
@@ -260,9 +267,11 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
             return Promise.resolve().then(function () {
               assertEntity(_this4, entity);
               var id = getId(entity);
-              if (!id || PersistentData.isDirty(entity)) {
+              var noId = !id;
+              if (noId || PersistentData.isDirty(entity)) {
                 var _ret = function () {
-                  var fetch = id ? serverMap.get(_this4).put : serverMap.get(_this4).post;
+                  var server = serverMap.get(_this4);
+                  var fetch = noId ? server.post : server.put;
                   var path = getPath(entity);
                   var config = PersistentConfig.get(entity);
                   var data = PersistentData.extract(entity);
@@ -270,9 +279,20 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
                     v: Promise.resolve().then(function () {
                       return applySafe(config.prePersist, entity);
                     }).then(function () {
-                      return Reflect.apply(fetch, serverMap.get(_this4), [id ? path + '/' + id : path, data]);
+                      return Reflect.apply(fetch, server, [noId ? path : path + '/' + id, data]);
                     }).then(function (raw) {
-                      return raw && PersistentObject.setData(entity, raw);
+                      if (noId) {
+                        var location = raw[LOCATION];
+                        if (!location) {
+                          throw new Error('REST server should return' + ' the location of the new entity');
+                        }
+                        var idPath = location.substring(location.lastIndexOf(path) + path.length + 1);
+
+                        var index = idPath.indexOf('/');
+                        var newId = index > 0 ? idPath.substring(0, index) : idPath;
+                        PersistentData.setProperty(entity, config.idKey, newId);
+                        PersistentData.setNotDirty(entity);
+                      }
                     }).then(function () {
                       return attach(_this4, entity);
                     }).then(function () {
@@ -412,7 +432,18 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
                 if (response.ok) {
                   var contentType = response.headers.get('content-type');
                   if (contentType && contentType.startsWith('application/json')) {
-                    return response.json();
+                    var _ret2 = function () {
+                      var location = response.headers.get('location');
+                      var promise = response.json();
+                      return {
+                        v: location ? promise.then(function (obj) {
+                          obj[LOCATION] = location;
+                          return obj;
+                        }) : promise
+                      };
+                    }();
+
+                    if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
                   }
                 }
                 return null;
