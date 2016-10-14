@@ -39,4 +39,13 @@ describe('@Id', () => {
     @Entity class Bar extends Foo {}
     return test(Bar);
   });
+
+  it('Double inheritance', () => {
+    class Foo {
+      @Id key;
+    }
+    class Bar extends Foo {}
+    @Entity class Baz extends Bar {}
+    return test(Baz);
+  });
 });

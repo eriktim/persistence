@@ -56,9 +56,12 @@ define(['exports', 'moment', '../persistent-config', '../util'], function (expor
           return val.isValid() ? val : undefined;
         },
         setter: function setter(value) {
-          var val = parse(value, format);
-          if (!val.isValid()) {
-            throw new Error('invalid date: ' + value);
+          var val = value;
+          if (!_moment2.default.isMoment(val)) {
+            val = parse(value, format);
+            if (!val.isValid()) {
+              throw new Error('invalid date: ' + value);
+            }
           }
           return Reflect.apply(_setter, this, [val.format(format)]);
         }

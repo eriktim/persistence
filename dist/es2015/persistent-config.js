@@ -11,6 +11,25 @@ export const PropertyType = Object.freeze({
   TRANSIENT: 'transient'
 });
 
+function inheritConfig(config, Class) {
+  let SuperClass = Object.getPrototypeOf(Class);
+  if (!SuperClass) {
+    return false;
+  }
+  if (!configurations.has(SuperClass)) {
+    return inheritConfig(config, SuperClass);
+  }
+  let superConfig = configurations.get(SuperClass);
+  for (let key in superConfig) {
+    if (key === 'propertyMap') {
+      Object.assign(config[key], superConfig[key]);
+    } else {
+      config[key] = superConfig[key];
+    }
+  }
+  return true;
+}
+
 export let PersistentConfig = class PersistentConfig {
   constructor() {
     this.idKey = undefined;
@@ -28,17 +47,7 @@ export let PersistentConfig = class PersistentConfig {
     let Class = Util.getClass(objectOrClass);
     if (!configurations.has(Class)) {
       let config = new PersistentConfig();
-      let SuperClass = Object.getPrototypeOf(Class);
-      if (configurations.has(SuperClass)) {
-        let superConfig = configurations.get(SuperClass);
-        for (let key in superConfig) {
-          if (key === 'propertyMap') {
-            Object.assign(config[key], superConfig[key]);
-          } else {
-            config[key] = superConfig[key];
-          }
-        }
-      }
+      inheritConfig(config, Class);
       configurations.set(Class, config);
     }
     return configurations.get(Class);

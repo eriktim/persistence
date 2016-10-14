@@ -11,6 +11,25 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
     }
   }
 
+  function inheritConfig(config, Class) {
+    var SuperClass = Object.getPrototypeOf(Class);
+    if (!SuperClass) {
+      return false;
+    }
+    if (!configurations.has(SuperClass)) {
+      return inheritConfig(config, SuperClass);
+    }
+    var superConfig = configurations.get(SuperClass);
+    for (var key in superConfig) {
+      if (key === 'propertyMap') {
+        Object.assign(config[key], superConfig[key]);
+      } else {
+        config[key] = superConfig[key];
+      }
+    }
+    return true;
+  }
+
   return {
     setters: [function (_persistentData) {
       PersistentData = _persistentData.PersistentData;
@@ -121,17 +140,7 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
             var Class = Util.getClass(objectOrClass);
             if (!configurations.has(Class)) {
               var config = new PersistentConfig();
-              var SuperClass = Object.getPrototypeOf(Class);
-              if (configurations.has(SuperClass)) {
-                var superConfig = configurations.get(SuperClass);
-                for (var key in superConfig) {
-                  if (key === 'propertyMap') {
-                    Object.assign(config[key], superConfig[key]);
-                  } else {
-                    config[key] = superConfig[key];
-                  }
-                }
-              }
+              inheritConfig(config, Class);
               configurations.set(Class, config);
             }
             return configurations.get(Class);

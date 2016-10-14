@@ -40,9 +40,12 @@ export function Temporal(formatOrTarget, optPropertyKey, optDescriptor) {
         return val.isValid() ? val : undefined;
       },
       setter: function (value) {
-        let val = parse(value, format);
-        if (!val.isValid()) {
-          throw new Error(`invalid date: ${ value }`);
+        let val = value;
+        if (!moment.isMoment(val)) {
+          val = parse(value, format);
+          if (!val.isValid()) {
+            throw new Error(`invalid date: ${ value }`);
+          }
         }
         return Reflect.apply(setter, this, [val.format(format)]);
       }
