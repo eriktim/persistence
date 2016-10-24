@@ -43,13 +43,15 @@ var PersistentObject = exports.PersistentObject = function () {
   _createClass(PersistentObject, null, [{
     key: 'byDecoration',
     value: function byDecoration(Target) {
+      Target.isPersistent = true;
+
       var config = _persistentConfig.PersistentConfig.get(Target);
 
       var instance = Reflect.construct(Target, []);
-      Object.keys(instance).forEach(function (propertyKey) {
+      for (var propertyKey in instance) {
         var propConfig = config.getProperty(propertyKey);
         if (propConfig.type === _persistentConfig.PropertyType.TRANSIENT) {
-          return;
+          continue;
         }
         var ownDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, propertyKey) || {};
         var descriptor = _util.Util.mergeDescriptors(ownDescriptor, {
@@ -58,7 +60,7 @@ var PersistentObject = exports.PersistentObject = function () {
         });
         var finalDescriptor = propertyDecorator ? propertyDecorator(Target.prototype, propertyKey, descriptor) : descriptor;
         Reflect.defineProperty(Target.prototype, propertyKey, finalDescriptor);
-      });
+      }
 
       return new Proxy(Target, {
         construct: function construct(target, argumentsList) {

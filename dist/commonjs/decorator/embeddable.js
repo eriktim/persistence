@@ -13,7 +13,9 @@ function Embeddable(optTarget) {
   var isDecorator = _util.Util.isClassDecorator.apply(_util.Util, arguments);
   var deco = function deco(Target) {
     Target.isEmbeddable = true;
-    return _persistentObject.PersistentObject.byDecoration(Target);
+    if (!Target.isPersistent) {
+      return _persistentObject.PersistentObject.byDecoration(Target);
+    }
   };
   return isDecorator ? deco(optTarget) : deco;
 }

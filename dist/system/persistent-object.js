@@ -68,13 +68,15 @@ System.register(['./collection', './config', './persistent-config', './persisten
         _createClass(PersistentObject, null, [{
           key: 'byDecoration',
           value: function byDecoration(Target) {
+            Target.isPersistent = true;
+
             var config = PersistentConfig.get(Target);
 
             var instance = Reflect.construct(Target, []);
-            Object.keys(instance).forEach(function (propertyKey) {
+            for (var propertyKey in instance) {
               var propConfig = config.getProperty(propertyKey);
               if (propConfig.type === PropertyType.TRANSIENT) {
-                return;
+                continue;
               }
               var ownDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, propertyKey) || {};
               var descriptor = Util.mergeDescriptors(ownDescriptor, {
@@ -83,7 +85,7 @@ System.register(['./collection', './config', './persistent-config', './persisten
               });
               var finalDescriptor = propertyDecorator ? propertyDecorator(Target.prototype, propertyKey, descriptor) : descriptor;
               Reflect.defineProperty(Target.prototype, propertyKey, finalDescriptor);
-            });
+            }
 
             return new Proxy(Target, {
               construct: function construct(target, argumentsList) {

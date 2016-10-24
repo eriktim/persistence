@@ -21,14 +21,16 @@ function getEntity(obj) {
 
 export class PersistentObject {
   static byDecoration(Target) {
+    Target.isPersistent = true;
+
     const config = PersistentConfig.get(Target);
 
     // decorate properties
     const instance = Reflect.construct(Target, []);
-    Object.keys(instance).forEach(propertyKey => {
+    for (let propertyKey in instance) { // get all enumerable properties
       const propConfig = config.getProperty(propertyKey);
       if (propConfig.type === PropertyType.TRANSIENT) {
-        return;
+        continue;
       }
       let ownDescriptor = Object.getOwnPropertyDescriptor(
           Target.prototype, propertyKey) || {};
@@ -39,7 +41,7 @@ export class PersistentObject {
       let finalDescriptor = propertyDecorator ? propertyDecorator(
           Target.prototype, propertyKey, descriptor) : descriptor;
       Reflect.defineProperty(Target.prototype, propertyKey, finalDescriptor);
-    });
+    }
 
     // create proxy to override constructor
     return new Proxy(Target, {
