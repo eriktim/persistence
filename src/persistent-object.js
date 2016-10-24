@@ -21,6 +21,9 @@ function getEntity(obj) {
 
 export class PersistentObject {
   static byDecoration(Target) {
+    if (Target.isPersistent) {
+      return undefined;
+    }
     Target.isPersistent = true;
 
     const config = PersistentConfig.get(Target);
