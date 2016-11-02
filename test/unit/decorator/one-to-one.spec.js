@@ -43,10 +43,6 @@ describe('@OneToOne', () => {
     expect(() => foo.bar = foo).toThrowError('invalid reference object');
   });
 
-  it('bad reference', () => {
-    expect(() => foo.bar = emptyBar).toThrowError('bad reference object');
-  });
-
   it('valid reference', () => {
     foo.bar = bar;
     return foo.bar.then(b => expect(b).toEqual(bar));

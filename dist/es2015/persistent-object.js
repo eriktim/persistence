@@ -2,25 +2,23 @@ import { setCollectionData } from './collection';
 import { Config } from './config';
 import { PersistentConfig, PropertyType } from './persistent-config';
 import { PersistentData, readValue } from './persistent-data';
-import { ENTITY_MANAGER } from './symbols';
+import { defineSymbol, ENTITY_MANAGER, PARENT } from './symbols';
 import { Util } from './util';
 
 const propertyDecorator = Config.getPropertyDecorator();
-const parentMap = new WeakMap();
 
-function getEntity(obj) {
-  if (ENTITY_MANAGER in obj) {
-    return obj;
+export function getEntity(obj) {
+  while (obj[PARENT]) {
+    obj = obj[PARENT];
   }
-  let parent = parentMap.get(obj);
-  if (parent) {
-    return getEntity(parent);
-  }
-  throw new Error('object is not part of an entity');
+  return obj;
 }
 
 export let PersistentObject = class PersistentObject {
   static byDecoration(Target) {
+    if (Target.isPersistent) {
+      return undefined;
+    }
     Target.isPersistent = true;
 
     const config = PersistentConfig.get(Target);
@@ -56,7 +54,7 @@ export let PersistentObject = class PersistentObject {
   }
 
   static apply(obj, data, parent) {
-    parentMap.set(obj, parent);
+    defineSymbol(obj, PARENT, { value: parent, writable: false });
     PersistentObject.setData(obj, data);
     let entity = getEntity(obj);
     let entityManager = entity[ENTITY_MANAGER];

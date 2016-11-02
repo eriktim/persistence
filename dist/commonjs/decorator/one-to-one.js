@@ -12,12 +12,19 @@ var _persistentConfig = require('../persistent-config');
 
 var _entityManager = require('../entity-manager');
 
+var _persistentObject = require('../persistent-object');
+
 var _symbols = require('../symbols');
 
 var _util = require('../util');
 
 var referencesMap = new WeakMap();
 var SELF_REF = 'self';
+
+function getRelationMap(obj) {
+  var entity = (0, _persistentObject.getEntity)(obj);
+  return entity[_symbols.RELATIONS];
+}
 
 function getAndSetReferenceFactory(Type, getter, setter) {
   return [function (target, propertyKey) {
@@ -35,7 +42,8 @@ function getAndSetReferenceFactory(Type, getter, setter) {
         var id = (0, _entityManager.idFromUri)(uri);
         if (id) {
           return entityManager.find(Type, id).then(function (entity) {
-            return references.set(propertyKey, entity);
+            references.set(propertyKey, entity);
+            getRelationMap(target).add(entity);
           });
         }
       }
@@ -47,23 +55,34 @@ function getAndSetReferenceFactory(Type, getter, setter) {
       }
       return entity;
     });
-  }, function (target, propertyKey, entity) {
+  }, function (target, propertyKey, relatedEntity) {
     if (Type === SELF_REF) {
       Type = Object.getPrototypeOf(target).constructor;
     }
-    if (!(entity instanceof Type)) {
+    if (!(relatedEntity instanceof Type)) {
       throw new TypeError('invalid reference object');
     }
-    var uri = (0, _entityManager.getUri)(entity);
-    if (!uri) {
-      throw new TypeError('bad reference object');
-    }
-    Reflect.apply(setter, target, [uri]);
+    var entity = (0, _persistentObject.getEntity)(target);
     if (!referencesMap.has(target)) {
       referencesMap.set(target, new Map());
     }
     var references = referencesMap.get(target);
-    references.set(propertyKey, entity);
+    if (references.has(propertyKey)) {
+      var oldRelatedEntity = references.get(propertyKey);
+      getRelationMap(target).delete(oldRelatedEntity);
+      (0, _entityManager.setUnresolvedRelation)(entity, oldRelatedEntity, null);
+    }
+    getRelationMap(target).add(relatedEntity);
+    var setUri = function setUri(uri) {
+      return Reflect.apply(setter, target, [uri]);
+    };
+    var uri = (0, _entityManager.getUri)(relatedEntity);
+    if (uri) {
+      setUri(uri);
+    } else {
+      (0, _entityManager.setUnresolvedRelation)(entity, relatedEntity, setUri);
+    }
+    references.set(propertyKey, relatedEntity);
   }];
 }
 

@@ -8,9 +8,7 @@ System.register(['../persistent-object', '../util'], function (_export, _context
     var isDecorator = Util.isClassDecorator.apply(Util, arguments);
     var deco = function deco(Target) {
       Target.isEmbeddable = true;
-      if (!Target.isPersistent) {
-        return PersistentObject.byDecoration(Target);
-      }
+      return PersistentObject.byDecoration(Target);
     };
     return isDecorator ? deco(optTarget) : deco;
   }

@@ -271,7 +271,10 @@ define(['exports', './symbols', './util'], function (exports, _symbols, _util) {
       value: function setProperty(obj, path, value) {
         var data = getData(obj);
         if (writeValue(data, path, value)) {
-          obj[_symbols.VERSION]++;
+          do {
+            obj[_symbols.VERSION]++;
+            obj = obj[_symbols.PARENT];
+          } while (obj);
         }
       }
     }, {

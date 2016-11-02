@@ -4,6 +4,8 @@ import {EntityManager, getLocationSymbolForTesting, getServerForTesting}
 
 const LOCATION = getLocationSymbolForTesting();
 
+export const URL = 'mock://no-url';
+
 export function asJasmineValue(value) {
   if (typeof value === 'string') {
     let obj = {};
@@ -16,7 +18,7 @@ export function asJasmineValue(value) {
 }
 
 export function createEntityManagerStub() {
-  let config = Config.create();
+  let config = Config.create({baseUrl: URL});
   let entityManager = new EntityManager(config);
   entityManager.requests = [];
   let server = getServerForTesting(entityManager);
@@ -30,7 +32,7 @@ export function createEntityManagerStub() {
       path,
       body: Object.assign({}, body)
     });
-    body[LOCATION] = (path.endsWith('/') ? '' : '/') + (body.id || 1);
+    body[LOCATION] = path + (path.endsWith('/') ? '' : '/') + (body.id || '1');
     return Promise.resolve(body);
   };
   return entityManager;

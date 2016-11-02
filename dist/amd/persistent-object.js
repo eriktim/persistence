@@ -5,6 +5,7 @@ define(['exports', './collection', './config', './persistent-config', './persist
     value: true
   });
   exports.PersistentObject = undefined;
+  exports.getEntity = getEntity;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -31,17 +32,12 @@ define(['exports', './collection', './config', './persistent-config', './persist
   }();
 
   var propertyDecorator = _config.Config.getPropertyDecorator();
-  var parentMap = new WeakMap();
 
   function getEntity(obj) {
-    if (_symbols.ENTITY_MANAGER in obj) {
-      return obj;
+    while (obj[_symbols.PARENT]) {
+      obj = obj[_symbols.PARENT];
     }
-    var parent = parentMap.get(obj);
-    if (parent) {
-      return getEntity(parent);
-    }
-    throw new Error('object is not part of an entity');
+    return obj;
   }
 
   var PersistentObject = exports.PersistentObject = function () {
@@ -52,6 +48,9 @@ define(['exports', './collection', './config', './persistent-config', './persist
     _createClass(PersistentObject, null, [{
       key: 'byDecoration',
       value: function byDecoration(Target) {
+        if (Target.isPersistent) {
+          return undefined;
+        }
         Target.isPersistent = true;
 
         var config = _persistentConfig.PersistentConfig.get(Target);
@@ -90,7 +89,7 @@ define(['exports', './collection', './config', './persistent-config', './persist
     }, {
       key: 'apply',
       value: function apply(obj, data, parent) {
-        parentMap.set(obj, parent);
+        (0, _symbols.defineSymbol)(obj, _symbols.PARENT, { value: parent, writable: false });
         PersistentObject.setData(obj, data);
         var entity = getEntity(obj);
         var entityManager = entity[_symbols.ENTITY_MANAGER];

@@ -1,4 +1,4 @@
-import {VERSION, defineSymbol} from './symbols';
+import {PARENT, VERSION, defineSymbol} from './symbols';
 import {Util} from './util';
 
 const dataMap = new WeakMap();
@@ -135,7 +135,10 @@ export class PersistentData {
   static setProperty(obj, path, value) {
     let data = getData(obj);
     if (writeValue(data, path, value)) {
-      obj[VERSION]++;
+      do {
+        obj[VERSION]++;
+        obj = obj[PARENT];
+      } while (obj);
     }
   }
 

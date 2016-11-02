@@ -7,6 +7,8 @@ exports.PersistentObject = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+exports.getEntity = getEntity;
+
 var _collection = require('./collection');
 
 var _config = require('./config');
@@ -22,17 +24,12 @@ var _util = require('./util');
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var propertyDecorator = _config.Config.getPropertyDecorator();
-var parentMap = new WeakMap();
 
 function getEntity(obj) {
-  if (_symbols.ENTITY_MANAGER in obj) {
-    return obj;
+  while (obj[_symbols.PARENT]) {
+    obj = obj[_symbols.PARENT];
   }
-  var parent = parentMap.get(obj);
-  if (parent) {
-    return getEntity(parent);
-  }
-  throw new Error('object is not part of an entity');
+  return obj;
 }
 
 var PersistentObject = exports.PersistentObject = function () {
@@ -43,6 +40,9 @@ var PersistentObject = exports.PersistentObject = function () {
   _createClass(PersistentObject, null, [{
     key: 'byDecoration',
     value: function byDecoration(Target) {
+      if (Target.isPersistent) {
+        return undefined;
+      }
       Target.isPersistent = true;
 
       var config = _persistentConfig.PersistentConfig.get(Target);
@@ -81,7 +81,7 @@ var PersistentObject = exports.PersistentObject = function () {
   }, {
     key: 'apply',
     value: function apply(obj, data, parent) {
-      parentMap.set(obj, parent);
+      (0, _symbols.defineSymbol)(obj, _symbols.PARENT, { value: parent, writable: false });
       PersistentObject.setData(obj, data);
       var entity = getEntity(obj);
       var entityManager = entity[_symbols.ENTITY_MANAGER];

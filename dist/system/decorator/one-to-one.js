@@ -1,9 +1,14 @@
 'use strict';
 
-System.register(['../persistent-config', '../entity-manager', '../symbols', '../util'], function (_export, _context) {
+System.register(['../persistent-config', '../entity-manager', '../persistent-object', '../symbols', '../util'], function (_export, _context) {
   "use strict";
 
-  var PersistentConfig, getUri, idFromUri, ENTITY_MANAGER, Util, _slicedToArray, referencesMap, SELF_REF;
+  var PersistentConfig, getUri, idFromUri, setUnresolvedRelation, getEntity, ENTITY_MANAGER, RELATIONS, Util, _slicedToArray, referencesMap, SELF_REF;
+
+  function getRelationMap(obj) {
+    var entity = getEntity(obj);
+    return entity[RELATIONS];
+  }
 
   function getAndSetReferenceFactory(Type, getter, setter) {
     return [function (target, propertyKey) {
@@ -21,7 +26,8 @@ System.register(['../persistent-config', '../entity-manager', '../symbols', '../
           var id = idFromUri(uri);
           if (id) {
             return entityManager.find(Type, id).then(function (entity) {
-              return references.set(propertyKey, entity);
+              references.set(propertyKey, entity);
+              getRelationMap(target).add(entity);
             });
           }
         }
@@ -33,23 +39,34 @@ System.register(['../persistent-config', '../entity-manager', '../symbols', '../
         }
         return entity;
       });
-    }, function (target, propertyKey, entity) {
+    }, function (target, propertyKey, relatedEntity) {
       if (Type === SELF_REF) {
         Type = Object.getPrototypeOf(target).constructor;
       }
-      if (!(entity instanceof Type)) {
+      if (!(relatedEntity instanceof Type)) {
         throw new TypeError('invalid reference object');
       }
-      var uri = getUri(entity);
-      if (!uri) {
-        throw new TypeError('bad reference object');
-      }
-      Reflect.apply(setter, target, [uri]);
+      var entity = getEntity(target);
       if (!referencesMap.has(target)) {
         referencesMap.set(target, new Map());
       }
       var references = referencesMap.get(target);
-      references.set(propertyKey, entity);
+      if (references.has(propertyKey)) {
+        var oldRelatedEntity = references.get(propertyKey);
+        getRelationMap(target).delete(oldRelatedEntity);
+        setUnresolvedRelation(entity, oldRelatedEntity, null);
+      }
+      getRelationMap(target).add(relatedEntity);
+      var setUri = function setUri(uri) {
+        return Reflect.apply(setter, target, [uri]);
+      };
+      var uri = getUri(relatedEntity);
+      if (uri) {
+        setUri(uri);
+      } else {
+        setUnresolvedRelation(entity, relatedEntity, setUri);
+      }
+      references.set(propertyKey, relatedEntity);
     }];
   }
 
@@ -88,8 +105,12 @@ System.register(['../persistent-config', '../entity-manager', '../symbols', '../
     }, function (_entityManager) {
       getUri = _entityManager.getUri;
       idFromUri = _entityManager.idFromUri;
+      setUnresolvedRelation = _entityManager.setUnresolvedRelation;
+    }, function (_persistentObject) {
+      getEntity = _persistentObject.getEntity;
     }, function (_symbols) {
       ENTITY_MANAGER = _symbols.ENTITY_MANAGER;
+      RELATIONS = _symbols.RELATIONS;
     }, function (_util) {
       Util = _util.Util;
     }],

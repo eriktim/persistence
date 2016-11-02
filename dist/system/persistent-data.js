@@ -3,7 +3,7 @@
 System.register(['./symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var VERSION, defineSymbol, Util, _createClass, _typeof, _slicedToArray, dataMap, serializedDataMap, COMMA_WITH_SPACE, DOT_OUTSIDE_BRACKETS, EQUAL_SIGN_WITH_SPACE, ALL_BRACKETS, PersistentData;
+  var PARENT, VERSION, defineSymbol, Util, _createClass, _typeof, _slicedToArray, dataMap, serializedDataMap, COMMA_WITH_SPACE, DOT_OUTSIDE_BRACKETS, EQUAL_SIGN_WITH_SPACE, ALL_BRACKETS, PersistentData;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -187,6 +187,7 @@ System.register(['./symbols', './util'], function (_export, _context) {
 
   return {
     setters: [function (_symbols) {
+      PARENT = _symbols.PARENT;
       VERSION = _symbols.VERSION;
       defineSymbol = _symbols.defineSymbol;
     }, function (_util) {
@@ -278,7 +279,10 @@ System.register(['./symbols', './util'], function (_export, _context) {
           value: function setProperty(obj, path, value) {
             var data = getData(obj);
             if (writeValue(data, path, value)) {
-              obj[VERSION]++;
+              do {
+                obj[VERSION]++;
+                obj = obj[PARENT];
+              } while (obj);
             }
           }
         }, {

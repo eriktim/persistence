@@ -1,10 +1,16 @@
 import {PersistentConfig} from '../persistent-config';
-import {getUri, idFromUri} from '../entity-manager';
-import {ENTITY_MANAGER} from '../symbols';
+import {getUri, idFromUri, setUnresolvedRelation} from '../entity-manager';
+import {getEntity} from '../persistent-object';
+import {ENTITY_MANAGER, RELATIONS} from '../symbols';
 import {Util} from '../util';
 
 const referencesMap = new WeakMap();
 const SELF_REF = 'self';
+
+function getRelationMap(obj) {
+  let entity = getEntity(obj);
+  return entity[RELATIONS];
+}
 
 function getAndSetReferenceFactory(Type, getter, setter) {
   return [
@@ -23,8 +29,10 @@ function getAndSetReferenceFactory(Type, getter, setter) {
             let uri = Reflect.apply(getter, target, []);
             let id = idFromUri(uri);
             if (id) {
-              return entityManager.find(Type, id)
-                .then(entity => references.set(propertyKey, entity));
+              return entityManager.find(Type, id).then(entity => {
+                references.set(propertyKey, entity);
+                getRelationMap(target).add(entity);
+              });
             }
           }
         })
@@ -37,23 +45,32 @@ function getAndSetReferenceFactory(Type, getter, setter) {
           return entity;
         });
     },
-    function(target, propertyKey, entity) {
+    function(target, propertyKey, relatedEntity) {
       if (Type === SELF_REF) {
         Type = Object.getPrototypeOf(target).constructor;
       }
-      if (!(entity instanceof Type)) {
+      if (!(relatedEntity instanceof Type)) {
         throw new TypeError('invalid reference object');
       }
-      let uri = getUri(entity);
-      if (!uri) {
-        throw new TypeError('bad reference object');
-      }
-      Reflect.apply(setter, target, [uri]);
+      let entity = getEntity(target);
       if (!referencesMap.has(target)) {
         referencesMap.set(target, new Map());
       }
       const references = referencesMap.get(target);
-      references.set(propertyKey, entity);
+      if (references.has(propertyKey)) {
+        let oldRelatedEntity = references.get(propertyKey);
+        getRelationMap(target).delete(oldRelatedEntity);
+        setUnresolvedRelation(entity, oldRelatedEntity, null);
+      }
+      getRelationMap(target).add(relatedEntity);
+      let setUri = uri => Reflect.apply(setter, target, [uri]);
+      let uri = getUri(relatedEntity);
+      if (uri) {
+        setUri(uri);
+      } else {
+        setUnresolvedRelation(entity, relatedEntity, setUri);
+      }
+      references.set(propertyKey, relatedEntity);
     }
   ];
 }

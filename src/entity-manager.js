@@ -2,7 +2,7 @@ import {Config} from './config';
 import {PersistentConfig} from './persistent-config';
 import {PersistentData} from './persistent-data';
 import {PersistentObject} from './persistent-object';
-import {ENTITY_MANAGER, REMOVED, defineSymbol} from './symbols';
+import {defineSymbol, ENTITY_MANAGER, RELATIONS, REMOVED} from './symbols';
 import {Util} from './util';
 
 const LOCATION = Symbol('location');
@@ -10,6 +10,7 @@ const LOCATION = Symbol('location');
 const serverMap = new WeakMap();
 const contextMap = new WeakMap();
 const cacheMap = new WeakMap();
+const unresolvedRelationsMap = new WeakMap();
 
 export function getLocationSymbolForTesting() {
   return LOCATION;
@@ -26,6 +27,18 @@ export function getUri(entity) {
 
 export function idFromUri(uri) {
   return uri ? uri.split('?')[0].split('/').pop() : undefined;
+}
+
+export function setUnresolvedRelation(entity, relatedEntity, setUri) {
+  if (!unresolvedRelationsMap.has(entity)) {
+    unresolvedRelationsMap.set(entity, new Map());
+  }
+  let unresolvedEntityRelationsMap = unresolvedRelationsMap.get(entity);
+  if (setUri) {
+    unresolvedEntityRelationsMap.set(relatedEntity, setUri);
+  } else {
+    unresolvedEntityRelationsMap.delete(relatedEntity);
+  }
 }
 
 function applySafe(fn, thisObj, args = []) {
@@ -111,7 +124,7 @@ export class EntityManager {
     return contextMap.get(this).has(entity);
   }
 
-  create(Target, data) {
+  create(Target, data = {}) {
     return Promise.resolve()
       .then(() => {
         let config = PersistentConfig.get(Target);
@@ -122,8 +135,9 @@ export class EntityManager {
           return null;
         }
         let entity = new Target();
-        defineSymbol(entity, REMOVED, false);
         defineSymbol(entity, ENTITY_MANAGER, {value: this, writable: false});
+        defineSymbol(entity, RELATIONS, {value: new Set(), writable: false});
+        defineSymbol(entity, REMOVED, false);
         return Promise.resolve()
           .then(() => PersistentObject.apply(entity, data))
           .then(() => applySafe(config.postLoad, entity))
@@ -184,6 +198,22 @@ export class EntityManager {
     return Promise.resolve()
       .then(() => {
         assertEntity(this, entity);
+        // persist related entities
+        return Promise.all(Array.from(entity[RELATIONS])
+            .map(e => this.persist(e)));
+      })
+      .then(() => {
+        if (unresolvedRelationsMap.has(entity)) {
+          // set uri of unresolved related entities
+          let entries = unresolvedRelationsMap.get(entity).entries();
+          for (let [relation, setUri] of entries) {
+            let uri = getUri(relation);
+            setUri(uri);
+          }
+          unresolvedRelationsMap.delete(entity);
+        }
+      })
+      .then(() => {
         let id = getId(entity);
         let noId = !id;
         if (noId || PersistentData.isDirty(entity)) {

@@ -3,7 +3,7 @@
 System.register(['./collection', './config', './persistent-config', './persistent-data', './symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var setCollectionData, Config, PersistentConfig, PropertyType, PersistentData, readValue, ENTITY_MANAGER, Util, _createClass, propertyDecorator, parentMap, PersistentObject;
+  var setCollectionData, Config, PersistentConfig, PropertyType, PersistentData, readValue, defineSymbol, ENTITY_MANAGER, PARENT, Util, _createClass, propertyDecorator, PersistentObject;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -12,15 +12,13 @@ System.register(['./collection', './config', './persistent-config', './persisten
   }
 
   function getEntity(obj) {
-    if (ENTITY_MANAGER in obj) {
-      return obj;
+    while (obj[PARENT]) {
+      obj = obj[PARENT];
     }
-    var parent = parentMap.get(obj);
-    if (parent) {
-      return getEntity(parent);
-    }
-    throw new Error('object is not part of an entity');
+    return obj;
   }
+
+  _export('getEntity', getEntity);
 
   return {
     setters: [function (_collection) {
@@ -34,7 +32,9 @@ System.register(['./collection', './config', './persistent-config', './persisten
       PersistentData = _persistentData.PersistentData;
       readValue = _persistentData.readValue;
     }, function (_symbols) {
+      defineSymbol = _symbols.defineSymbol;
       ENTITY_MANAGER = _symbols.ENTITY_MANAGER;
+      PARENT = _symbols.PARENT;
     }, function (_util) {
       Util = _util.Util;
     }],
@@ -58,7 +58,6 @@ System.register(['./collection', './config', './persistent-config', './persisten
       }();
 
       propertyDecorator = Config.getPropertyDecorator();
-      parentMap = new WeakMap();
 
       _export('PersistentObject', PersistentObject = function () {
         function PersistentObject() {
@@ -68,6 +67,9 @@ System.register(['./collection', './config', './persistent-config', './persisten
         _createClass(PersistentObject, null, [{
           key: 'byDecoration',
           value: function byDecoration(Target) {
+            if (Target.isPersistent) {
+              return undefined;
+            }
             Target.isPersistent = true;
 
             var config = PersistentConfig.get(Target);
@@ -106,7 +108,7 @@ System.register(['./collection', './config', './persistent-config', './persisten
         }, {
           key: 'apply',
           value: function apply(obj, data, parent) {
-            parentMap.set(obj, parent);
+            defineSymbol(obj, PARENT, { value: parent, writable: false });
             PersistentObject.setData(obj, data);
             var entity = getEntity(obj);
             var entityManager = entity[ENTITY_MANAGER];

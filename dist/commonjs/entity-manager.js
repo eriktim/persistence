@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.EntityManager = undefined;
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -13,6 +15,7 @@ exports.getLocationSymbolForTesting = getLocationSymbolForTesting;
 exports.getServerForTesting = getServerForTesting;
 exports.getUri = getUri;
 exports.idFromUri = idFromUri;
+exports.setUnresolvedRelation = setUnresolvedRelation;
 
 var _config = require('./config');
 
@@ -33,6 +36,7 @@ var LOCATION = Symbol('location');
 var serverMap = new WeakMap();
 var contextMap = new WeakMap();
 var cacheMap = new WeakMap();
+var unresolvedRelationsMap = new WeakMap();
 
 function getLocationSymbolForTesting() {
   return LOCATION;
@@ -51,6 +55,18 @@ function getUri(entity) {
 
 function idFromUri(uri) {
   return uri ? uri.split('?')[0].split('/').pop() : undefined;
+}
+
+function setUnresolvedRelation(entity, relatedEntity, setUri) {
+  if (!unresolvedRelationsMap.has(entity)) {
+    unresolvedRelationsMap.set(entity, new Map());
+  }
+  var unresolvedEntityRelationsMap = unresolvedRelationsMap.get(entity);
+  if (setUri) {
+    unresolvedEntityRelationsMap.set(relatedEntity, setUri);
+  } else {
+    unresolvedEntityRelationsMap.delete(relatedEntity);
+  }
 }
 
 function applySafe(fn, thisObj) {
@@ -148,8 +164,10 @@ var EntityManager = exports.EntityManager = function () {
     }
   }, {
     key: 'create',
-    value: function create(Target, data) {
+    value: function create(Target) {
       var _this = this;
+
+      var data = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       return Promise.resolve().then(function () {
         var config = _persistentConfig.PersistentConfig.get(Target);
@@ -160,8 +178,9 @@ var EntityManager = exports.EntityManager = function () {
           return null;
         }
         var entity = new Target();
-        (0, _symbols.defineSymbol)(entity, _symbols.REMOVED, false);
         (0, _symbols.defineSymbol)(entity, _symbols.ENTITY_MANAGER, { value: _this, writable: false });
+        (0, _symbols.defineSymbol)(entity, _symbols.RELATIONS, { value: new Set(), writable: false });
+        (0, _symbols.defineSymbol)(entity, _symbols.REMOVED, false);
         return Promise.resolve().then(function () {
           return _persistentObject.PersistentObject.apply(entity, data);
         }).then(function () {
@@ -235,6 +254,45 @@ var EntityManager = exports.EntityManager = function () {
 
       return Promise.resolve().then(function () {
         assertEntity(_this4, entity);
+
+        return Promise.all(Array.from(entity[_symbols.RELATIONS]).map(function (e) {
+          return _this4.persist(e);
+        }));
+      }).then(function () {
+        if (unresolvedRelationsMap.has(entity)) {
+          var entries = unresolvedRelationsMap.get(entity).entries();
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var _step$value = _slicedToArray(_step.value, 2);
+
+              var relation = _step$value[0];
+              var setUri = _step$value[1];
+
+              var uri = getUri(relation);
+              setUri(uri);
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+
+          unresolvedRelationsMap.delete(entity);
+        }
+      }).then(function () {
         var id = getId(entity);
         var noId = !id;
         if (noId || _persistentData.PersistentData.isDirty(entity)) {
@@ -366,7 +424,7 @@ var Server = function () {
   }, {
     key: 'fetch',
     value: function (_fetch) {
-      function fetch(_x5, _x6) {
+      function fetch(_x6, _x7) {
         return _fetch.apply(this, arguments);
       }
 

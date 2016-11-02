@@ -4,9 +4,11 @@ define(['exports', './util'], function (exports, _util) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.VERSION = exports.REMOVED = exports.ENTITY_MANAGER = undefined;
+  exports.VERSION = exports.REMOVED = exports.RELATIONS = exports.PARENT = exports.ENTITY_MANAGER = undefined;
   exports.defineSymbol = defineSymbol;
   var ENTITY_MANAGER = exports.ENTITY_MANAGER = '__entityManager__';
+  var PARENT = exports.PARENT = '__parent__';
+  var RELATIONS = exports.RELATIONS = '__relations__';
   var REMOVED = exports.REMOVED = '__removed__';
   var VERSION = exports.VERSION = '__version__';
 

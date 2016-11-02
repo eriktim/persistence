@@ -4,9 +4,8 @@ import {Config} from '../../src/config';
 import {PersistentConfig} from '../../src/persistent-config';
 import {EntityManager, getLocationSymbolForTesting, getServerForTesting}
     from '../../src/entity-manager';
-import {asJasmineValue, expectRejection} from './helper';
+import {asJasmineValue, expectRejection, URL} from './helper';
 
-const URL = 'mock://no-url';
 const HEADERS = new Headers({
   'Content-Type': 'application/json',
   'Accept': 'application/json'

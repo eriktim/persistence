@@ -3,7 +3,7 @@
 System.register(['./util'], function (_export, _context) {
   "use strict";
 
-  var Util, ENTITY_MANAGER, REMOVED, VERSION;
+  var Util, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED, VERSION;
   function defineSymbol(obj, symbol) {
     var descriptor = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
@@ -28,6 +28,14 @@ System.register(['./util'], function (_export, _context) {
       _export('ENTITY_MANAGER', ENTITY_MANAGER = '__entityManager__');
 
       _export('ENTITY_MANAGER', ENTITY_MANAGER);
+
+      _export('PARENT', PARENT = '__parent__');
+
+      _export('PARENT', PARENT);
+
+      _export('RELATIONS', RELATIONS = '__relations__');
+
+      _export('RELATIONS', RELATIONS);
 
       _export('REMOVED', REMOVED = '__removed__');
 
