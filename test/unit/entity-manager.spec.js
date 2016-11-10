@@ -181,11 +181,18 @@ describe('EntityManager', () => {
       });
   });
 
+  it('No construction', () => {
+    expect(() => new Foo()).toThrowError(
+        'Use EntityManager#create to create new entities');
+  });
+
   it('unmanaged', () => {
-    let foo = new Foo();
-    foo.id = 1;
-    expectRejection(entityManager.persist(foo),
-        'argument is not a valid entity');
+    let cfg = Config.create({baseUrl: URL});
+    let em = new EntityManager(cfg);
+    entityManager.create(Foo).then(foo => {
+      expectRejection(em.persist(foo),
+          'argument is not a valid entity');
+    });
   });
 });
 

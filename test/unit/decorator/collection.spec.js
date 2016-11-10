@@ -61,15 +61,15 @@ describe('@Collection', () => {
 
   it('Versions', () => {
     return entityManager.create(Foo, {}).then(foo => {
-      expect(foo[VERSION]).toEqual(2);
+      expect(foo[VERSION]).toEqual(1);
       let item = foo.bars.newItem();
-      expect(foo[VERSION]).toEqual(4);
+      expect(foo[VERSION]).toEqual(3);
       foo.bars.delete(item);
-      expect(foo[VERSION]).toEqual(5);
+      expect(foo[VERSION]).toEqual(4);
       foo.bars.add(item);
-      expect(foo[VERSION]).toEqual(6);
+      expect(foo[VERSION]).toEqual(5);
       foo.bars.clear();
-      expect(foo[VERSION]).toEqual(7);
+      expect(foo[VERSION]).toEqual(6);
     });
   });
 

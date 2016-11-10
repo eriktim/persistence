@@ -88,4 +88,46 @@ describe('@Entity', () => {
       expect(foo.bar.prop).toBe('C');
     });
   });
+
+  it('Entity constructor', () => {
+    @Entity
+    class Foo {
+      prop = undefined;
+
+      constructor() {
+        this.prop = 'foo';
+      }
+
+      __construct(prop = 'bar') {
+        this.prop = this.prop || 'bar';
+      }
+    }
+    return entityManager.create(Foo, {})
+      .then(foo => expect(foo.prop).toBeUndefined());
+  });
+
+  it('Non-Entity constructor', () => {
+    @Embeddable
+    class Bar {
+      prop = undefined;
+
+      constructor() {
+        this.prop = 'foo';
+      }
+
+      __construct(prop = 'bar') {
+        this.prop = this.prop || prop;
+      }
+    }
+
+    @Entity
+    class Foo {
+      @Embedded(Bar)
+      bar;
+    }
+    expect(new Bar().prop).toBe('bar');
+    expect(new Bar('baz').prop).toBe('baz');
+    return entityManager.create(Foo, {})
+      .then(foo => expect(foo.bar.prop).toBeUndefined());
+  });
 });

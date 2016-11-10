@@ -19,15 +19,15 @@ class Bar {
 @Embeddable
 @Collectible
 class Foo {
-  @Embedded(Bar) embedded;
-  @Collection(Bar) collection;
+  @Embedded(Bar) bar;
+  @Collection(Bar) bars;
   property = undefined;
 }
 
 @Entity
 class EntityClass {
-  @Embedded(Foo) embedded;
-  @Collection(Foo) collection;
+  @Embedded(Foo) foo;
+  @Collection(Foo) foos;
   property = undefined;
 }
 
@@ -48,17 +48,17 @@ describe('Versions should cascade through collections & embedded objects', () =>
     return entityManager.create(EntityClass)
       .then(entityClass => {
         obj = entityClass;
-        vE0 = obj.embedded[VERSION];
-        obj.collection.newItem();
-        obj.collection.newItem();
-        let items = Array.from(obj.collection);
+        vE0 = obj.foo[VERSION];
+        obj.foos.newItem();
+        obj.foos.newItem();
+        let items = Array.from(obj.foos);
         item = items.pop();
         vC0 = item[VERSION];
         parentItem = items.pop();
-        vCE0 = parentItem.embedded[VERSION];
-        parentItem.collection.newItem();
-        parentItem.collection.newItem();
-        let itemsOfParentItem = Array.from(parentItem.collection);
+        vCE0 = parentItem.bar[VERSION];
+        parentItem.bars.newItem();
+        parentItem.bars.newItem();
+        let itemsOfParentItem = Array.from(parentItem.bars);
         itemOfParentItem = itemsOfParentItem.pop();
         vCC0 = itemOfParentItem[VERSION];
         v0 = obj[VERSION];
@@ -72,15 +72,15 @@ describe('Versions should cascade through collections & embedded objects', () =>
   });
 
   it('Embedded object', () => {
-    expect(obj.embedded[VERSION]).toBe(vE0, 'vE0');
-    obj.embedded.property = VALUE;
-    expect(obj.embedded[VERSION]).toBe(vE0 + 1, 'vE1');
+    expect(obj.foo[VERSION]).toBe(vE0, 'vE0');
+    obj.foo.property = VALUE;
+    expect(obj.foo[VERSION]).toBe(vE0 + 1, 'vE1');
     expect(obj[VERSION]).toBe(v0 + 1, 'v1');
   });
 
   it('Collected object', () => {
     expect(item[VERSION]).toBe(vC0, 'vC0');
-    obj.collection.forEach(it => it.property = VALUE);
+    obj.foos.forEach(it => it.property = VALUE);
     expect(item[VERSION]).toBe(vC0 + 1, 'vC1');
     expect(obj[VERSION]).toBe(v0 + 2, 'v1');
   });
@@ -94,7 +94,7 @@ describe('Versions should cascade through collections & embedded objects', () =>
 
   it('Collected collected object', () => {
     expect(itemOfParentItem[VERSION]).toBe(vCC0, 'vCC0');
-    parentItem.collection.forEach(it => it.property = VALUE);
+    parentItem.bars.forEach(it => it.property = VALUE);
     expect(itemOfParentItem[VERSION]).toBe(vCC0 + 1, 'vCC1');
     expect(obj[VERSION]).toBe(v0 + 2, 'v1');
   });
