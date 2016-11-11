@@ -6,6 +6,7 @@ Object.assign(index, allIndex);
 const exports = [
   'Collectible',
   'Collection',
+  'Config',
   'Embeddable',
   'Embedded',
   'Entity',
