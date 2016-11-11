@@ -103,8 +103,8 @@ describe('@Property', () => {
       key: 'code.5',
       value: 'five'
     }];
-    return entityManager.create(Bar, {elements}).then(bar => {
-      let data = PersistentData.extract(bar);
+    let data = {elements};
+    return entityManager.create(Bar, data).then(bar => {
       expect(() => bar.badProperty)
           .toThrowError('invalid array index: elements[key=bad][0]');
       expect(data.elements.length).toBe(5);
@@ -118,6 +118,62 @@ describe('@Property', () => {
       expect(bar.property3).toBe('three');
       expect(bar.property4).toBe('four');
       expect(bar.property5).toBe('five');
+    });
+  });
+
+  it('JSON indices', () => {
+    const SYSTEM = 'http://hl7.org';
+    @Entity class Resource {
+      @Property(`component[{"code":{"coding":[{"system":"${SYSTEM}","code":123}]}}].valueString`)
+      property;
+
+      @Property(`coding[{"system":"${SYSTEM}","code":123,"(display)":"Default display"}].version`)
+      initializedOptional;
+
+      @Property(`coding[{"system":"${SYSTEM}","code":456,"(display)":"Default display"}].version`)
+      uninitializedOptional;
+    }
+    let coding = {
+      system: SYSTEM,
+      code: 123
+    };
+    let data = {
+      component: [{
+        code: {
+          coding: [Object.assign({}, coding)]
+        },
+        valueString: 'foo'
+      }],
+      coding: [Object.assign({}, coding, {display: 'Persisted display', version: 1})]
+    };
+    return entityManager.create(Resource, data).then(resource => {
+      expect(resource.property).toBe('foo');
+      expect(resource.initializedOptional).toBe(1);
+      expect(resource.uninitializedOptional).toBeUndefined();
+      resource.uninitializedOptional = 2;
+      expect(resource.uninitializedOptional).toBe(2);
+      expect(data).toEqual({
+        component: [{
+          code: {
+            coding: [{
+              system: SYSTEM,
+              code: 123
+            }]
+          },
+          valueString: 'foo'
+        }],
+        coding: [{
+          system: SYSTEM,
+          code: 123,
+          display: 'Persisted display',
+          version: 1
+        }, {
+          system: SYSTEM,
+          code: 456,
+          display: 'Default display',
+          version: 2
+        }]
+      });
     });
   });
 });

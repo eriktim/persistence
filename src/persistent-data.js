@@ -4,10 +4,10 @@ import {Util} from './util';
 const dataMap = new WeakMap();
 const serializedDataMap = new WeakMap(); // TODO refer per property
 
+const SEARCH_FIELDS = Symbol('searchFields');
 const COMMA_WITH_SPACE = /\s*,\s*/;
 const DOT_OUTSIDE_BRACKETS = /\.(?=(?:[^\]]|\[[^\]]*\])*$)/;
 const EQUAL_SIGN_WITH_SPACE = /\s*=\s*/;
-const ALL_BRACKETS = /\[[^\]]+\]/g;
 
 function getData(obj) {
   if (!dataMap.has(obj)) {
@@ -16,19 +16,95 @@ function getData(obj) {
   return dataMap.get(obj);
 }
 
+function toDefaultValuesObject(orgObj) {
+  let obj = {};
+  obj[SEARCH_FIELDS] = [];
+  for (let prop in orgObj) {
+    let val = orgObj[prop];
+    if (/^\(.*\)$/.test(prop)) {
+      prop = prop.substring(1, prop.length - 1);
+    } else {
+      obj[SEARCH_FIELDS].push(prop);
+    }
+    if (Array.isArray(val)) {
+      obj[prop] = val.map(toDefaultValuesObject);
+    } else if (typeof val === 'object') {
+      obj[prop] = val === null ? null : toDefaultValuesObject(val);
+    } else {
+      obj[prop] = val;
+    }
+  }
+  return obj;
+}
+
 function keyToObject(key) {
   let keyObj = {};
-  key.split(COMMA_WITH_SPACE).forEach(tuple => {
-    let [p, v] = tuple.split(EQUAL_SIGN_WITH_SPACE);
-    keyObj[p] = v;
-  });
+  if (key.startsWith('{')) {
+    try {
+      let obj = JSON.parse(key);
+      keyObj = toDefaultValuesObject(obj);
+    } catch (e) {
+      throw new Error('invalid JSON key: ' + key);
+    }
+  } else {
+    key.split(COMMA_WITH_SPACE).forEach(tuple => {
+      let [p, v] = tuple.split(EQUAL_SIGN_WITH_SPACE);
+      keyObj[p] = v;
+    });
+  }
   return keyObj;
+}
+
+function findArrayItemByObject(arr, searchObj) {
+  if (!Array.isArray(arr)) {
+    return null;
+  }
+  function equal(obj, ref) {
+    if (typeof obj !== typeof ref) {
+      return false;
+    }
+    if (typeof obj !== 'object') {
+      return obj === ref;
+    }
+    if (obj === null || ref === null) {
+      return obj === null && ref === null;
+    }
+    let keys = SEARCH_FIELDS in ref ? ref[SEARCH_FIELDS] : Object.keys(ref);
+    return !keys.find(key => !equal(obj[key], ref[key]));
+  }
+  return arr.find(item => equal(item, searchObj));
+}
+
+function getArrayKeys(path) {
+  let keys = [];
+  let openBrackets = 0;
+  let bracketsStart = -1;
+  for (let i = path.indexOf('['); i < path.length; i++) {
+    if (path[i] === '[') {
+      if (bracketsStart < 0) {
+        bracketsStart = i;
+      }
+      openBrackets++;
+    } else {
+      if (bracketsStart < 0) {
+        throw new Error('invalid array keys: ' + path);
+      }
+      if (path[i] === ']') {
+        openBrackets--;
+        if (!openBrackets) {
+          keys.push(path.substring(bracketsStart + 1, i));
+          bracketsStart = -1;
+        }
+      }
+    }
+  }
+  return keys;
 }
 
 function getObjectFromArray(baseObj, path, options = {}) {
   let allowCreation = options.allowCreation || false;
   let isArray = options.isArray || false;
-  let keys = path.match(ALL_BRACKETS).map(k => k.substring(1, k.length - 1));
+  let keys = getArrayKeys(path);
   let prop = path.substring(0, path.indexOf('['));
   if (!(prop in baseObj)) {
     if (!allowCreation) {
@@ -55,21 +131,19 @@ function getObjectFromArray(baseObj, path, options = {}) {
     } else {
       if (!lastKey) {
         // smart array index must refer to an object
-        throw Error(`invalid array index: ${path}`);
+        // as we search for a matching object
+        throw new Error(`invalid array index: ${path}`);
       }
       let keyObj = keyToObject(key);
       let arr = obj;
-      obj = arr.find(o => {
-        for (let p in keyObj) {
-          if (o[p] !== keyObj[p]) {
-            return false;
-          }
+      obj = findArrayItemByObject(arr, keyObj);
+      if (!obj) {
+        if (allowCreation) {
+          obj = keyObj;
+          arr.push(obj);
+        } else {
+          break;
         }
-        return true;
-      });
-      if (!obj && allowCreation) {
-        obj = keyObj;
-        arr.push(obj);
       }
     }
   }
