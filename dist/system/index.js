@@ -1,6 +1,6 @@
 'use strict';
 
-System.register(['./decorator/collectible', './decorator/collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient', './entity-manager'], function (_export, _context) {
+System.register(['./decorator/collectible', './decorator/collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient', './config', './entity-manager'], function (_export, _context) {
   "use strict";
 
   return {
@@ -85,11 +85,16 @@ System.register(['./decorator/collectible', './decorator/collection', './decorat
       _exportObj16.Transient = _decoratorTransient.Transient;
 
       _export(_exportObj16);
-    }, function (_entityManager) {
+    }, function (_config) {
       var _exportObj17 = {};
-      _exportObj17.EntityManager = _entityManager.EntityManager;
+      _exportObj17.Config = _config.Config;
 
       _export(_exportObj17);
+    }, function (_entityManager) {
+      var _exportObj18 = {};
+      _exportObj18.EntityManager = _entityManager.EntityManager;
+
+      _export(_exportObj18);
     }],
     execute: function () {}
   };

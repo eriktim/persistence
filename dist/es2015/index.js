@@ -16,4 +16,5 @@ export { PreRemove } from './decorator/pre-remove';
 export { Property } from './decorator/property';
 export { Temporal, TemporalFormat } from './decorator/temporal';
 export { Transient } from './decorator/transient';
+export { Config } from './config';
 export { EntityManager } from './entity-manager';

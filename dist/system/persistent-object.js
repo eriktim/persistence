@@ -1,9 +1,9 @@
 'use strict';
 
-System.register(['./collection', './config', './persistent-config', './persistent-data', './symbols', './util'], function (_export, _context) {
+System.register(['./collection', './config', './entity-manager', './persistent-config', './persistent-data', './symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var setCollectionData, Config, PersistentConfig, PropertyType, PersistentData, readValue, defineSymbol, ENTITY_MANAGER, PARENT, Util, _createClass, propertyDecorator, PersistentObject;
+  var setCollectionData, Config, EntityManager, PersistentConfig, PropertyType, PersistentData, readValue, defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED, Util, _createClass, CONSTRUCTOR, transientFieldsMap, propertyDecorator, PersistentObject;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -15,7 +15,7 @@ System.register(['./collection', './config', './persistent-config', './persisten
     while (obj[PARENT]) {
       obj = obj[PARENT];
     }
-    return obj;
+    return ENTITY_MANAGER in obj ? obj : null;
   }
 
   _export('getEntity', getEntity);
@@ -25,6 +25,8 @@ System.register(['./collection', './config', './persistent-config', './persisten
       setCollectionData = _collection.setCollectionData;
     }, function (_config) {
       Config = _config.Config;
+    }, function (_entityManager) {
+      EntityManager = _entityManager.EntityManager;
     }, function (_persistentConfig) {
       PersistentConfig = _persistentConfig.PersistentConfig;
       PropertyType = _persistentConfig.PropertyType;
@@ -35,6 +37,8 @@ System.register(['./collection', './config', './persistent-config', './persisten
       defineSymbol = _symbols.defineSymbol;
       ENTITY_MANAGER = _symbols.ENTITY_MANAGER;
       PARENT = _symbols.PARENT;
+      RELATIONS = _symbols.RELATIONS;
+      REMOVED = _symbols.REMOVED;
     }, function (_util) {
       Util = _util.Util;
     }],
@@ -57,6 +61,8 @@ System.register(['./collection', './config', './persistent-config', './persisten
         };
       }();
 
+      CONSTRUCTOR = '__construct';
+      transientFieldsMap = new WeakMap();
       propertyDecorator = Config.getPropertyDecorator();
 
       _export('PersistentObject', PersistentObject = function () {
@@ -67,6 +73,8 @@ System.register(['./collection', './config', './persistent-config', './persisten
         _createClass(PersistentObject, null, [{
           key: 'byDecoration',
           value: function byDecoration(Target) {
+            var allowOwnConstructor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
             if (Target.isPersistent) {
               return undefined;
             }
@@ -75,11 +83,13 @@ System.register(['./collection', './config', './persistent-config', './persisten
             var config = PersistentConfig.get(Target);
 
             var instance = Reflect.construct(Target, []);
+            var transientFields = new Set(Object.keys(instance));
             for (var propertyKey in instance) {
               var propConfig = config.getProperty(propertyKey);
               if (propConfig.type === PropertyType.TRANSIENT) {
                 continue;
               }
+              transientFields.delete(propertyKey);
               var ownDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, propertyKey) || {};
               var descriptor = Util.mergeDescriptors(ownDescriptor, {
                 get: propConfig.getter,
@@ -88,19 +98,30 @@ System.register(['./collection', './config', './persistent-config', './persisten
               var finalDescriptor = propertyDecorator ? propertyDecorator(Target.prototype, propertyKey, descriptor) : descriptor;
               Reflect.defineProperty(Target.prototype, propertyKey, finalDescriptor);
             }
+            transientFieldsMap.set(Target, transientFields);
+
+            if (allowOwnConstructor) {
+              return new Proxy(Target, {
+                construct: function construct(target, argumentsList) {
+                  return Reflect.construct(function () {
+                    PersistentObject.apply(this, {}, null);
+                    if (typeof this[CONSTRUCTOR] === 'function') {
+                      Reflect.apply(this[CONSTRUCTOR], this, argumentsList);
+                    }
+                  }, argumentsList, Target);
+                }
+              });
+            }
 
             return new Proxy(Target, {
               construct: function construct(target, argumentsList) {
-                return Reflect.construct(function () {
-                  var _this = this;
-
-                  PersistentData.inject(this, {});
-                  Object.keys(instance).forEach(function (propertyKey) {
-                    var propConfig = config.getProperty(propertyKey);
-                    if (propConfig.type === PropertyType.TRANSIENT && !Reflect.has(_this, propertyKey)) {
-                      _this[propertyKey] = undefined;
-                    }
-                  });
+                return Reflect.construct(function (entityManager) {
+                  if (!(entityManager instanceof EntityManager)) {
+                    throw new Error('Use EntityManager#create to create new entities');
+                  }
+                  defineSymbol(this, ENTITY_MANAGER, { value: entityManager, writable: false });
+                  defineSymbol(this, RELATIONS, { value: new Set(), writable: false });
+                  defineSymbol(this, REMOVED, false);
                 }, argumentsList, Target);
               }
             });
@@ -111,13 +132,24 @@ System.register(['./collection', './config', './persistent-config', './persisten
             defineSymbol(obj, PARENT, { value: parent, writable: false });
             PersistentObject.setData(obj, data);
             var entity = getEntity(obj);
-            var entityManager = entity[ENTITY_MANAGER];
-            var onNewObject = entityManager.config.onNewObject;
-            if (typeof onNewObject === 'function') {
-              Reflect.apply(onNewObject, null, [obj, entity]);
+            if (entity) {
+              var entityManager = entity[ENTITY_MANAGER];
+              var onNewObject = entityManager.config.onNewObject;
+              if (typeof onNewObject === 'function') {
+                Reflect.apply(onNewObject, null, [obj, entity]);
+              }
             }
             var isExtensible = obj === entity ? PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
             if (!isExtensible) {
+              var Target = Object.getPrototypeOf(obj).constructor;
+              var transientFields = transientFieldsMap.get(Target);
+              if (transientFields && transientFields.size) {
+                transientFields.forEach(function (propertyKey) {
+                  if (!obj.hasOwnProperty(propertyKey)) {
+                    obj[propertyKey] = undefined;
+                  }
+                });
+              }
               Object.preventExtensions(obj);
             }
           }

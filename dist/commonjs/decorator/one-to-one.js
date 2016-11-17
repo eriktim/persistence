@@ -23,7 +23,7 @@ var SELF_REF = 'self';
 
 function getRelationMap(obj) {
   var entity = (0, _persistentObject.getEntity)(obj);
-  return entity[_symbols.RELATIONS];
+  return entity ? entity[_symbols.RELATIONS] : undefined;
 }
 
 function getAndSetReferenceFactory(Type, getter, setter) {
@@ -87,7 +87,7 @@ function getAndSetReferenceFactory(Type, getter, setter) {
 }
 
 function OneToOne(Type) {
-  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
   if (_util.Util.isPropertyDecorator.apply(_util.Util, arguments) || _util.Util.is(Type) && Type !== SELF_REF && !_util.Util.isClass(Type)) {
     throw new Error('@OneToOne requires a constructor argument');
@@ -95,12 +95,10 @@ function OneToOne(Type) {
   return function (target, propertyKey) {
     var config = _persistentConfig.PersistentConfig.get(target).getProperty(propertyKey);
 
-    var _getAndSetReferenceFa = getAndSetReferenceFactory(Type, config.getter, config.setter);
-
-    var _getAndSetReferenceFa2 = _slicedToArray(_getAndSetReferenceFa, 2);
-
-    var getReference = _getAndSetReferenceFa2[0];
-    var setReference = _getAndSetReferenceFa2[1];
+    var _getAndSetReferenceFa = getAndSetReferenceFactory(Type, config.getter, config.setter),
+        _getAndSetReferenceFa2 = _slicedToArray(_getAndSetReferenceFa, 2),
+        getReference = _getAndSetReferenceFa2[0],
+        setReference = _getAndSetReferenceFa2[1];
 
     config.configure({
       getter: function getter() {

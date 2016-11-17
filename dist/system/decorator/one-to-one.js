@@ -7,7 +7,7 @@ System.register(['../persistent-config', '../entity-manager', '../persistent-obj
 
   function getRelationMap(obj) {
     var entity = getEntity(obj);
-    return entity[RELATIONS];
+    return entity ? entity[RELATIONS] : undefined;
   }
 
   function getAndSetReferenceFactory(Type, getter, setter) {
@@ -71,7 +71,7 @@ System.register(['../persistent-config', '../entity-manager', '../persistent-obj
   }
 
   function OneToOne(Type) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     if (Util.isPropertyDecorator.apply(Util, arguments) || Util.is(Type) && Type !== SELF_REF && !Util.isClass(Type)) {
       throw new Error('@OneToOne requires a constructor argument');
@@ -79,12 +79,10 @@ System.register(['../persistent-config', '../entity-manager', '../persistent-obj
     return function (target, propertyKey) {
       var config = PersistentConfig.get(target).getProperty(propertyKey);
 
-      var _getAndSetReferenceFa = getAndSetReferenceFactory(Type, config.getter, config.setter);
-
-      var _getAndSetReferenceFa2 = _slicedToArray(_getAndSetReferenceFa, 2);
-
-      var getReference = _getAndSetReferenceFa2[0];
-      var setReference = _getAndSetReferenceFa2[1];
+      var _getAndSetReferenceFa = getAndSetReferenceFactory(Type, config.getter, config.setter),
+          _getAndSetReferenceFa2 = _slicedToArray(_getAndSetReferenceFa, 2),
+          getReference = _getAndSetReferenceFa2[0],
+          setReference = _getAndSetReferenceFa2[1];
 
       config.configure({
         getter: function getter() {

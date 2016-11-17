@@ -29,6 +29,7 @@ function getEmbeddedDataFactory(Type, getter, setter) {
         throw new Error('embedded data is corrupt');
       }
       var type = new Type();
+
       _persistentObject.PersistentObject.apply(type, data, target);
       embeddedData.set(propertyKey, type);
     }

@@ -9,7 +9,7 @@ const SELF_REF = 'self';
 
 function getRelationMap(obj) {
   let entity = getEntity(obj);
-  return entity[RELATIONS];
+  return entity ? entity[RELATIONS] : undefined;
 }
 
 function getAndSetReferenceFactory(Type, getter, setter) {

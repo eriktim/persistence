@@ -7,7 +7,7 @@ exports.EntityManager = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -70,7 +70,7 @@ function setUnresolvedRelation(entity, relatedEntity, setUri) {
 }
 
 function applySafe(fn, thisObj) {
-  var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+  var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
   return fn ? Reflect.apply(fn, thisObj, args) : undefined;
 }
@@ -138,7 +138,7 @@ function toParams() {
 
 var EntityManager = exports.EntityManager = function () {
   function EntityManager() {
-    var config = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+    var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
     _classCallCheck(this, EntityManager);
 
@@ -167,7 +167,7 @@ var EntityManager = exports.EntityManager = function () {
     value: function create(Target) {
       var _this = this;
 
-      var data = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       return Promise.resolve().then(function () {
         var config = _persistentConfig.PersistentConfig.get(Target);
@@ -177,10 +177,7 @@ var EntityManager = exports.EntityManager = function () {
         if (!_util.Util.isObject(data)) {
           return null;
         }
-        var entity = new Target();
-        (0, _symbols.defineSymbol)(entity, _symbols.ENTITY_MANAGER, { value: _this, writable: false });
-        (0, _symbols.defineSymbol)(entity, _symbols.RELATIONS, { value: new Set(), writable: false });
-        (0, _symbols.defineSymbol)(entity, _symbols.REMOVED, false);
+        var entity = new Target(_this);
         return Promise.resolve().then(function () {
           return _persistentObject.PersistentObject.apply(entity, data);
         }).then(function () {
@@ -222,7 +219,7 @@ var EntityManager = exports.EntityManager = function () {
     value: function query(Entity) {
       var _this3 = this;
 
-      var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       return Promise.resolve().then(function () {
         var entityMapper = _this3.config.queryEntityMapperFactory(Entity);
@@ -267,10 +264,9 @@ var EntityManager = exports.EntityManager = function () {
 
           try {
             for (var _iterator = entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var _step$value = _slicedToArray(_step.value, 2);
-
-              var relation = _step$value[0];
-              var setUri = _step$value[1];
+              var _step$value = _slicedToArray(_step.value, 2),
+                  relation = _step$value[0],
+                  setUri = _step$value[1];
 
               var uri = getUri(relation);
               setUri(uri);
@@ -339,7 +335,7 @@ var EntityManager = exports.EntityManager = function () {
     value: function refresh(entity) {
       var _this5 = this;
 
-      var reload = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+      var reload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
       return Promise.resolve().then(function () {
         assertEntity(_this5, entity);
@@ -399,7 +395,7 @@ var Server = function () {
   }, {
     key: 'get',
     value: function get(path) {
-      var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+      var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       return this.fetch(path, {
         method: 'GET'
@@ -436,7 +432,7 @@ var Server = function () {
     }(function (uri, init) {
       var _this7 = this;
 
-      var stringOrPropertyMap = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+      var stringOrPropertyMap = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
       var params = typeof stringOrPropertyMap === 'string' ? '?' + stringOrPropertyMap : toParams(stringOrPropertyMap);
       var url = this.baseUrl + '/' + uri + params;

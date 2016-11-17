@@ -8,7 +8,7 @@ System.register(['../persistent-object', '../util'], function (_export, _context
     var isDecorator = Util.isClassDecorator.apply(Util, arguments);
     var deco = function deco(Target) {
       Target.isCollectible = true;
-      return PersistentObject.byDecoration(Target);
+      return PersistentObject.byDecoration(Target, true);
     };
     return isDecorator ? deco(optTarget) : deco;
   }

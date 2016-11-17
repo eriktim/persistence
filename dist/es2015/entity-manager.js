@@ -2,7 +2,7 @@ import { Config } from './config';
 import { PersistentConfig } from './persistent-config';
 import { PersistentData } from './persistent-data';
 import { PersistentObject } from './persistent-object';
-import { defineSymbol, ENTITY_MANAGER, RELATIONS, REMOVED } from './symbols';
+import { RELATIONS, REMOVED } from './symbols';
 import { Util } from './util';
 
 const LOCATION = Symbol('location');
@@ -128,10 +128,7 @@ export let EntityManager = class EntityManager {
       if (!Util.isObject(data)) {
         return null;
       }
-      let entity = new Target();
-      defineSymbol(entity, ENTITY_MANAGER, { value: this, writable: false });
-      defineSymbol(entity, RELATIONS, { value: new Set(), writable: false });
-      defineSymbol(entity, REMOVED, false);
+      let entity = new Target(this);
       return Promise.resolve().then(() => PersistentObject.apply(entity, data)).then(() => applySafe(config.postLoad, entity)).then(() => attach(this, entity)).then(() => entity);
     });
   }

@@ -3,7 +3,7 @@
 System.register(['./symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var PARENT, VERSION, defineSymbol, Util, _createClass, _typeof, _slicedToArray, dataMap, serializedDataMap, COMMA_WITH_SPACE, DOT_OUTSIDE_BRACKETS, EQUAL_SIGN_WITH_SPACE, ALL_BRACKETS, PersistentData;
+  var PARENT, VERSION, defineSymbol, Util, _createClass, _slicedToArray, _typeof, dataMap, serializedDataMap, SEARCH_FIELDS, COMMA_WITH_SPACE, DOT_OUTSIDE_BRACKETS, EQUAL_SIGN_WITH_SPACE, PersistentData;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -18,29 +18,105 @@ System.register(['./symbols', './util'], function (_export, _context) {
     return dataMap.get(obj);
   }
 
+  function toDefaultValuesObject(orgObj) {
+    var obj = {};
+    obj[SEARCH_FIELDS] = [];
+    for (var prop in orgObj) {
+      var val = orgObj[prop];
+      if (/^\(.*\)$/.test(prop)) {
+        prop = prop.substring(1, prop.length - 1);
+      } else {
+        obj[SEARCH_FIELDS].push(prop);
+      }
+      if (Array.isArray(val)) {
+        obj[prop] = val.map(toDefaultValuesObject);
+      } else if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') {
+        obj[prop] = val === null ? null : toDefaultValuesObject(val);
+      } else {
+        obj[prop] = val;
+      }
+    }
+    return obj;
+  }
+
   function keyToObject(key) {
     var keyObj = {};
-    key.split(COMMA_WITH_SPACE).forEach(function (tuple) {
-      var _tuple$split = tuple.split(EQUAL_SIGN_WITH_SPACE);
+    if (key.startsWith('{')) {
+      try {
+        var obj = JSON.parse(key);
+        keyObj = toDefaultValuesObject(obj);
+      } catch (e) {
+        throw new Error('invalid JSON key: ' + key);
+      }
+    } else {
+      key.split(COMMA_WITH_SPACE).forEach(function (tuple) {
+        var _tuple$split = tuple.split(EQUAL_SIGN_WITH_SPACE),
+            _tuple$split2 = _slicedToArray(_tuple$split, 2),
+            p = _tuple$split2[0],
+            v = _tuple$split2[1];
 
-      var _tuple$split2 = _slicedToArray(_tuple$split, 2);
-
-      var p = _tuple$split2[0];
-      var v = _tuple$split2[1];
-
-      keyObj[p] = v;
-    });
+        keyObj[p] = v;
+      });
+    }
     return keyObj;
   }
 
+  function findArrayItemByObject(arr, searchObj) {
+    if (!Array.isArray(arr)) {
+      return null;
+    }
+    function equal(obj, ref) {
+      if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== (typeof ref === 'undefined' ? 'undefined' : _typeof(ref))) {
+        return false;
+      }
+      if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object') {
+        return obj === ref;
+      }
+      if (obj === null || ref === null) {
+        return obj === null && ref === null;
+      }
+      var keys = SEARCH_FIELDS in ref ? ref[SEARCH_FIELDS] : Object.keys(ref);
+      return !keys.find(function (key) {
+        return !equal(obj[key], ref[key]);
+      });
+    }
+    return arr.find(function (item) {
+      return equal(item, searchObj);
+    });
+  }
+
+  function getArrayKeys(path) {
+    var keys = [];
+    var openBrackets = 0;
+    var bracketsStart = -1;
+    for (var i = path.indexOf('['); i < path.length; i++) {
+      if (path[i] === '[') {
+        if (bracketsStart < 0) {
+          bracketsStart = i;
+        }
+        openBrackets++;
+      } else {
+        if (bracketsStart < 0) {
+          throw new Error('invalid array keys: ' + path);
+        }
+        if (path[i] === ']') {
+          openBrackets--;
+          if (!openBrackets) {
+            keys.push(path.substring(bracketsStart + 1, i));
+            bracketsStart = -1;
+          }
+        }
+      }
+    }
+    return keys;
+  }
+
   function getObjectFromArray(baseObj, path) {
-    var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     var allowCreation = options.allowCreation || false;
     var isArray = options.isArray || false;
-    var keys = path.match(ALL_BRACKETS).map(function (k) {
-      return k.substring(1, k.length - 1);
-    });
+    var keys = getArrayKeys(path);
     var prop = path.substring(0, path.indexOf('['));
     if (!(prop in baseObj)) {
       if (!allowCreation) {
@@ -72,25 +148,20 @@ System.register(['./symbols', './util'], function (_export, _context) {
           }
           obj = obj[key];
         } else {
-          (function () {
-            if (!lastKey) {
-              throw Error('invalid array index: ' + path);
-            }
-            var keyObj = keyToObject(key);
-            var arr = obj;
-            obj = arr.find(function (o) {
-              for (var p in keyObj) {
-                if (o[p] !== keyObj[p]) {
-                  return false;
-                }
-              }
-              return true;
-            });
-            if (!obj && allowCreation) {
+          if (!lastKey) {
+            throw new Error('invalid array index: ' + path);
+          }
+          var keyObj = keyToObject(key);
+          var arr = obj;
+          obj = findArrayItemByObject(arr, keyObj);
+          if (!obj) {
+            if (allowCreation) {
               obj = keyObj;
               arr.push(obj);
+            } else {
+              break;
             }
-          })();
+          }
         }
       }
     } catch (err) {
@@ -212,12 +283,6 @@ System.register(['./symbols', './util'], function (_export, _context) {
         };
       }();
 
-      _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-        return typeof obj;
-      } : function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-      };
-
       _slicedToArray = function () {
         function sliceIterator(arr, i) {
           var _arr = [];
@@ -256,12 +321,17 @@ System.register(['./symbols', './util'], function (_export, _context) {
         };
       }();
 
+      _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+        return typeof obj;
+      } : function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
       dataMap = new WeakMap();
       serializedDataMap = new WeakMap();
+      SEARCH_FIELDS = Symbol('searchFields');
       COMMA_WITH_SPACE = /\s*,\s*/;
       DOT_OUTSIDE_BRACKETS = /\.(?=(?:[^\]]|\[[^\]]*\])*$)/;
       EQUAL_SIGN_WITH_SPACE = /\s*=\s*/;
-      ALL_BRACKETS = /\[[^\]]+\]/g;
 
       _export('PersistentData', PersistentData = function () {
         function PersistentData() {

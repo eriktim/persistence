@@ -52,7 +52,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
   } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
   function _classCallCheck(instance, Constructor) {
@@ -118,7 +118,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
   }
 
   function applySafe(fn, thisObj) {
-    var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+    var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
     return fn ? Reflect.apply(fn, thisObj, args) : undefined;
   }
@@ -186,7 +186,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
 
   var EntityManager = exports.EntityManager = function () {
     function EntityManager() {
-      var config = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+      var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
       _classCallCheck(this, EntityManager);
 
@@ -215,7 +215,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
       value: function create(Target) {
         var _this = this;
 
-        var data = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+        var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
         return Promise.resolve().then(function () {
           var config = _persistentConfig.PersistentConfig.get(Target);
@@ -225,10 +225,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
           if (!_util.Util.isObject(data)) {
             return null;
           }
-          var entity = new Target();
-          (0, _symbols.defineSymbol)(entity, _symbols.ENTITY_MANAGER, { value: _this, writable: false });
-          (0, _symbols.defineSymbol)(entity, _symbols.RELATIONS, { value: new Set(), writable: false });
-          (0, _symbols.defineSymbol)(entity, _symbols.REMOVED, false);
+          var entity = new Target(_this);
           return Promise.resolve().then(function () {
             return _persistentObject.PersistentObject.apply(entity, data);
           }).then(function () {
@@ -270,7 +267,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
       value: function query(Entity) {
         var _this3 = this;
 
-        var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+        var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
         return Promise.resolve().then(function () {
           var entityMapper = _this3.config.queryEntityMapperFactory(Entity);
@@ -315,10 +312,9 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
 
             try {
               for (var _iterator = entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var _step$value = _slicedToArray(_step.value, 2);
-
-                var relation = _step$value[0];
-                var setUri = _step$value[1];
+                var _step$value = _slicedToArray(_step.value, 2),
+                    relation = _step$value[0],
+                    setUri = _step$value[1];
 
                 var uri = getUri(relation);
                 setUri(uri);
@@ -387,7 +383,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
       value: function refresh(entity) {
         var _this5 = this;
 
-        var reload = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+        var reload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
         return Promise.resolve().then(function () {
           assertEntity(_this5, entity);
@@ -447,7 +443,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
     }, {
       key: 'get',
       value: function get(path) {
-        var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+        var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
         return this.fetch(path, {
           method: 'GET'
@@ -484,7 +480,7 @@ define(['exports', './config', './persistent-config', './persistent-data', './pe
       }(function (uri, init) {
         var _this7 = this;
 
-        var stringOrPropertyMap = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+        var stringOrPropertyMap = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
         var params = typeof stringOrPropertyMap === 'string' ? '?' + stringOrPropertyMap : toParams(stringOrPropertyMap);
         var url = this.baseUrl + '/' + uri + params;

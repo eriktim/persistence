@@ -3,7 +3,7 @@
 System.register(['./config', './persistent-config', './persistent-data', './persistent-object', './symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var Config, PersistentConfig, PersistentData, PersistentObject, defineSymbol, ENTITY_MANAGER, RELATIONS, REMOVED, Util, _slicedToArray, _typeof, _createClass, LOCATION, serverMap, contextMap, cacheMap, unresolvedRelationsMap, EntityManager, Server;
+  var Config, PersistentConfig, PersistentData, PersistentObject, RELATIONS, REMOVED, Util, _slicedToArray, _typeof, _createClass, LOCATION, serverMap, contextMap, cacheMap, unresolvedRelationsMap, EntityManager, Server;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -53,7 +53,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
   _export('setUnresolvedRelation', setUnresolvedRelation);
 
   function applySafe(fn, thisObj) {
-    var args = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+    var args = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
     return fn ? Reflect.apply(fn, thisObj, args) : undefined;
   }
@@ -129,8 +129,6 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
     }, function (_persistentObject) {
       PersistentObject = _persistentObject.PersistentObject;
     }, function (_symbols) {
-      defineSymbol = _symbols.defineSymbol;
-      ENTITY_MANAGER = _symbols.ENTITY_MANAGER;
       RELATIONS = _symbols.RELATIONS;
       REMOVED = _symbols.REMOVED;
     }, function (_util) {
@@ -178,7 +176,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
       _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
       } : function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
 
       _createClass = function () {
@@ -207,7 +205,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
 
       _export('EntityManager', EntityManager = function () {
         function EntityManager() {
-          var config = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+          var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
           _classCallCheck(this, EntityManager);
 
@@ -236,7 +234,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
           value: function create(Target) {
             var _this = this;
 
-            var data = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+            var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
             return Promise.resolve().then(function () {
               var config = PersistentConfig.get(Target);
@@ -246,10 +244,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
               if (!Util.isObject(data)) {
                 return null;
               }
-              var entity = new Target();
-              defineSymbol(entity, ENTITY_MANAGER, { value: _this, writable: false });
-              defineSymbol(entity, RELATIONS, { value: new Set(), writable: false });
-              defineSymbol(entity, REMOVED, false);
+              var entity = new Target(_this);
               return Promise.resolve().then(function () {
                 return PersistentObject.apply(entity, data);
               }).then(function () {
@@ -291,7 +286,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
           value: function query(Entity) {
             var _this3 = this;
 
-            var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+            var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
             return Promise.resolve().then(function () {
               var entityMapper = _this3.config.queryEntityMapperFactory(Entity);
@@ -336,10 +331,9 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
 
                 try {
                   for (var _iterator = entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var _step$value = _slicedToArray(_step.value, 2);
-
-                    var relation = _step$value[0];
-                    var setUri = _step$value[1];
+                    var _step$value = _slicedToArray(_step.value, 2),
+                        relation = _step$value[0],
+                        setUri = _step$value[1];
 
                     var uri = getUri(relation);
                     setUri(uri);
@@ -408,7 +402,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
           value: function refresh(entity) {
             var _this5 = this;
 
-            var reload = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+            var reload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
             return Promise.resolve().then(function () {
               assertEntity(_this5, entity);
@@ -470,7 +464,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
         }, {
           key: 'get',
           value: function get(path) {
-            var stringOrPropertyMap = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+            var stringOrPropertyMap = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
             return this.fetch(path, {
               method: 'GET'
@@ -507,7 +501,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
           }(function (uri, init) {
             var _this7 = this;
 
-            var stringOrPropertyMap = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+            var stringOrPropertyMap = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
             var params = typeof stringOrPropertyMap === 'string' ? '?' + stringOrPropertyMap : toParams(stringOrPropertyMap);
             var url = this.baseUrl + '/' + uri + params;

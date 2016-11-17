@@ -154,6 +154,15 @@ Object.defineProperty(exports, 'Transient', {
   }
 });
 
+var _config = require('./config');
+
+Object.defineProperty(exports, 'Config', {
+  enumerable: true,
+  get: function get() {
+    return _config.Config;
+  }
+});
+
 var _entityManager = require('./entity-manager');
 
 Object.defineProperty(exports, 'EntityManager', {

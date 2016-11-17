@@ -9,7 +9,7 @@ define(['exports'], function (exports) {
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
   } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
   function _classCallCheck(instance, Constructor) {
@@ -71,7 +71,7 @@ define(['exports'], function (exports) {
     _createClass(Config, [{
       key: 'configure',
       value: function configure() {
-        var userConfig = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+        var userConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
         var config = configurations.get(this);
         for (var key in userConfig || {}) {

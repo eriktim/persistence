@@ -1,4 +1,4 @@
-define(['exports', './decorator/collectible', './decorator/collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient', './entity-manager'], function (exports, _collectible, _collection, _embeddable, _embedded, _entity, _id, _manyToOne, _oneToOne, _postLoad, _postPersist, _postRemove, _prePersist, _preRemove, _property, _temporal, _transient, _entityManager) {
+define(['exports', './decorator/collectible', './decorator/collection', './decorator/embeddable', './decorator/embedded', './decorator/entity', './decorator/id', './decorator/many-to-one', './decorator/one-to-one', './decorator/post-load', './decorator/post-persist', './decorator/post-remove', './decorator/pre-persist', './decorator/pre-remove', './decorator/property', './decorator/temporal', './decorator/transient', './config', './entity-manager'], function (exports, _collectible, _collection, _embeddable, _embedded, _entity, _id, _manyToOne, _oneToOne, _postLoad, _postPersist, _postRemove, _prePersist, _preRemove, _property, _temporal, _transient, _config, _entityManager) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -104,6 +104,12 @@ define(['exports', './decorator/collectible', './decorator/collection', './decor
     enumerable: true,
     get: function () {
       return _transient.Transient;
+    }
+  });
+  Object.defineProperty(exports, 'Config', {
+    enumerable: true,
+    get: function () {
+      return _config.Config;
     }
   });
   Object.defineProperty(exports, 'EntityManager', {

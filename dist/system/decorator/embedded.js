@@ -22,6 +22,7 @@ System.register(['../persistent-config', '../persistent-object', '../util'], fun
           throw new Error('embedded data is corrupt');
         }
         var type = new Type();
+
         PersistentObject.apply(type, data, target);
         embeddedData.set(propertyKey, type);
       }

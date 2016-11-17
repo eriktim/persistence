@@ -1,21 +1,25 @@
 import { setCollectionData } from './collection';
 import { Config } from './config';
+import { EntityManager } from './entity-manager';
 import { PersistentConfig, PropertyType } from './persistent-config';
 import { PersistentData, readValue } from './persistent-data';
-import { defineSymbol, ENTITY_MANAGER, PARENT } from './symbols';
+import { defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED } from './symbols';
 import { Util } from './util';
 
+const CONSTRUCTOR = '__construct';
+
+const transientFieldsMap = new WeakMap();
 const propertyDecorator = Config.getPropertyDecorator();
 
 export function getEntity(obj) {
   while (obj[PARENT]) {
     obj = obj[PARENT];
   }
-  return obj;
+  return ENTITY_MANAGER in obj ? obj : null;
 }
 
 export let PersistentObject = class PersistentObject {
-  static byDecoration(Target) {
+  static byDecoration(Target, allowOwnConstructor = false) {
     if (Target.isPersistent) {
       return undefined;
     }
@@ -24,11 +28,13 @@ export let PersistentObject = class PersistentObject {
     const config = PersistentConfig.get(Target);
 
     const instance = Reflect.construct(Target, []);
+    const transientFields = new Set(Object.keys(instance));
     for (let propertyKey in instance) {
       const propConfig = config.getProperty(propertyKey);
       if (propConfig.type === PropertyType.TRANSIENT) {
         continue;
       }
+      transientFields.delete(propertyKey);
       let ownDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, propertyKey) || {};
       let descriptor = Util.mergeDescriptors(ownDescriptor, {
         get: propConfig.getter,
@@ -37,17 +43,30 @@ export let PersistentObject = class PersistentObject {
       let finalDescriptor = propertyDecorator ? propertyDecorator(Target.prototype, propertyKey, descriptor) : descriptor;
       Reflect.defineProperty(Target.prototype, propertyKey, finalDescriptor);
     }
+    transientFieldsMap.set(Target, transientFields);
+
+    if (allowOwnConstructor) {
+      return new Proxy(Target, {
+        construct: function (target, argumentsList) {
+          return Reflect.construct(function () {
+            PersistentObject.apply(this, {}, null);
+            if (typeof this[CONSTRUCTOR] === 'function') {
+              Reflect.apply(this[CONSTRUCTOR], this, argumentsList);
+            }
+          }, argumentsList, Target);
+        }
+      });
+    }
 
     return new Proxy(Target, {
       construct: function (target, argumentsList) {
-        return Reflect.construct(function () {
-          PersistentData.inject(this, {});
-          Object.keys(instance).forEach(propertyKey => {
-            const propConfig = config.getProperty(propertyKey);
-            if (propConfig.type === PropertyType.TRANSIENT && !Reflect.has(this, propertyKey)) {
-              this[propertyKey] = undefined;
-            }
-          });
+        return Reflect.construct(function (entityManager) {
+          if (!(entityManager instanceof EntityManager)) {
+            throw new Error('Use EntityManager#create to create new entities');
+          }
+          defineSymbol(this, ENTITY_MANAGER, { value: entityManager, writable: false });
+          defineSymbol(this, RELATIONS, { value: new Set(), writable: false });
+          defineSymbol(this, REMOVED, false);
         }, argumentsList, Target);
       }
     });
@@ -57,13 +76,24 @@ export let PersistentObject = class PersistentObject {
     defineSymbol(obj, PARENT, { value: parent, writable: false });
     PersistentObject.setData(obj, data);
     let entity = getEntity(obj);
-    let entityManager = entity[ENTITY_MANAGER];
-    let onNewObject = entityManager.config.onNewObject;
-    if (typeof onNewObject === 'function') {
-      Reflect.apply(onNewObject, null, [obj, entity]);
+    if (entity) {
+      let entityManager = entity[ENTITY_MANAGER];
+      let onNewObject = entityManager.config.onNewObject;
+      if (typeof onNewObject === 'function') {
+        Reflect.apply(onNewObject, null, [obj, entity]);
+      }
     }
     let isExtensible = obj === entity ? PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
     if (!isExtensible) {
+      let Target = Object.getPrototypeOf(obj).constructor;
+      let transientFields = transientFieldsMap.get(Target);
+      if (transientFields && transientFields.size) {
+        transientFields.forEach(propertyKey => {
+          if (!obj.hasOwnProperty(propertyKey)) {
+            obj[propertyKey] = undefined;
+          }
+        });
+      }
       Object.preventExtensions(obj);
     }
   }
