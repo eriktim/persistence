@@ -96,7 +96,7 @@ describe('Util', () => {
     expect(util(foo, 'bar', 'baz')).toEqual(false, 'obj, str, str');
     expect(util()).toEqual(false, 'no args');
     expect(util(foo)).toEqual(false, '1 arg');
-    expect(util(foo, 'bar')).toEqual(false, '2 args');
+    expect(util(foo, 'bar')).toEqual(true, '2 args');
     expect(util(foo, 'bar', {}, {})).toEqual(false, '4 args');
   });
 });
