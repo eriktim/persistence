@@ -1,20 +1,22 @@
-declare type Class = any;
-declare type EntityClass = any;
-declare type Entity = any;
+interface ICollectible {}
+
+interface IEmbeddable {}
+
+interface IEntity {}
 
 export declare function Collectible(): any;
 
-export declare function Collection(Target: Class): any;
+export declare function Collection(Target: ICollectible): any;
 
 export declare function Embeddable(): any;
 
-export declare function Embedded(Target: Class): any;
+export declare function Embedded(Target: IEmbeddable): any;
 
 export declare function Entity(path?: string): any;
 
 export declare function Id(): any;
 
-export declare function OneToOne(Target: EntityClass): any;
+export declare function OneToOne(Target: IEntity): any;
 
 export declare function PostLoad(): any;
 
@@ -39,24 +41,32 @@ export enum TemporalFormat {
   TIME = <any>'HH:mm:ss'
 }
 
-export interface TypedCollection<T> extends Set {
+export interface IConfigOptions {
+  baseUrl: string,
+  extensible?: boolean,
+  fetchInterceptor?: Function,
+  onNewObject?: Function,
+  queryEntityMapperFactory?: Function
+}
+
+export interface ICollection<T> extends Set {
   newItem(): T;
 }
 
 export declare class Config {
-  static create(config: any): Config;
-  configure(config: any): void;
+  static create(config: IConfigOptions): Config;
+  configure(config: IConfigOptions): void;
 }
 
 export declare class EntityManager {
   constructor(config?: Config);
   clear(): void;
-  contains(entity: Entity): boolean;
-  create(Entity: EntityClass, data?: any): Promise<Entity>;
-  detach(entity: Entity): boolean;
-  find(Entity: EntityClass, id: string|number): Promise<Entity>;
-  query(Entity: EntityClass, params: string|any): Promise<Entity[]>;
-  persist(entity: Entity): Promise<Entity>;
-  refresh(entity: Entity): Promise<Entity>;
-  remove(entity: Entity): Promise<Entity>;
+  contains(entity: IEntity): boolean;
+  create(Entity: IEntity, data?: any): Promise<IEntity>;
+  detach(entity: IEntity): boolean;
+  find(Entity: IEntity, id: string|number): Promise<IEntity>;
+  query(Entity: IEntity, params: string|any): Promise<IEntity[]>;
+  persist(entity: IEntity): Promise<IEntity>;
+  refresh(entity: IEntity): Promise<IEntity>;
+  remove(entity: IEntity): Promise<IEntity>;
 }
