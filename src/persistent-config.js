@@ -13,7 +13,10 @@ export const PropertyType = Object.freeze({
 });
 
 function inheritConfig(config, Class) {
-  let SuperClass = Object.getPrototypeOf(Class);
+  // proxy-safe retrieval of super class
+  let prototype = Class.prototype;
+  let proto = prototype ? Reflect.getPrototypeOf(prototype) : null;
+  let SuperClass = proto ? proto.constructor : null;
   if (!SuperClass) {
     return false;
   }

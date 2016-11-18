@@ -12,7 +12,9 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
   }
 
   function inheritConfig(config, Class) {
-    var SuperClass = Object.getPrototypeOf(Class);
+    var prototype = Class.prototype;
+    var proto = prototype ? Reflect.getPrototypeOf(prototype) : null;
+    var SuperClass = proto ? proto.constructor : null;
     if (!SuperClass) {
       return false;
     }
