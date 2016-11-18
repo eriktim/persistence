@@ -3,6 +3,7 @@ import {Embedded} from '../../src/decorator/embedded';
 import {Entity} from '../../src/decorator/entity';
 import {Collectible} from '../../src/decorator/collectible';
 import {Collection} from '../../src/decorator/collection';
+import {Property} from '../../src/decorator/property';
 import {Config} from '../../src/config';
 import {EntityManager} from '../../src/entity-manager';
 import {VERSION} from '../../src/symbols';
@@ -13,7 +14,7 @@ const VALUE = 'val';
 @Embeddable
 @Collectible
 class Bar {
-  property = undefined;
+  @Property property;
 }
 
 @Embeddable
@@ -21,14 +22,14 @@ class Bar {
 class Foo {
   @Embedded(Bar) bar;
   @Collection(Bar) bars;
-  property = undefined;
+  @Property property;
 }
 
 @Entity
 class EntityClass {
   @Embedded(Foo) foo;
   @Collection(Foo) foos;
-  property = undefined;
+  @Property property;
 }
 
 describe('Versions should cascade through collections & embedded objects', () => {
@@ -102,21 +103,21 @@ describe('Versions should cascade through collections & embedded objects', () =>
 
 @Embeddable
 class Level2 {
-  property = undefined;
+  @Property property;
 }
 
 @Embeddable
 class Level1 {
   @Embedded(Level2)
   deeper;
-  property = undefined;
+  @Property property;
 }
 
 @Entity
 class Root {
   @Embedded(Level1)
   deeper;
-  property = undefined;
+  @Property property;
 }
 
 describe('Versions should cascade through nested embedded objects', () => {

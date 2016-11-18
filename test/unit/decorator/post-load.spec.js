@@ -1,5 +1,6 @@
 import {Entity} from '../../../src/decorator/entity';
 import {PostLoad} from '../../../src/decorator/post-load';
+import {Property} from '../../../src/decorator/property';
 import {createEntityManagerStub} from '../helper';
 
 describe('@PostLoad', () => {
@@ -19,7 +20,7 @@ describe('@PostLoad', () => {
   it('Default', () => {
     @Entity
     class Foo {
-      triggered = undefined;
+      @Property triggered;
 
       @PostLoad
       trigger() {
@@ -31,7 +32,7 @@ describe('@PostLoad', () => {
 
   it('Inheritance', () => {
     class Foo {
-      triggered = undefined;
+      @Property triggered;
 
       @PostLoad
       trigger() {
@@ -45,7 +46,7 @@ describe('@PostLoad', () => {
 
   it('Inheritance & default', () => {
     class Foo {
-      triggeredSuper = undefined;
+      @Property triggeredSuper;
 
       @PostLoad
       trigger() {
@@ -54,7 +55,7 @@ describe('@PostLoad', () => {
     }
     @Entity
     class Bar extends Foo {
-      triggeredSub = undefined;
+      @Property triggeredSub;
 
       @PostLoad
       trigger() {

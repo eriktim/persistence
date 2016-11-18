@@ -1,13 +1,14 @@
 import {Entity} from '../../src/decorator/entity';
 import {Id} from '../../src/decorator/id';
 import {OneToOne} from '../../src/decorator/one-to-one';
+import {Property} from '../../src/decorator/property';
 import {PersistentData} from '../../src/persistent-data';
 import {createEntityManagerStub} from './helper';
 
 @Entity
 class Bar {
   @Id id;
-  prop = undefined;
+  @Property prop;
 }
 
 @Entity

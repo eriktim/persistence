@@ -1,6 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PostRemove} from '../../../src/decorator/post-remove';
+import {Property} from '../../../src/decorator/property';
 import {REMOVED} from '../../../src/symbols';
 import {createEntityManagerStub} from '../helper';
 
@@ -24,9 +25,8 @@ describe('@PostRemove', () => {
   it('Default', () => {
     @Entity
     class Foo {
-      @Id
-      key;
-      removed = undefined;
+      @Id key;
+      @Property removed;
 
       @PostRemove
       trigger() {
@@ -38,9 +38,8 @@ describe('@PostRemove', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Id
-      key;
-      removed = undefined;
+      @Id key;
+      @Property removed;
 
       @PostRemove
       trigger() {
@@ -54,9 +53,8 @@ describe('@PostRemove', () => {
 
   it('Inheritance & default', () => {
     class Foo {
-      @Id
-      key;
-      removedSuper = undefined;
+      @Id key;
+      @Property removedSuper;
 
       @PostRemove
       trigger() {
@@ -65,7 +63,7 @@ describe('@PostRemove', () => {
     }
     @Entity
     class Bar extends Foo {
-      removedSub = undefined;
+      @Property removedSub;
 
       @PostRemove
       trigger() {

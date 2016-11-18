@@ -26,17 +26,15 @@ export class PersistentObject {
     }
     Target.isPersistent = true;
 
-    const config = PersistentConfig.get(Target);
-
     // decorate properties
-    const instance = Reflect.construct(Target, []);
-    const transientFields = new Set(Object.keys(instance));
-    for (let propertyKey in instance) { // get all enumerable properties
+    const config = PersistentConfig.get(Target);
+    const transientFields = new Set();
+    for (let propertyKey in config.propertyMap) {
       const propConfig = config.getProperty(propertyKey);
       if (propConfig.type === PropertyType.TRANSIENT) {
+        transientFields.add(propertyKey);
         continue;
       }
-      transientFields.delete(propertyKey);
       let ownDescriptor = Object.getOwnPropertyDescriptor(
           Target.prototype, propertyKey) || {};
       let descriptor = Util.mergeDescriptors(ownDescriptor, {

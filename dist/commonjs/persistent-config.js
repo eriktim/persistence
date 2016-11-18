@@ -21,6 +21,7 @@ var propertyKeys = new Map();
 var PropertyType = exports.PropertyType = Object.freeze({
   COLLECTION: 'collection',
   EMBEDDED: 'embedded',
+  ID: 'id',
   TEMPORAL: 'temporal',
   TRANSIENT: 'transient'
 });

@@ -67,6 +67,7 @@ System.register(['./persistent-data', './util'], function (_export, _context) {
       _export('PropertyType', PropertyType = Object.freeze({
         COLLECTION: 'collection',
         EMBEDDED: 'embedded',
+        ID: 'id',
         TEMPORAL: 'temporal',
         TRANSIENT: 'transient'
       }));

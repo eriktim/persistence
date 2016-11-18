@@ -1,6 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PreRemove} from '../../../src/decorator/pre-remove';
+import {Property} from '../../../src/decorator/property';
 import {REMOVED} from '../../../src/symbols';
 import {createEntityManagerStub} from '../helper';
 
@@ -24,9 +25,8 @@ describe('@PreRemove', () => {
   it('Default', () => {
     @Entity
     class Foo {
-      @Id
-      key;
-      removed = undefined;
+      @Id key;
+      @Property removed;
 
       @PreRemove
       trigger() {
@@ -38,9 +38,8 @@ describe('@PreRemove', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Id
-      key;
-      removed = undefined;
+      @Id key;
+      @Property removed;
 
       @PreRemove
       trigger() {
@@ -54,9 +53,8 @@ describe('@PreRemove', () => {
 
   it('Inheritance & default', () => {
     class Foo {
-      @Id
-      key;
-      removedSuper = undefined;
+      @Id key;
+      @Property removedSuper;
 
       @PreRemove
       trigger() {
@@ -65,7 +63,7 @@ describe('@PreRemove', () => {
     }
     @Entity
     class Bar extends Foo {
-      removedSub = undefined;
+      @Property removedSub;
 
       @PreRemove
       trigger() {

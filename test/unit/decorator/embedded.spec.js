@@ -2,11 +2,12 @@ import {Embeddable} from '../../../src/decorator/embeddable';
 import {Embedded} from '../../../src/decorator/embedded';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
+import {Property} from '../../../src/decorator/property';
 import {PersistentData} from '../../../src/persistent-data';
 import {createEntityManagerStub, expectRejection} from '../helper';
 
 @Embeddable class Bar {
-  baz = undefined;
+  @Property baz;
 }
 
 @Entity class Foo {

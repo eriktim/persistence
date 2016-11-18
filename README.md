@@ -1,13 +1,13 @@
-Persistence JS
-==============
+Persistence
+===========
 
 > Inspired by the Java Persistence API
 
     @Embeddable
     class Size {
-      x = undefined;
-      y = undefined;
-      z = undefined;
+      @Property x;
+      @Property y;
+      @Property z;
       
       @Transient volume;
       

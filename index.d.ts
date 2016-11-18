@@ -30,9 +30,18 @@ export declare function Property(path?: string): any;
 
 export declare function Temporal(): any;
 
-export declare type TemporalFormat = 'DEFAULT' | 'DATETIME' | 'DATE' | 'TIME';
-
 export declare function Transient(): any;
+
+export enum TemporalFormat {
+  DEFAULT = <any>'YYYY-MM-DDTHH:mm:ssZ',
+  DATETIME = <any>'YYYY-MM-DD HH:mm:ss',
+  DATE = <any>'YYYY-MM-DD',
+  TIME = <any>'HH:mm:ss'
+}
+
+export interface TypedCollection<T> extends Set {
+  newItem(): T;
+}
 
 export declare class Config {
   static create(config: any): Config;
@@ -43,7 +52,7 @@ export declare class EntityManager {
   constructor(config?: Config);
   clear(): void;
   contains(entity: Entity): boolean;
-  create(Entity: EntityClass, data?: any): Entity;
+  create(Entity: EntityClass, data?: any): Promise<Entity>;
   detach(entity: Entity): boolean;
   find(Entity: EntityClass, id: string|number): Promise<Entity>;
   query(Entity: EntityClass, params: string|any): Promise<Entity[]>;

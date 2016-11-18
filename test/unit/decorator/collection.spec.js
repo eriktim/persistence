@@ -2,6 +2,7 @@ import {Collectible} from '../../../src/decorator/collectible';
 import {Collection} from '../../../src/decorator/collection';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
+import {Property} from '../../../src/decorator/property';
 import {getArrayForTesting} from '../../../src/collection';
 import {PersistentData} from '../../../src/persistent-data';
 import {VERSION} from '../../../src/symbols';
@@ -9,7 +10,7 @@ import {createEntityManagerStub, expectRejection} from '../helper';
 
 @Collectible
 class Bar {
-  baz = undefined;
+  @Property baz;
 }
 
 @Entity class Foo {

@@ -1,12 +1,13 @@
 import {Collectible} from '../../src/decorator/collectible';
 import {Entity} from '../../src/decorator/entity';
+import {Property} from '../../src/decorator/property';
 import {CollectionFactory, getArrayForTesting} from '../../src/collection';
 import {createEntityManagerStub} from './helper';
 
 describe('Collection', () => {
   @Entity class Object {}
   @Collectible class Foo {
-    prop = undefined;
+    @Property prop;
   }
   let entity;
   let collection;

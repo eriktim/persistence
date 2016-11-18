@@ -55,7 +55,7 @@ describe('@Property', () => {
 
   it('Save', () => {
     expect(data.key).toEqual('key');
-    expect(data.undecorated).toEqual('undecorated');
+    expect(data.undecorated).toBeUndefined();
     expect(data.unnamed).toEqual('unnamed');
     expect(data.empty).toEqual('empty');
     expect(data.nameOfNamed).toEqual('named');

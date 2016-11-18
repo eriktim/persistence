@@ -7,6 +7,7 @@ const propertyKeys = new Map();
 export const PropertyType = Object.freeze({
   COLLECTION: 'collection',
   EMBEDDED: 'embedded',
+  ID: 'id',
   TEMPORAL: 'temporal',
   TRANSIENT: 'transient'
 });

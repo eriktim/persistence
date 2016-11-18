@@ -1,4 +1,4 @@
-import {Embeddable, isEmbeddable} from '../../../src/decorator/embeddable';
+import {Embeddable} from '../../../src/decorator/embeddable';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {createEntityManagerStub} from '../helper';

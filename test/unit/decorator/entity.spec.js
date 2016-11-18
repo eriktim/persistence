@@ -4,6 +4,7 @@ import {Embeddable} from '../../../src/decorator/embeddable';
 import {Embedded} from '../../../src/decorator/embedded';
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
+import {Property} from '../../../src/decorator/property';
 import {Config} from '../../../src/config';
 import {PersistentConfig} from '../../../src/persistent-config';
 import {createEntityManagerStub} from '../helper';
@@ -66,7 +67,7 @@ describe('@Entity', () => {
     @Collectible
     @Embeddable
     class Bar {
-      prop = undefined;
+      @Property prop;
     }
 
     @Entity
@@ -92,7 +93,7 @@ describe('@Entity', () => {
   it('Entity constructor', () => {
     @Entity
     class Foo {
-      prop = undefined;
+      @Property prop;
 
       constructor() {
         this.prop = 'foo';
@@ -109,7 +110,7 @@ describe('@Entity', () => {
   it('Non-Entity constructor', () => {
     @Embeddable
     class Bar {
-      prop = undefined;
+      @Property prop;
 
       constructor() {
         this.prop = 'foo';

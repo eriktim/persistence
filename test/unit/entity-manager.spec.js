@@ -1,5 +1,6 @@
 import {Entity} from '../../src/decorator/entity';
 import {Id} from '../../src/decorator/id';
+import {Property} from '../../src/decorator/property';
 import {Config} from '../../src/config';
 import {PersistentConfig} from '../../src/persistent-config';
 import {EntityManager, getLocationSymbolForTesting, getServerForTesting}
@@ -90,7 +91,7 @@ describe('EntityManager', () => {
 
   it('query using a custom mapper', () => {
     @Entity class Bundle {
-      foo = undefined;
+      @Property foo;
     }
     let config = Config.create({
       queryEntityMapperFactory: () => () => new Map([[{foo: 'bar'}, Bundle]])

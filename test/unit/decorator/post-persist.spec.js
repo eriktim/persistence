@@ -1,6 +1,7 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PostPersist} from '../../../src/decorator/post-persist';
+import {Property} from '../../../src/decorator/property';
 import {createEntityManagerStub} from '../helper';
 
 describe('@PostPersist', () => {
@@ -26,9 +27,8 @@ describe('@PostPersist', () => {
   it('Default', () => {
     @Entity
     class Foo {
-      @Id
-      key;
-      triggered = undefined;
+      @Id key;
+      @Property triggered;
 
       @PostPersist
       trigger() {
@@ -40,9 +40,8 @@ describe('@PostPersist', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Id
-      key;
-      triggered = undefined;
+      @Id key;
+      @Property triggered;
 
       @PostPersist
       trigger() {
@@ -56,9 +55,8 @@ describe('@PostPersist', () => {
 
   it('Inheritance & default', () => {
     class Foo {
-      @Id
-      key;
-      triggeredSuper = undefined;
+      @Id key;
+      @Property triggeredSuper;
 
       @PostPersist
       trigger() {
@@ -67,7 +65,7 @@ describe('@PostPersist', () => {
     }
     @Entity
     class Bar extends Foo {
-      triggeredSub = undefined;
+      @Property triggeredSub;
 
       @PostPersist
       trigger() {

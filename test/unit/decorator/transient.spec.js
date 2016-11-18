@@ -1,5 +1,6 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
+import {Property} from '../../../src/decorator/property';
 import {Transient} from '../../../src/decorator/transient';
 import {PersistentData} from '../../../src/persistent-data';
 import {createEntityManagerStub} from '../helper';
@@ -9,7 +10,8 @@ class Foo {
   @Id
   key;
 
-  undecorated = undefined;
+  @Property
+  undecorated;
 
   @Transient
   noFactory;

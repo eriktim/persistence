@@ -42,6 +42,7 @@ define(['exports', './persistent-data', './util'], function (exports, _persisten
   var PropertyType = exports.PropertyType = Object.freeze({
     COLLECTION: 'collection',
     EMBEDDED: 'embedded',
+    ID: 'id',
     TEMPORAL: 'temporal',
     TRANSIENT: 'transient'
   });

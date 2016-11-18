@@ -12,9 +12,11 @@ var _util = require('../util');
 function Id(optTarget, optPropertyKey, optDescriptor) {
   var isDecorator = _util.Util.isPropertyDecorator.apply(_util.Util, arguments);
   var deco = function deco(target, propertyKey) {
-    _persistentConfig.PersistentConfig.get(target).configure({
+    var config = _persistentConfig.PersistentConfig.get(target);
+    config.configure({
       idKey: propertyKey
     });
+    config.configureProperty(propertyKey, { type: _persistentConfig.PropertyType.ID });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

@@ -1,5 +1,6 @@
 import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
+import {Property} from '../../../src/decorator/property';
 import {PrePersist} from '../../../src/decorator/pre-persist';
 import {createEntityManagerStub} from '../helper';
 
@@ -26,9 +27,8 @@ describe('@PrePersist', () => {
   it('Default', () => {
     @Entity
     class Foo {
-      @Id
-      key;
-      triggered = undefined;
+      @Id key;
+      @Property triggered;
 
       @PrePersist
       trigger() {
@@ -40,9 +40,8 @@ describe('@PrePersist', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Id
-      key;
-      triggered = undefined;
+      @Id key;
+      @Property triggered;
 
       @PrePersist
       trigger() {
@@ -56,9 +55,8 @@ describe('@PrePersist', () => {
 
   it('Inheritance & default', () => {
     class Foo {
-      @Id
-      key;
-      triggeredSuper = undefined;
+      @Id key;
+      @Property triggeredSuper;
 
       @PrePersist
       trigger() {
@@ -67,7 +65,7 @@ describe('@PrePersist', () => {
     }
     @Entity
     class Bar extends Foo {
-      triggeredSub = undefined;
+      @Property triggeredSub;
 
       @PrePersist
       trigger() {

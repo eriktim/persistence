@@ -81,15 +81,13 @@ System.register(['./collection', './config', './entity-manager', './persistent-c
             Target.isPersistent = true;
 
             var config = PersistentConfig.get(Target);
-
-            var instance = Reflect.construct(Target, []);
-            var transientFields = new Set(Object.keys(instance));
-            for (var propertyKey in instance) {
+            var transientFields = new Set();
+            for (var propertyKey in config.propertyMap) {
               var propConfig = config.getProperty(propertyKey);
               if (propConfig.type === PropertyType.TRANSIENT) {
+                transientFields.add(propertyKey);
                 continue;
               }
-              transientFields.delete(propertyKey);
               var ownDescriptor = Object.getOwnPropertyDescriptor(Target.prototype, propertyKey) || {};
               var descriptor = Util.mergeDescriptors(ownDescriptor, {
                 get: propConfig.getter,
