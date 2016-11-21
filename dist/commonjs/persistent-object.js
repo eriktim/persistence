@@ -25,8 +25,6 @@ var _util = require('./util');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var CONSTRUCTOR = '__construct';
-
 var transientFieldsMap = new WeakMap();
 var propertyDecorator = _config.Config.getPropertyDecorator();
 
@@ -74,10 +72,8 @@ var PersistentObject = exports.PersistentObject = function () {
         return new Proxy(Target, {
           construct: function construct(target, argumentsList) {
             return Reflect.construct(function () {
-              PersistentObject.apply(this, {}, null);
-              if (typeof this[CONSTRUCTOR] === 'function') {
-                Reflect.apply(this[CONSTRUCTOR], this, argumentsList);
-              }
+              var data = argumentsList.length === 1 ? argumentsList[0] : {};
+              PersistentObject.apply(this, data, null);
             }, argumentsList, Target);
           }
         });

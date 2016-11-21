@@ -3,7 +3,7 @@
 System.register(['./collection', './config', './entity-manager', './persistent-config', './persistent-data', './symbols', './util'], function (_export, _context) {
   "use strict";
 
-  var setCollectionData, Config, EntityManager, PersistentConfig, PropertyType, PersistentData, readValue, defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED, Util, _createClass, CONSTRUCTOR, transientFieldsMap, propertyDecorator, PersistentObject;
+  var setCollectionData, Config, EntityManager, PersistentConfig, PropertyType, PersistentData, readValue, defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED, Util, _createClass, transientFieldsMap, propertyDecorator, PersistentObject;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -61,7 +61,6 @@ System.register(['./collection', './config', './entity-manager', './persistent-c
         };
       }();
 
-      CONSTRUCTOR = '__construct';
       transientFieldsMap = new WeakMap();
       propertyDecorator = Config.getPropertyDecorator();
 
@@ -102,10 +101,8 @@ System.register(['./collection', './config', './entity-manager', './persistent-c
               return new Proxy(Target, {
                 construct: function construct(target, argumentsList) {
                   return Reflect.construct(function () {
-                    PersistentObject.apply(this, {}, null);
-                    if (typeof this[CONSTRUCTOR] === 'function') {
-                      Reflect.apply(this[CONSTRUCTOR], this, argumentsList);
-                    }
+                    var data = argumentsList.length === 1 ? argumentsList[0] : {};
+                    PersistentObject.apply(this, data, null);
                   }, argumentsList, Target);
                 }
               });

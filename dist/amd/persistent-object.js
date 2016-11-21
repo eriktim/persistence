@@ -31,8 +31,6 @@ define(['exports', './collection', './config', './entity-manager', './persistent
     };
   }();
 
-  var CONSTRUCTOR = '__construct';
-
   var transientFieldsMap = new WeakMap();
   var propertyDecorator = _config.Config.getPropertyDecorator();
 
@@ -80,10 +78,8 @@ define(['exports', './collection', './config', './entity-manager', './persistent
           return new Proxy(Target, {
             construct: function construct(target, argumentsList) {
               return Reflect.construct(function () {
-                PersistentObject.apply(this, {}, null);
-                if (typeof this[CONSTRUCTOR] === 'function') {
-                  Reflect.apply(this[CONSTRUCTOR], this, argumentsList);
-                }
+                var data = argumentsList.length === 1 ? argumentsList[0] : {};
+                PersistentObject.apply(this, data, null);
               }, argumentsList, Target);
             }
           });

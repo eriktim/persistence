@@ -6,8 +6,6 @@ import { PersistentData, readValue } from './persistent-data';
 import { defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED } from './symbols';
 import { Util } from './util';
 
-const CONSTRUCTOR = '__construct';
-
 const transientFieldsMap = new WeakMap();
 const propertyDecorator = Config.getPropertyDecorator();
 
@@ -47,10 +45,8 @@ export let PersistentObject = class PersistentObject {
       return new Proxy(Target, {
         construct: function (target, argumentsList) {
           return Reflect.construct(function () {
-            PersistentObject.apply(this, {}, null);
-            if (typeof this[CONSTRUCTOR] === 'function') {
-              Reflect.apply(this[CONSTRUCTOR], this, argumentsList);
-            }
+            let data = argumentsList.length === 1 ? argumentsList[0] : {};
+            PersistentObject.apply(this, data, null);
           }, argumentsList, Target);
         }
       });

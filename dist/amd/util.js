@@ -110,7 +110,15 @@ define(['exports'], function (exports) {
     }, {
       key: 'isPropertyDecorator',
       value: function isPropertyDecorator(target, propertyKey, descriptor) {
-        return arguments.length === 3 && Util.isObject(target) && typeof propertyKey === 'string' && propertyKey !== '' && Util.isObject(descriptor);
+        var genericCheck = Util.isObject(target) && typeof propertyKey === 'string' && propertyKey !== '';
+        switch (arguments.length) {
+          case 2:
+            return genericCheck;
+          case 3:
+            return genericCheck && Util.isObject(descriptor);
+          default:
+            return false;
+        }
       }
     }]);
 
