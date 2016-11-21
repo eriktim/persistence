@@ -95,12 +95,8 @@ describe('@Entity', () => {
     class Foo {
       @Property prop;
 
-      constructor() {
-        this.prop = 'foo';
-      }
-
-      __construct(prop = 'bar') {
-        this.prop = this.prop || 'bar';
+      constructor(init = {}) {
+        this.prop = 'thisIsBeingIgnored';
       }
     }
     return entityManager.create(Foo, {})
@@ -112,12 +108,8 @@ describe('@Entity', () => {
     class Bar {
       @Property prop;
 
-      constructor() {
-        this.prop = 'foo';
-      }
-
-      __construct(prop = 'bar') {
-        this.prop = this.prop || prop;
+      constructor(init = {}) {
+        this.prop = 'thisIsBeingIgnored';
       }
     }
 
@@ -126,8 +118,8 @@ describe('@Entity', () => {
       @Embedded(Bar)
       bar;
     }
-    expect(new Bar().prop).toBe('bar');
-    expect(new Bar('baz').prop).toBe('baz');
+    expect(new Bar().prop).toBeUndefined();
+    expect(new Bar({prop: 'bar'}).prop).toBe('bar');
     return entityManager.create(Foo, {})
       .then(foo => expect(foo.bar.prop).toBeUndefined());
   });
