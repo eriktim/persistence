@@ -20,7 +20,6 @@ export interface IConfigOptions {
   uriToReference: (uri: string) => any
 }
 
-
 export interface IEntityOptions {
   path?: string,
   nonPersistent?: boolean
@@ -37,6 +36,8 @@ export declare function Embedded(Target: Class<IEmbeddable>): PropertyDecorator;
 export declare function Entity(pathOrOptions?: string|IEntityOptions): ClassDecorator;
 
 export declare function Id(): PropertyDecorator;
+
+export declare function ManyToOne(Target: Class<IEntity>): PropertyDecorator;
 
 export declare function OneToOne(Target: Class<IEntity>): PropertyDecorator;
 
