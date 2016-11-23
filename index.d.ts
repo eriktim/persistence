@@ -15,7 +15,9 @@ export interface IConfigOptions {
   extensible?: boolean,
   fetchInterceptor?: Function,
   onNewObject?: Function,
+  referenceToUri: (reference: any) => string,
   queryEntityMapperFactory?: Function
+  uriToReference: (uri: string) => any
 }
 
 

@@ -17,13 +17,13 @@ export function asJasmineValue(value) {
   return value;
 }
 
-export function createEntityManagerStub() {
-  let config = Config.create({baseUrl: URL});
+export function createEntityManagerStub(options = {}) {
+  let config = Config.create(Object.assign({baseUrl: URL}, options));
   let entityManager = new EntityManager(config);
   entityManager.requests = [];
   let server = getServerForTesting(entityManager);
   server.fetch = function(path, init, propertyMap) {
-    if (propertyMap) {
+    if (propertyMap && Object.keys(propertyMap).length) {
       throw new Error('propertyMap is not supported' +
           ' by the stub entity manager');
     }

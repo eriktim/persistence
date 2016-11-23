@@ -3,6 +3,18 @@ const configurations = new WeakMap();
 let defaultInstance;
 let propertyDecorator;
 
+const defaultQueryEntityMapperFactory = Entity => {
+  return function(values) {
+    let map = new Map();
+    (values || []).forEach(value => map.set(value, Entity));
+    return map;
+  };
+};
+
+function identity(val) {
+  return val;
+}
+
 export class Config {
   constructor() {
     const config = {
@@ -10,13 +22,9 @@ export class Config {
       extensible: false,
       fetchInterceptor: null,
       onNewObject: () => undefined,
-      queryEntityMapperFactory: Entity => {
-        return function(values) {
-          let map = new Map();
-          (values || []).forEach(value => map.set(value, Entity));
-          return map;
-        };
-      }
+      referenceToUri: identity,
+      queryEntityMapperFactory: defaultQueryEntityMapperFactory,
+      uriToReference: identity
     };
     configurations.set(this, config);
     if (!defaultInstance) {

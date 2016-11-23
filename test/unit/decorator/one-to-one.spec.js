@@ -22,16 +22,27 @@ class Foo {
 describe('@OneToOne', () => {
   let foo;
   let bar;
-  let emptyBar;
+  let custom;
+  let data;
+  let lastRef;
 
   beforeEach(() => {
-    let entityManager = createEntityManagerStub();
+    let entityManager = createEntityManagerStub({
+      referenceToUri: obj => {
+        lastRef = obj;
+        return obj ? obj['link'] : undefined;
+      },
+      uriToReference: uri => {
+        return {link: uri};
+      }
+    });
+    data = {};
     return Promise.all([
       entityManager.create(Foo, {key: 123}),
       entityManager.create(Bar, {key: 456}),
-      entityManager.create(Bar, {})
+      entityManager.create(Foo, data)
     ])
-    .then(values => [foo, bar, emptyBar] = values);
+    .then(values => [foo, bar, custom] = values);
   });
 
   it('initial value', () => {
@@ -45,5 +56,17 @@ describe('@OneToOne', () => {
   it('valid reference', () => {
     foo.bar = bar;
     return foo.bar.then(b => expect(b).toEqual(bar));
+  });
+
+  it('set custom reference object', () => {
+    expect(data).toEqual({});
+    custom.bar = bar;
+    expect(data).toEqual({bar: {link: 'bar/456'}});
+  });
+
+  it('get custom reference object', () => {
+    let ref = {link: 'bar/111'};
+    data['bar'] = ref;
+    return custom.bar.then(bar => expect(lastRef).toBe(ref));
   });
 });
