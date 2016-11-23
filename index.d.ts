@@ -57,7 +57,7 @@ export interface IConfigOptions {
   queryEntityMapperFactory?: Function
 }
 
-export interface ICollection<T> extends Set {
+export interface ICollection<T> extends Set<T> {
   newItem(): T;
 }
 
