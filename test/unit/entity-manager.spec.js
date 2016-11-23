@@ -192,7 +192,7 @@ describe('EntityManager', () => {
     let em = new EntityManager(cfg);
     entityManager.create(Foo).then(foo => {
       expectRejection(em.persist(foo),
-          'argument is not a valid entity');
+          'argument is not a persistent entity');
     });
   });
 });

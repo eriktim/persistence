@@ -51,6 +51,7 @@ export class PersistentConfig {
   }
 
   idKey = undefined;
+  nonPersistent = false;
   path = undefined;
   postLoad = undefined;
   postPersist = undefined;

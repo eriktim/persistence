@@ -47,7 +47,7 @@ function applySafe(fn, thisObj, args = []) {
 
 function assertEntity(entityManager, entity) {
   if (!entityManager.contains(entity)) {
-    throw new TypeError('argument is not a valid entity');
+    throw new TypeError('argument is not a persistent entity');
   }
 }
 
@@ -138,7 +138,7 @@ export class EntityManager {
         return Promise.resolve()
           .then(() => PersistentObject.apply(entity, data))
           .then(() => applySafe(config.postLoad, entity))
-          .then(() => attach(this, entity))
+          .then(() => config.nonPersistent || attach(this, entity))
           .then(() => entity);
       });
   }

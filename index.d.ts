@@ -10,6 +10,20 @@ interface Class<T> {
   new (): T;
 }
 
+export interface IConfigOptions {
+  baseUrl: string,
+  extensible?: boolean,
+  fetchInterceptor?: Function,
+  onNewObject?: Function,
+  queryEntityMapperFactory?: Function
+}
+
+
+export interface IEntityOptions {
+  path?: string,
+  nonPersistent?: boolean
+}
+
 export declare function Collectible(): ClassDecorator;
 
 export declare function Collection(Target: Class<ICollectible>): PropertyDecorator;
@@ -18,7 +32,7 @@ export declare function Embeddable(): ClassDecorator;
 
 export declare function Embedded(Target: Class<IEmbeddable>): PropertyDecorator;
 
-export declare function Entity(path?: string): ClassDecorator;
+export declare function Entity(pathOrOptions?: string|IEntityOptions): ClassDecorator;
 
 export declare function Id(): PropertyDecorator;
 
@@ -47,14 +61,6 @@ export interface TemporalFormat {
   DATETIME: TemporalFormatString,
   DATE: TemporalFormatString,
   TIME: TemporalFormatString
-}
-
-export interface IConfigOptions {
-  baseUrl: string,
-  extensible?: boolean,
-  fetchInterceptor?: Function,
-  onNewObject?: Function,
-  queryEntityMapperFactory?: Function
 }
 
 export interface ICollection<T> extends Set<T> {

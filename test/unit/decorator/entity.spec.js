@@ -63,6 +63,27 @@ describe('@Entity', () => {
       );
   });
 
+  it('@Entity(object)', () => {
+    @Entity({
+      path: 'baz',
+      nonPersistent: true
+    })
+    class Foo {
+      @Id id;
+    }
+    expect(PersistentConfig.get(Foo).path).toEqual('baz');
+
+    return entityManager.create(Foo, {})
+      .then(foo => {
+        expect(foo).toEqual(jasmine.any(Foo));
+        return entityManager.persist(foo);
+      })
+      .then(
+        () => {throw new Error('persisted entity');},
+        err => expect(err.message).toEqual('argument is not a persistent entity')
+      );
+  });
+
   it('Collectible & Embeddable', () => {
     @Collectible
     @Embeddable
