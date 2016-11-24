@@ -14,7 +14,7 @@ export function PreRemove(optTarget, optPropertyKey, optDescriptor) {
       configurable: true,
       enumerable: false,
       value: undefined,
-      writable: false
+      writable: true
     });
   };
   return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
