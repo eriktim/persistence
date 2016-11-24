@@ -137,8 +137,8 @@ export class EntityManager {
         let entity = new Target(this);
         return Promise.resolve()
           .then(() => PersistentObject.apply(entity, data))
-          .then(() => applySafe(config.postLoad, entity))
           .then(() => config.nonPersistent || attach(this, entity))
+          .then(() => applySafe(config.postLoad, entity))
           .then(() => entity);
       });
   }
