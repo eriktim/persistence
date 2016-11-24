@@ -39,30 +39,24 @@ describe('@ManyToOne', () => {
   });
 
   it('initial value', () => {
-    return foo.bars.then(r => {
-      expect(r).toEqual(jasmine.any(Set));
-      expect(r.size).toBe(0);
-    });
+    expect(foo.bars).toEqual(jasmine.any(Set));
+    expect(foo.bars.size).toBe(0);
   });
 
   it('invalid reference', () => {
-    return foo.bars.then(r => {
-      expect(() => r.add(foo)).toThrowError('invalid reference object');
-    });
+    expect(() => foo.bars.add(foo)).toThrowError('invalid reference object');
   });
 
   it('valid references', () => {
     expect(data).toEqual({key: 123});
-    return foo.bars.then(r => {
-      r.add(bar1);
-      expect(data).toEqual({key: 123, bars: ['bar/1']});
-      r.add(bar2);
-      expect(data).toEqual({key: 123, bars: ['bar/1', 'bar/2']});
-      r.add(bar3);
-      expect(data).toEqual({key: 123, bars: ['bar/1', 'bar/2', 'bar/3']});
-      r.delete(bar2);
-      expect(data).toEqual({key: 123, bars: ['bar/1', 'bar/3']});
-      expect(Array.from(r)).toEqual([bar1, bar3]);
-    });
+    foo.bars.add(bar1);
+    expect(data).toEqual({key: 123, bars: ['bar/1']});
+    foo.bars.add(bar2);
+    expect(data).toEqual({key: 123, bars: ['bar/1', 'bar/2']});
+    foo.bars.add(bar3);
+    expect(data).toEqual({key: 123, bars: ['bar/1', 'bar/2', 'bar/3']});
+    foo.bars.delete(bar2);
+    expect(data).toEqual({key: 123, bars: ['bar/1', 'bar/3']});
+    return foo.bars.then(r => expect(r).toEqual([bar1, bar3]));
   });
 });

@@ -4,13 +4,14 @@ import {ENTITY_MANAGER, RELATIONS, VERSION} from './symbols';
 
 const configMap = new WeakMap();
 const referenceMap = new WeakMap();
+const promiseMap = new WeakMap();
 
 function getRelationMap(obj) {
   let entity = getEntity(obj);
   return entity ? entity[RELATIONS] : undefined;
 }
 
-export function setReferencesData(references, array) {
+export function loadReferencesData(references, array) {
   let config = configMap.get(references);
   config.silent = true;
   if (config.array) {
@@ -31,7 +32,8 @@ export function setReferencesData(references, array) {
       });
     }
   });
-  return Promise.all(promises).then(entities => {
+  let p = Promise.all(promises).then(entities => {
+    config.silent = false;
     if (!entityManager.contains(config.target)) {
       entities.forEach(entity => {
         if (entity && entityManager.contains(entity)) {
@@ -39,8 +41,9 @@ export function setReferencesData(references, array) {
         }
       });
     }
-    config.silent = false;
   });
+  promiseMap.set(references, p);
+  return p;
 }
 
 function versionUp(target) {
@@ -69,7 +72,7 @@ class References extends Set {
     if (uri) {
       setUri(uri);
     } else {
-      setUnresolvedRelation(entity, item, setUri);
+      setUnresolvedRelation(config.target, item, setUri);
     }
     getRelationMap(config.target).add(item);
     if (!config.silent) {
@@ -106,16 +109,22 @@ class References extends Set {
     }
     return deleted;
   }
+
+  // similar to Promise.all(...)
+  then(fn) {
+    return promiseMap.get(this).then(() => fn(Array.from(this)));
+  }
 }
 
 export class ReferencesFactory {
-  static request(Type, array, target) {
+  static create(Type, array, target) {
     let references = new References();
     configMap.set(references, {
       Type,
       silent: false,
       target
     });
-    return setReferencesData(references, array).then(() => references);
+    loadReferencesData(references, array);
+    return references;
   }
 }

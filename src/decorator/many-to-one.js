@@ -11,7 +11,6 @@ function getReferencesFactory(Type, getter, setter) {
       referencesMap.set(target, new Map());
     }
     const references = referencesMap.get(target);
-    let p = Promise.resolve();
     if (!references.has(propertyKey)) {
       let data = Reflect.apply(getter, target, []);
       if (data === undefined) {
@@ -21,11 +20,10 @@ function getReferencesFactory(Type, getter, setter) {
       if (!Array.isArray(data)) {
         throw new Error('references data is corrupt');
       }
-      p = ReferencesFactory.request(Type, data, target).then(setOfReferences => {
-        references.set(propertyKey, setOfReferences);
-      });
+      let setOfReferences = ReferencesFactory.create(Type, data, target);
+      references.set(propertyKey, setOfReferences);
     }
-    return p.then(() => references.get(propertyKey));
+    return references.get(propertyKey);
   };
 }
 
