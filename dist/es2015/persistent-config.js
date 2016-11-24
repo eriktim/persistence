@@ -36,6 +36,7 @@ function inheritConfig(config, Class) {
 export let PersistentConfig = class PersistentConfig {
   constructor() {
     this.idKey = undefined;
+    this.nonPersistent = false;
     this.path = undefined;
     this.postLoad = undefined;
     this.postPersist = undefined;

@@ -43,7 +43,6 @@ export function loadReferencesData(references, array) {
     }
   });
   promiseMap.set(references, p);
-  return p;
 }
 
 function versionUp(target) {

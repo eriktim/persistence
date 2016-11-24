@@ -41,6 +41,20 @@ define(['exports'], function (exports) {
   var defaultInstance = void 0;
   var propertyDecorator = void 0;
 
+  var defaultQueryEntityMapperFactory = function defaultQueryEntityMapperFactory(Entity) {
+    return function (values) {
+      var map = new Map();
+      (values || []).forEach(function (value) {
+        return map.set(value, Entity);
+      });
+      return map;
+    };
+  };
+
+  function identity(val) {
+    return val;
+  }
+
   var Config = function () {
     function Config() {
       _classCallCheck(this, Config);
@@ -52,15 +66,9 @@ define(['exports'], function (exports) {
         onNewObject: function onNewObject() {
           return undefined;
         },
-        queryEntityMapperFactory: function queryEntityMapperFactory(Entity) {
-          return function (values) {
-            var map = new Map();
-            (values || []).forEach(function (value) {
-              return map.set(value, Entity);
-            });
-            return map;
-          };
-        }
+        referenceToUri: identity,
+        queryEntityMapperFactory: defaultQueryEntityMapperFactory,
+        uriToReference: identity
       };
       configurations.set(this, config);
       if (!defaultInstance) {

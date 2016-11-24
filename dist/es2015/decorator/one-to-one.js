@@ -22,9 +22,11 @@ function getAndSetReferenceFactory(Type, getter, setter) {
     }
     const references = referencesMap.get(target);
     const entityManager = target[ENTITY_MANAGER];
+    const config = entityManager.config;
     return Promise.resolve().then(() => {
       if (!references.has(propertyKey)) {
-        let uri = Reflect.apply(getter, target, []);
+        let reference = Reflect.apply(getter, target, []);
+        let uri = config.referenceToUri(reference);
         let id = idFromUri(uri);
         if (id) {
           return entityManager.find(Type, id).then(entity => {
@@ -47,6 +49,8 @@ function getAndSetReferenceFactory(Type, getter, setter) {
       throw new TypeError('invalid reference object');
     }
     let entity = getEntity(target);
+    const entityManager = target[ENTITY_MANAGER];
+    const config = entityManager.config;
     if (!referencesMap.has(target)) {
       referencesMap.set(target, new Map());
     }
@@ -57,7 +61,10 @@ function getAndSetReferenceFactory(Type, getter, setter) {
       setUnresolvedRelation(entity, oldRelatedEntity, null);
     }
     getRelationMap(target).add(relatedEntity);
-    let setUri = uri => Reflect.apply(setter, target, [uri]);
+    let setUri = uri => {
+      let reference = config.uriToReference(uri);
+      Reflect.apply(setter, target, [reference]);
+    };
     let uri = getUri(relatedEntity);
     if (uri) {
       setUri(uri);

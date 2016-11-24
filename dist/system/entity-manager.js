@@ -60,7 +60,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
 
   function assertEntity(entityManager, entity) {
     if (!entityManager.contains(entity)) {
-      throw new TypeError('argument is not a valid entity');
+      throw new TypeError('argument is not a persistent entity');
     }
   }
 
@@ -250,7 +250,7 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
               }).then(function () {
                 return applySafe(config.postLoad, entity);
               }).then(function () {
-                return attach(_this, entity);
+                return config.nonPersistent || attach(_this, entity);
               }).then(function () {
                 return entity;
               });

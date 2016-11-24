@@ -52,6 +52,7 @@ var PersistentConfig = exports.PersistentConfig = function () {
     _classCallCheck(this, PersistentConfig);
 
     this.idKey = undefined;
+    this.nonPersistent = false;
     this.path = undefined;
     this.postLoad = undefined;
     this.postPersist = undefined;

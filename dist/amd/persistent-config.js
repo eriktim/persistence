@@ -73,6 +73,7 @@ define(['exports', './persistent-data', './util'], function (exports, _persisten
       _classCallCheck(this, PersistentConfig);
 
       this.idKey = undefined;
+      this.nonPersistent = false;
       this.path = undefined;
       this.postLoad = undefined;
       this.postPersist = undefined;

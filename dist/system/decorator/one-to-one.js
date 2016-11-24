@@ -20,9 +20,11 @@ System.register(['../persistent-config', '../entity-manager', '../persistent-obj
       }
       var references = referencesMap.get(target);
       var entityManager = target[ENTITY_MANAGER];
+      var config = entityManager.config;
       return Promise.resolve().then(function () {
         if (!references.has(propertyKey)) {
-          var uri = Reflect.apply(getter, target, []);
+          var reference = Reflect.apply(getter, target, []);
+          var uri = config.referenceToUri(reference);
           var id = idFromUri(uri);
           if (id) {
             return entityManager.find(Type, id).then(function (entity) {
@@ -47,6 +49,8 @@ System.register(['../persistent-config', '../entity-manager', '../persistent-obj
         throw new TypeError('invalid reference object');
       }
       var entity = getEntity(target);
+      var entityManager = target[ENTITY_MANAGER];
+      var config = entityManager.config;
       if (!referencesMap.has(target)) {
         referencesMap.set(target, new Map());
       }
@@ -58,7 +62,8 @@ System.register(['../persistent-config', '../entity-manager', '../persistent-obj
       }
       getRelationMap(target).add(relatedEntity);
       var setUri = function setUri(uri) {
-        return Reflect.apply(setter, target, [uri]);
+        var reference = config.uriToReference(uri);
+        Reflect.apply(setter, target, [reference]);
       };
       var uri = getUri(relatedEntity);
       if (uri) {

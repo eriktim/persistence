@@ -3,12 +3,16 @@
 System.register([], function (_export, _context) {
   "use strict";
 
-  var _typeof, _createClass, configurations, defaultInstance, propertyDecorator, Config;
+  var _typeof, _createClass, configurations, defaultInstance, propertyDecorator, defaultQueryEntityMapperFactory, Config;
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
+  }
+
+  function identity(val) {
+    return val;
   }
 
   function resetGlobalConfigForTesting() {
@@ -49,6 +53,16 @@ System.register([], function (_export, _context) {
       defaultInstance = void 0;
       propertyDecorator = void 0;
 
+      defaultQueryEntityMapperFactory = function defaultQueryEntityMapperFactory(Entity) {
+        return function (values) {
+          var map = new Map();
+          (values || []).forEach(function (value) {
+            return map.set(value, Entity);
+          });
+          return map;
+        };
+      };
+
       _export('Config', Config = function () {
         function Config() {
           _classCallCheck(this, Config);
@@ -60,15 +74,9 @@ System.register([], function (_export, _context) {
             onNewObject: function onNewObject() {
               return undefined;
             },
-            queryEntityMapperFactory: function queryEntityMapperFactory(Entity) {
-              return function (values) {
-                var map = new Map();
-                (values || []).forEach(function (value) {
-                  return map.set(value, Entity);
-                });
-                return map;
-              };
-            }
+            referenceToUri: identity,
+            queryEntityMapperFactory: defaultQueryEntityMapperFactory,
+            uriToReference: identity
           };
           configurations.set(this, config);
           if (!defaultInstance) {

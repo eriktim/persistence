@@ -4,16 +4,26 @@ System.register(['../persistent-config', '../persistent-object', '../util'], fun
   "use strict";
 
   var PersistentConfig, PersistentObject, Util;
-  function Entity(pathOrTarget) {
+  function Entity(optionsOrTarget) {
     var isDecorator = Util.isClassDecorator.apply(Util, arguments);
     var deco = function deco(Target) {
-      var defaultPath = Target.name.toLowerCase();
-      var path = isDecorator ? defaultPath : pathOrTarget || defaultPath;
+      var defaultPath = function defaultPath() {
+        return Target.name.toLowerCase();
+      };
+      var path = void 0;
+      var nonPersistent = false;
+      if (isDecorator) {
+        path = defaultPath();
+      } else {
+        var options = typeof optionsOrTarget === 'string' ? { path: optionsOrTarget } : optionsOrTarget || {};
+        path = options.path || defaultPath();
+        nonPersistent = options.nonPersistent || false;
+      }
       var config = PersistentConfig.get(Target);
-      config.configure({ path: path });
+      config.configure({ path: path, nonPersistent: nonPersistent });
       return PersistentObject.byDecoration(Target);
     };
-    return isDecorator ? deco(pathOrTarget) : deco;
+    return isDecorator ? deco(optionsOrTarget) : deco;
   }
 
   _export('Entity', Entity);

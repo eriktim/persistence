@@ -5,8 +5,8 @@ import {Util} from '../util';
 export function Entity(optionsOrTarget) {
   const isDecorator = Util.isClassDecorator(...arguments);
   const deco = function(Target) {
-    // configure the remote path for the Entity
-    const defaultPath = () => Target.name.toLowerCase(); // FIXME warn Function.name
+    // FIXME warn Function.name
+    const defaultPath = () => Target.name.toLowerCase();
     let path;
     let nonPersistent = false;
     if (isDecorator) {

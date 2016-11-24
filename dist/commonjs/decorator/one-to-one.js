@@ -36,9 +36,11 @@ function getAndSetReferenceFactory(Type, getter, setter) {
     }
     var references = referencesMap.get(target);
     var entityManager = target[_symbols.ENTITY_MANAGER];
+    var config = entityManager.config;
     return Promise.resolve().then(function () {
       if (!references.has(propertyKey)) {
-        var uri = Reflect.apply(getter, target, []);
+        var reference = Reflect.apply(getter, target, []);
+        var uri = config.referenceToUri(reference);
         var id = (0, _entityManager.idFromUri)(uri);
         if (id) {
           return entityManager.find(Type, id).then(function (entity) {
@@ -63,6 +65,8 @@ function getAndSetReferenceFactory(Type, getter, setter) {
       throw new TypeError('invalid reference object');
     }
     var entity = (0, _persistentObject.getEntity)(target);
+    var entityManager = target[_symbols.ENTITY_MANAGER];
+    var config = entityManager.config;
     if (!referencesMap.has(target)) {
       referencesMap.set(target, new Map());
     }
@@ -74,7 +78,8 @@ function getAndSetReferenceFactory(Type, getter, setter) {
     }
     getRelationMap(target).add(relatedEntity);
     var setUri = function setUri(uri) {
-      return Reflect.apply(setter, target, [uri]);
+      var reference = config.uriToReference(uri);
+      Reflect.apply(setter, target, [reference]);
     };
     var uri = (0, _entityManager.getUri)(relatedEntity);
     if (uri) {
