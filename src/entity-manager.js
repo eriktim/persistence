@@ -237,6 +237,9 @@ export class EntityManager {
                 let newId = index > 0 ? idPath.substring(0, index) : idPath;
                 PersistentData.setProperty(entity, config.idKey, newId);
                 PersistentData.setNotDirty(entity);
+                let cache = cacheMap.get(this);
+                let uri = getUri(entity);
+                cachedEntity(entity, cache, uri);
               }
             })
             .then(() => attach(this, entity))
