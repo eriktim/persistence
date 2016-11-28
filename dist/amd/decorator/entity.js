@@ -21,7 +21,11 @@ define(['exports', '../persistent-config', '../persistent-object', '../util'], f
         nonPersistent = options.nonPersistent || false;
       }
       var config = _persistentConfig.PersistentConfig.get(Target);
-      config.configure({ path: path, nonPersistent: nonPersistent });
+      config.configure({
+        path: path,
+        cacheOnly: false,
+        nonPersistent: nonPersistent
+      });
       return _persistentObject.PersistentObject.byDecoration(Target);
     };
     return isDecorator ? deco(optionsOrTarget) : deco;

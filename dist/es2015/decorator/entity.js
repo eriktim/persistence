@@ -16,7 +16,11 @@ export function Entity(optionsOrTarget) {
       nonPersistent = options.nonPersistent || false;
     }
     const config = PersistentConfig.get(Target);
-    config.configure({ path, nonPersistent });
+    config.configure({
+      path,
+      cacheOnly: false,
+      nonPersistent
+    });
     return PersistentObject.byDecoration(Target);
   };
   return isDecorator ? deco(optionsOrTarget) : deco;

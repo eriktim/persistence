@@ -109,7 +109,7 @@ var References = function (_extendableBuiltin2) {
   _createClass(References, [{
     key: 'add',
     value: function add(item) {
-      if (this.has(item)) {
+      if (!item || this.has(item)) {
         return this;
       }
       var config = configMap.get(this);

@@ -25,6 +25,8 @@ export interface IEntityOptions {
   nonPersistent?: boolean
 }
 
+export declare function CachedEntity(path?: string): ClassDecorator;
+
 export declare function Collectible(): ClassDecorator;
 
 export declare function Collection(Target: Class<ICollectible>): PropertyDecorator;

@@ -18,7 +18,7 @@ export function getEntity(obj) {
 
 export let PersistentObject = class PersistentObject {
   static byDecoration(Target, allowOwnConstructor = false) {
-    if (Target.isPersistent) {
+    if (Target.hasOwnProperty('isPersistent')) {
       return undefined;
     }
     Target.isPersistent = true;

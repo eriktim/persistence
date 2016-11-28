@@ -24,6 +24,7 @@ describe('PersistentConfig', () => {
   });
 
   let keys = [
+    'cacheOnly',
     'idKey',
     'path',
     'postLoad',
@@ -34,14 +35,10 @@ describe('PersistentConfig', () => {
     'preRemove'
   ];
   let factory = key => {
+    let index = 1;
     return () => {
-      let configure = () => PersistentConfig.get(foo).configure({[key]: 'foo'});
+      let configure = () => PersistentConfig.get(foo).configure({[key]: 'foo' + index++});
       configure();
-      if (/^(pre|post)/.test(key)) {
-        expect(configure).not.toThrow();
-      } else {
-        expect(configure).toThrow();
-      }
     };
   };
   for (let key of keys) {

@@ -207,11 +207,18 @@ var EntityManager = exports.EntityManager = function () {
         var path = getPath(Entity);
         var uri = path + '/' + id;
         var cache = cacheMap.get(_this2);
-        return cache.get(uri) || serverMap.get(_this2).get(uri).then(function (data) {
-          return _this2.create(Entity, data);
-        }).then(function (entity) {
-          return cachedEntity(entity, cache, uri);
-        });
+        var noCache = function noCache() {
+          var config = _persistentConfig.PersistentConfig.get(Entity);
+          if (config.cacheOnly) {
+            return Promise.resolve(null);
+          }
+          return serverMap.get(_this2).get(uri).then(function (data) {
+            return _this2.create(Entity, data);
+          }).then(function (entity) {
+            return cachedEntity(entity, cache, uri);
+          });
+        };
+        return cache.get(uri) || noCache();
       });
     }
   }, {
@@ -225,22 +232,29 @@ var EntityManager = exports.EntityManager = function () {
         var entityMapper = _this3.config.queryEntityMapperFactory(Entity);
         var path = getPath(Entity);
         var cache = cacheMap.get(_this3);
-        return serverMap.get(_this3).get(path, stringOrPropertyMap).then(entityMapper).then(function (map) {
-          if (!(map instanceof Map)) {
-            throw new Error('entityMapper must return a Map');
-          }
-          var entries = Array.from(map.entries());
-          return Promise.all(entries.map(function (entry) {
-            return _this3.create(entry[1], entry[0]);
-          }));
-        }).then(function (entities) {
-          return entities.map(function (entity) {
-            if (!hasId(entity)) {
-              return entity;
+        return serverMap.get(_this3).get(path, stringOrPropertyMap).then(entityMapper).then(function (batchesOrMap) {
+          var batches = batchesOrMap instanceof Map ? [batchesOrMap] : Array.from(batchesOrMap);
+          batches.forEach(function (map) {
+            if (!(map instanceof Map)) {
+              throw new Error('entityMapper must return a (collection of) Map(s)');
             }
-            var uri = getUri(entity);
-            return cache.get(uri) || cachedEntity(entity, cache, uri);
           });
+          return batches.reduce(function (promise, map) {
+            var entries = Array.from(map);
+            return promise.then(function (entities) {
+              return Promise.all(entries.map(function (entry) {
+                return _this3.create(entry[1], entry[0]).then(function (entity) {
+                  if (!hasId(entity)) {
+                    return entity;
+                  }
+                  var uri = getUri(entity);
+                  return cache.get(uri) || cachedEntity(entity, cache, uri);
+                });
+              })).then(function (newEntities) {
+                return entities.concat(newEntities);
+              });
+            });
+          }, Promise.resolve([]));
         });
       });
     }

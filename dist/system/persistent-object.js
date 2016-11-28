@@ -74,7 +74,7 @@ System.register(['./collection', './config', './entity-manager', './persistent-c
           value: function byDecoration(Target) {
             var allowOwnConstructor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-            if (Target.isPersistent) {
+            if (Target.hasOwnProperty('isPersistent')) {
               return undefined;
             }
             Target.isPersistent = true;

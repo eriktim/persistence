@@ -4,6 +4,7 @@
 // * version @ Embedded/Collection
 // * Symbol('originalData') a.k.a. reset
 
+export {CachedEntity} from './decorator/cached-entity';
 export {Collectible} from './decorator/collectible';
 export {Collection} from './decorator/collection';
 export {Embeddable} from './decorator/embeddable';

@@ -50,6 +50,7 @@ export class PersistentConfig {
     return configurations.has(Class);
   }
 
+  cacheOnly = false;
   idKey = undefined;
   nonPersistent = false;
   path = undefined;
@@ -66,20 +67,20 @@ export class PersistentConfig {
       if (!Reflect.has(this, key)) {
         throw new Error(`entity key '${key}' is not a valid configuration`);
       }
-      if (this[key]) {
-        if (/^(pre|post)/.test(key)) {
-          let cb1 = this[key];
-          let cb2 = config[key];
-          this[key] = function() {
-            return Promise.resolve()
-              .then(() => Reflect.apply(cb1, this, []))
-              .then(() => Reflect.apply(cb2, this, []));
-          };
-          return;
+      if (this[key] && /^(pre|post)/.test(key)) {
+        let cb1 = this[key];
+        let cb2 = config[key];
+        this[key] = function() {
+          return Promise.resolve()
+            .then(() => Reflect.apply(cb1, this, []))
+            .then(() => Reflect.apply(cb2, this, []));
+        };
+      } else {
+        if (key === 'propertyMap') {
+          throw new Error('cannot configure propertyMap directly');
         }
-        throw new Error(`entity key '${key}' cannot be re-configured`);
+        this[key] = config[key];
       }
-      this[key] = config[key];
     });
   }
 

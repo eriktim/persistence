@@ -107,6 +107,27 @@ describe('EntityManager', () => {
       });
   });
 
+  it('query using a batched custom mapper', () => {
+    @Entity class Foo {
+      @Property foo;
+    }
+    let config = Config.create({
+      queryEntityMapperFactory: () => () => [
+        new Map([[{foo: 'one'}, Foo]]),
+        new Map([[{foo: 'two'}, Foo]])
+      ]
+    });
+    entityManager = new EntityManager(config);
+    return entityManager.query(Foo)
+      .then(entities => {
+        expect(entities.length).toBe(2);
+        expect(entities[0]).toEqual(jasmine.any(Foo));
+        expect(entities[1]).toEqual(jasmine.any(Foo));
+        expect(entities[0].foo).toEqual('one');
+        expect(entities[1].foo).toEqual('two');
+      });
+  });
+
   it('persist', () => {
     return expectRejection(entityManager.persist(bar))
       .then(() => {

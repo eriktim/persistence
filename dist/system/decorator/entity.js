@@ -20,7 +20,11 @@ System.register(['../persistent-config', '../persistent-object', '../util'], fun
         nonPersistent = options.nonPersistent || false;
       }
       var config = PersistentConfig.get(Target);
-      config.configure({ path: path, nonPersistent: nonPersistent });
+      config.configure({
+        path: path,
+        cacheOnly: false,
+        nonPersistent: nonPersistent
+      });
       return PersistentObject.byDecoration(Target);
     };
     return isDecorator ? deco(optionsOrTarget) : deco;

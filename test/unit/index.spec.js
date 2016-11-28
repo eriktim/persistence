@@ -4,6 +4,7 @@ let index = {};
 Object.assign(index, allIndex);
 
 const exports = [
+  'CachedEntity',
   'Collectible',
   'Collection',
   'Config',

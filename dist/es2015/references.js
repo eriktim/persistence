@@ -78,7 +78,7 @@ function versionUp(target) {
 
 let References = class References extends _extendableBuiltin(Set) {
   add(item) {
-    if (this.has(item)) {
+    if (!item || this.has(item)) {
       return this;
     }
     let config = configMap.get(this);

@@ -158,10 +158,16 @@ export class EntityManager {
         let path = getPath(Entity);
         let uri = `${path}/${id}`;
         let cache = cacheMap.get(this);
-        return cache.get(uri) ||
-            serverMap.get(this).get(uri)
-              .then(data => this.create(Entity, data))
-              .then(entity => cachedEntity(entity, cache, uri));
+        let noCache = () => {
+          let config = PersistentConfig.get(Entity);
+          if (config.cacheOnly) {
+            return Promise.resolve(null);
+          }
+          return serverMap.get(this).get(uri)
+            .then(data => this.create(Entity, data))
+            .then(entity => cachedEntity(entity, cache, uri));
+        };
+        return cache.get(uri) || noCache();
       });
   }
 
@@ -173,21 +179,32 @@ export class EntityManager {
         let cache = cacheMap.get(this);
         return serverMap.get(this).get(path, stringOrPropertyMap)
           .then(entityMapper)
-          .then(map => {
-            if (!(map instanceof Map)) {
-              throw new Error('entityMapper must return a Map');
-            }
-            let entries = Array.from(map.entries());
-            return Promise.all(entries.map(entry =>
-                this.create(entry[1], entry[0])));
-          })
-          .then(entities => entities.map(entity => {
-            if (!hasId(entity)) {
-              return entity;
-            }
-            let uri = getUri(entity);
-            return cache.get(uri) || cachedEntity(entity, cache, uri);
-          }));
+          .then(batchesOrMap => {
+            let batches = batchesOrMap instanceof Map ?
+                [batchesOrMap] : Array.from(batchesOrMap);
+            batches.forEach(map => {
+              if (!(map instanceof Map)) {
+                throw new Error(
+                  'entityMapper must return a (collection of) Map(s)');
+              }
+            });
+            return batches.reduce((promise, map) => {
+              let entries = Array.from(map);
+              return promise.then(entities => {
+                return Promise.all(entries.map(entry => {
+                  return this.create(entry[1], entry[0])
+                    .then(entity => {
+                      if (!hasId(entity)) {
+                        return entity;
+                      }
+                      let uri = getUri(entity);
+                      return cache.get(uri) || cachedEntity(entity, cache, uri);
+                    });
+                }))
+                .then(newEntities => entities.concat(newEntities));
+              });
+            }, Promise.resolve([]));
+          });
       });
   }
 

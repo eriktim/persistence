@@ -4,6 +4,15 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _cachedEntity = require('./decorator/cached-entity');
+
+Object.defineProperty(exports, 'CachedEntity', {
+  enumerable: true,
+  get: function get() {
+    return _cachedEntity.CachedEntity;
+  }
+});
+
 var _collectible = require('./decorator/collectible');
 
 Object.defineProperty(exports, 'Collectible', {
