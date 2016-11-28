@@ -42,8 +42,8 @@ var Config = function () {
       onNewObject: function onNewObject() {
         return undefined;
       },
-      referenceToUri: identity,
       queryEntityMapperFactory: defaultQueryEntityMapperFactory,
+      referenceToUri: identity,
       uriToReference: identity
     };
     configurations.set(this, config);

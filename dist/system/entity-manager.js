@@ -248,9 +248,9 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
               return Promise.resolve().then(function () {
                 return PersistentObject.apply(entity, data);
               }).then(function () {
-                return applySafe(config.postLoad, entity);
-              }).then(function () {
                 return config.nonPersistent || attach(_this, entity);
+              }).then(function () {
+                return applySafe(config.postLoad, entity);
               }).then(function () {
                 return entity;
               });
@@ -382,6 +382,9 @@ System.register(['./config', './persistent-config', './persistent-data', './pers
                         var newId = index > 0 ? idPath.substring(0, index) : idPath;
                         PersistentData.setProperty(entity, config.idKey, newId);
                         PersistentData.setNotDirty(entity);
+                        var cache = cacheMap.get(_this4);
+                        var uri = getUri(entity);
+                        cachedEntity(entity, cache, uri);
                       }
                     }).then(function () {
                       return attach(_this4, entity);

@@ -18,7 +18,7 @@ define(['exports', '../persistent-config', '../util'], function (exports, _persi
         configurable: true,
         enumerable: false,
         value: undefined,
-        writable: false
+        writable: true
       });
     };
     return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;

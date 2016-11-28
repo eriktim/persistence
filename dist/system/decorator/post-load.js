@@ -17,7 +17,7 @@ System.register(['../persistent-config', '../util'], function (_export, _context
         configurable: true,
         enumerable: false,
         value: undefined,
-        writable: false
+        writable: true
       });
     };
     return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;

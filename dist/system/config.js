@@ -74,8 +74,8 @@ System.register([], function (_export, _context) {
             onNewObject: function onNewObject() {
               return undefined;
             },
-            referenceToUri: identity,
             queryEntityMapperFactory: defaultQueryEntityMapperFactory,
+            referenceToUri: identity,
             uriToReference: identity
           };
           configurations.set(this, config);

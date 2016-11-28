@@ -22,8 +22,8 @@ export let Config = class Config {
       extensible: false,
       fetchInterceptor: null,
       onNewObject: () => undefined,
-      referenceToUri: identity,
       queryEntityMapperFactory: defaultQueryEntityMapperFactory,
+      referenceToUri: identity,
       uriToReference: identity
     };
     configurations.set(this, config);

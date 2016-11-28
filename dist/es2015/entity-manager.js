@@ -129,7 +129,7 @@ export let EntityManager = class EntityManager {
         return null;
       }
       let entity = new Target(this);
-      return Promise.resolve().then(() => PersistentObject.apply(entity, data)).then(() => applySafe(config.postLoad, entity)).then(() => config.nonPersistent || attach(this, entity)).then(() => entity);
+      return Promise.resolve().then(() => PersistentObject.apply(entity, data)).then(() => config.nonPersistent || attach(this, entity)).then(() => applySafe(config.postLoad, entity)).then(() => entity);
     });
   }
 
@@ -206,6 +206,9 @@ export let EntityManager = class EntityManager {
             let newId = index > 0 ? idPath.substring(0, index) : idPath;
             PersistentData.setProperty(entity, config.idKey, newId);
             PersistentData.setNotDirty(entity);
+            let cache = cacheMap.get(this);
+            let uri = getUri(entity);
+            cachedEntity(entity, cache, uri);
           }
         }).then(() => attach(this, entity)).then(() => applySafe(config.postPersist, entity));
       }

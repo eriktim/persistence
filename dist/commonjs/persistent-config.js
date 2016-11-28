@@ -78,8 +78,13 @@ var PersistentConfig = exports.PersistentConfig = function () {
               var cb1 = _this[key];
               var cb2 = config[key];
               _this[key] = function () {
-                Reflect.apply(cb1, this, []);
-                Reflect.apply(cb2, this, []);
+                var _this2 = this;
+
+                return Promise.resolve().then(function () {
+                  return Reflect.apply(cb1, _this2, []);
+                }).then(function () {
+                  return Reflect.apply(cb2, _this2, []);
+                });
               };
               return {
                 v: void 0
@@ -160,13 +165,13 @@ var EntityPropertyConfig = function () {
   _createClass(EntityPropertyConfig, [{
     key: 'configure',
     value: function configure(config) {
-      var _this2 = this;
+      var _this3 = this;
 
       Object.keys(config).forEach(function (key) {
-        if (!Reflect.has(_this2, key)) {
+        if (!Reflect.has(_this3, key)) {
           throw new Error('unknown entity property configuration key: ' + key);
         }
-        _this2[key] = config[key];
+        _this3[key] = config[key];
       });
     }
   }]);

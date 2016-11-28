@@ -72,8 +72,7 @@ export let PersistentConfig = class PersistentConfig {
           let cb1 = this[key];
           let cb2 = config[key];
           this[key] = function () {
-            Reflect.apply(cb1, this, []);
-            Reflect.apply(cb2, this, []);
+            return Promise.resolve().then(() => Reflect.apply(cb1, this, [])).then(() => Reflect.apply(cb2, this, []));
           };
           return;
         }

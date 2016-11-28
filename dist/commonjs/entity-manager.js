@@ -181,9 +181,9 @@ var EntityManager = exports.EntityManager = function () {
         return Promise.resolve().then(function () {
           return _persistentObject.PersistentObject.apply(entity, data);
         }).then(function () {
-          return applySafe(config.postLoad, entity);
-        }).then(function () {
           return config.nonPersistent || attach(_this, entity);
+        }).then(function () {
+          return applySafe(config.postLoad, entity);
         }).then(function () {
           return entity;
         });
@@ -315,6 +315,9 @@ var EntityManager = exports.EntityManager = function () {
                   var newId = index > 0 ? idPath.substring(0, index) : idPath;
                   _persistentData.PersistentData.setProperty(entity, config.idKey, newId);
                   _persistentData.PersistentData.setNotDirty(entity);
+                  var cache = cacheMap.get(_this4);
+                  var uri = getUri(entity);
+                  cachedEntity(entity, cache, uri);
                 }
               }).then(function () {
                 return attach(_this4, entity);
