@@ -1,9 +1,8 @@
 import {PersistentConfig} from '../persistent-config';
 import {Util} from '../util';
 
-export function PreRemove(optTarget, optPropertyKey, optDescriptor) {
-  let isDecorator = Util.isPropertyDecorator(...arguments);
-  let deco = function(target, propertyKey, descriptor) {
+export function PreRemove() {
+  return function(target: any, propertyKey: PropertyKey, descriptor: PropertyDescriptor): PropertyDescriptor {
     let preRemove = target[propertyKey];
     if (typeof preRemove !== 'function') {
       throw new Error(`@PreRemove ${propertyKey} is not a function`);
@@ -17,5 +16,4 @@ export function PreRemove(optTarget, optPropertyKey, optDescriptor) {
       writable: true
     });
   };
-  return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

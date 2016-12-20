@@ -5,9 +5,7 @@ import {PersistentConfig, PropertyType} from './persistent-config';
 import {PersistentData, readValue} from './persistent-data';
 import {defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED}
     from './symbols';
-import {Util} from './util';
 
-const transientFieldsMap = new WeakMap();
 const propertyDecorator = Config.getPropertyDecorator();
 
 export function getEntity(obj) {
@@ -17,33 +15,44 @@ export function getEntity(obj) {
   return ENTITY_MANAGER in obj ? obj : null;
 }
 
+const arrayHandler = {
+  get: function(target, property) {
+    return target[property];
+  },
+  set: function(target, property, value) {
+    target[property] = value;
+    return true;
+  }
+};
+
+const objectHandler = {
+  get: function(target, property) {
+    const config = PersistentConfig.get(target.constructor);
+    const propConfig = config.getProperty(property);
+    if (propConfig) {
+      return Reflect.apply(propConfig.getter, target, []);
+    } else {
+      return target[property];
+    }
+  },
+  set: function(target, property, value) {
+    const config = PersistentConfig.get(target.constructor);
+    const propConfig = config.getProperty(property);
+    if (propConfig) {
+      Reflect.apply(propConfig.setter, target, [value]);
+    } else if (Reflect.has(target, property) || Object.isExtensible(target)) {
+      target[property] = value;
+    }
+    return true;
+  }
+};
+
 export class PersistentObject {
   static byDecoration(Target, allowOwnConstructor = false) {
     if (Target.hasOwnProperty('isPersistent')) {
       return undefined;
     }
     Target.isPersistent = true;
-
-    // decorate properties
-    const config = PersistentConfig.get(Target);
-    const transientFields = new Set();
-    for (let propertyKey in config.propertyMap) {
-      const propConfig = config.getProperty(propertyKey);
-      if (propConfig.type === PropertyType.TRANSIENT) {
-        transientFields.add(propertyKey);
-        continue;
-      }
-      let ownDescriptor = Object.getOwnPropertyDescriptor(
-          Target.prototype, propertyKey) || {};
-      let descriptor = Util.mergeDescriptors(ownDescriptor, {
-        get: propConfig.getter,
-        set: propConfig.setter
-      });
-      let finalDescriptor = propertyDecorator ? propertyDecorator(
-          Target.prototype, propertyKey, descriptor) : descriptor;
-      Reflect.defineProperty(Target.prototype, propertyKey, finalDescriptor);
-    }
-    transientFieldsMap.set(Target, transientFields);
 
     if (allowOwnConstructor) {
       return new Proxy(Target, {
@@ -86,15 +95,6 @@ export class PersistentObject {
     let isExtensible = obj === entity ?
         PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
     if (!isExtensible) {
-      let Target = Object.getPrototypeOf(obj).constructor;
-      let transientFields = transientFieldsMap.get(Target);
-      if (transientFields && transientFields.size) {
-        transientFields.forEach(propertyKey => {
-          if (!obj.hasOwnProperty(propertyKey)) {
-            obj[propertyKey] = undefined;
-          }
-        });
-      }
       Object.preventExtensions(obj);
     }
   }

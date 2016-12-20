@@ -1,6 +1,6 @@
 export class Util {
-  static mergeDescriptors(infDescriptor, supDescriptor) {
-    let descriptor = {
+  static mergeDescriptors(infDescriptor: PropertyDescriptor, supDescriptor: PropertyDescriptor): PropertyDescriptor {
+    let descriptor: PropertyDescriptor = {
       enumerable: 'enumerable' in infDescriptor ?
           infDescriptor.enumerable : true,
       configurable: 'configurable' in infDescriptor ?
@@ -43,35 +43,17 @@ export class Util {
     return target.constructor;
   }
 
-  static is(value) {
+  static is(value: any): boolean {
     return value !== undefined && value !== null;
   }
 
-  static isClass(value) {
-    return typeof value === 'function';
-  }
-
-  static isClassDecorator(Target) {
-    return Util.isClass(Target) && arguments.length === 1;
-  }
-
-  static isInt(value) {
+  static isInt(value: any): boolean {
     let num = Number.parseInt(value, 10);
     return String(num) === value;
   }
 
-  static isObject(value) {
+  static isObject(value: any): boolean {
     return typeof value === 'object' && value !== null &&
         !Array.isArray(value);
-  }
-
-  static isPropertyDecorator(target, propertyKey, descriptor) {
-    let genericCheck = Util.isObject(target) &&
-        typeof propertyKey === 'string' && propertyKey !== '';
-    switch (arguments.length) {
-    case 2: return genericCheck;
-    case 3: return genericCheck && Util.isObject(descriptor);
-    default: return false;
-    }
   }
 }
