@@ -1,8 +1,7 @@
 import {Config} from '../../src/config';
-import {EntityManager, getLocationSymbolForTesting, getServerForTesting}
+import {Metadata} from '../../src/metadata';
+import {EntityManager, getServerForTesting}
     from '../../src/entity-manager';
-
-const LOCATION = getLocationSymbolForTesting();
 
 export const URL = 'mock://no-url';
 
@@ -32,7 +31,7 @@ export function createEntityManagerStub(options = {}) {
       path,
       body: Object.assign({}, body)
     });
-    body[LOCATION] = path + (path.endsWith('/') ? '' : '/') + (body.id || '1');
+    Reflect.defineMetadata(Metadata.LOCATION, path + (path.endsWith('/') ? '' : '/') + (body.id || '1'), body);
     return Promise.resolve(body);
   };
   return entityManager;

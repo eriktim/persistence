@@ -87,16 +87,16 @@ export function OneToOne(Type: PClass): PropertyDecorator {
     throw new Error('@OneToOne requires a constructor argument');
   }
   return function(target: PObject, propertyKey: PropertyKey) {
-    let config = PersistentConfig.get(target).getProperty(propertyKey);
-    let [getReference, setReference] = getAndSetReferenceFactory(
-        Type, config.getter, config.setter);
-    config.configure({
-      getter: function() {
-        return getReference(this, propertyKey);
-      },
-      setter: function(val) {
-        setReference(this, propertyKey, val);
-      }
-    });
+    // let config = PersistentConfig.get(target).getProperty(propertyKey);
+    // let [getReference, setReference] = getAndSetReferenceFactory(
+    //     Type, config.getter, config.setter);
+    // config.configure({
+    //   getter: function() {
+    //     return getReference(this, propertyKey);
+    //   },
+    //   setter: function(val) {
+    //     setReference(this, propertyKey, val);
+    //   }
+    // });
   };
 }

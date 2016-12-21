@@ -24,26 +24,10 @@ export function Temporal(format: string = TemporalFormat.DEFAULT) {
     if (!formats.find(f => f === format)) {
       throw new Error(`invalid type for @Temporal() ${propertyKey}`);
     }
-    let config = PersistentConfig.get(target).getProperty(propertyKey);
-    let getter = config.getter;
-    let setter = config.setter;
+    let config = PersistentConfig.get(target);
     config.configure({
-      type: PropertyType.TEMPORAL,
-      getter: function() {
-        let value = Reflect.apply(getter, this, []);
-        let val = parse(value, format);
-        return val.isValid() ? val : undefined;
-      },
-      setter: function(value: moment.Moment) {
-        let val = value;
-        if (!moment.isMoment(val)) {
-          val = parse(value, format);
-          if (!val.isValid()) {
-            throw new Error(`invalid date: ${value}`);
-          }
-        }
-        return Reflect.apply(setter, this, [val.format(format)]);
-      }
+      idKey: propertyKey
     });
+    config.configureProperty(propertyKey, {type: PropertyType.TEMPORAL});
   };
 }

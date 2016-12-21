@@ -1,11 +1,11 @@
-import {CachedEntity} from '../../../src/decorator/cached-entity';
+import {FakeEntity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {Config} from '../../../src/config';
 import {createEntityManagerStub} from '../helper';
 
 Config.create();
 
-describe('@CachedEntity', () => {
+describe('@FakeEntity', () => {
   let entityManager;
 
   beforeEach(() => {
@@ -13,7 +13,7 @@ describe('@CachedEntity', () => {
   });
 
   it('@Entity', () => {
-    @CachedEntity class Foo {
+    @FakeEntity class Foo {
       @Id id;
     }
 
@@ -25,7 +25,7 @@ describe('@CachedEntity', () => {
   });
 
   it('@Entity()', () => {
-    @CachedEntity() class Foo {
+    @FakeEntity() class Foo {
       @Id id;
     }
 
@@ -37,7 +37,7 @@ describe('@CachedEntity', () => {
   });
 
   it('@Entity(path)', () => {
-    @CachedEntity('bar') class Foo {
+    @FakeEntity('bar') class Foo {
       @Id id;
     }
 

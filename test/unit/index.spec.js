@@ -4,7 +4,6 @@ let index = {};
 Object.assign(index, allIndex);
 
 const exports = [
-  'CachedEntity',
   'Collectible',
   'Collection',
   'Config',
@@ -12,14 +11,17 @@ const exports = [
   'Embedded',
   'Entity',
   'EntityManager',
+  'FakeEntity',
   'Id',
   'ManyToOne',
   'OneToOne',
   'PostLoad',
   'PostPersist',
   'PostRemove',
+  'PostUpdate',
   'PrePersist',
   'PreRemove',
+  'PreUpdate',
   'Property',
   'Temporal',
   'TemporalFormat',

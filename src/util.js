@@ -1,4 +1,22 @@
+import {PersistentConfig} from './persistent-config';
+
+function ucFirst(str: string): string {
+  return str.charAt(0).toLocaleUpperCase() + str.substr(1);
+}
+
 export class Util {
+  static createHookDecorator(hook: string): MethodDecorator {
+    return function(target: PObject, propertyKey: string, descriptor: PropertyDescriptor) {
+      let fn = descriptor.value;
+      if (typeof fn !== 'function') {
+        throw new Error(`@${ucFirst(hook)}() ${propertyKey} is not a function`);
+      }
+      let config = PersistentConfig.get(target);
+      config.configure({[hook]: fn});
+      Reflect.deleteProperty(target, propertyKey);
+    };
+  }
+
   static mergeDescriptors(infDescriptor: PropertyDescriptor,
                           supDescriptor: PropertyDescriptor): PropertyDescriptor {
     let descriptor: PropertyDescriptor = {

@@ -1,20 +1,15 @@
 import {Config} from './config';
+import {Metadata} from './metadata';
 import {PersistentConfig} from './persistent-config';
 import {PersistentData} from './persistent-data';
 import {PersistentObject} from './persistent-object';
 import {RELATIONS, REMOVED} from './symbols';
 import {Util} from './util';
 
-const LOCATION = Symbol('location');
-
 const serverMap = new WeakMap();
 const contextMap = new WeakMap();
 const cacheMap = new WeakMap();
 const unresolvedRelationsMap = new WeakMap();
-
-export function getLocationSymbolForTesting() {
-  return LOCATION;
-}
 
 export function getServerForTesting(entityManager) {
   return serverMap.get(entityManager);
@@ -242,7 +237,7 @@ export class EntityManager {
                 [noId ? path : `${path}/${id}`, data]))
             .then(raw => {
               if (noId) {
-                let location = raw[LOCATION];
+                let location = Reflect.getMetadata(Metadata.LOCATION, raw);
                 if (!location) {
                   throw new Error('REST server should return'
                       + ' the location of the new entity');
@@ -362,7 +357,7 @@ class Server {
               let location = response.headers.get('location');
               let promise = response.json();
               return location ? promise.then(obj => {
-                obj[LOCATION] = location;
+                Reflect.defineMetadata(Metadata.LOCATION, location, obj);
                 return obj;
               }) : promise;
             }

@@ -1,19 +1,29 @@
 import {PersistentConfig} from '../persistent-config';
 import {PersistentObject} from '../persistent-object';
 
-export function Entity(optionsOrTarget: string|IEntityOptions): ClassDecorator {
+export function Entity(path?: string): ClassDecorator {
   return function(Target: PClass) {
-    let options = typeof optionsOrTarget === 'string' ?
-        {path: optionsOrTarget} : optionsOrTarget || {};
-    // FIXME warn Function.name
-    let path = options.path || Target.name.toLowerCase();
-    let nonPersistent = options.nonPersistent || false;
+    if (!path) {
+      // FIXME warn Function.name
+      path = Target.name.toLowerCase();
+    }
+    const config = PersistentConfig.get(Target);
+    config.configure({path});
+    return PersistentObject.byDecoration(Target);
+  };
+}
+
+export function FakeEntity(path?: string): ClassDecorator {
+  return function(Target: PClass) {
+    if (!path) {
+      // FIXME warn Function.name
+      path = Target.name.toLowerCase();
+    }
     const config = PersistentConfig.get(Target);
     config.configure({
       path,
-      cacheOnly: false,
-      nonPersistent
+      cacheOnly: true,
+      nonPersistent: true
     });
-    return PersistentObject.byDecoration(Target);
   };
 }

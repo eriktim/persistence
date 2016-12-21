@@ -6,8 +6,6 @@
 <PROJECT_ROOT>/jspm_packages/.*
 <PROJECT_ROOT>/node_modules/.*
 <PROJECT_ROOT>/test/.*
-<PROJECT_ROOT>/src/entity-manager.js
-<PROJECT_ROOT>/src/persistent-data.js
 
 [libs]
 flowtypes.js

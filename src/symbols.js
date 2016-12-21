@@ -1,5 +1,3 @@
-import {Util} from './util';
-
 // TODO metadata
 export const ENTITY_MANAGER: string = '__entityManager__';
 export const PARENT: string = '__parent__';

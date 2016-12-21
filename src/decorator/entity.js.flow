@@ -1,4 +1,0 @@
-declare interface IEntityOptions {
-  path?: string,
-  nonPersistent?: boolean
-}

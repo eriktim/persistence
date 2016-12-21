@@ -1,7 +1,5 @@
 declare type PObject = Object;
 
-declare type PArray = Array;
-
 declare interface PClass<T = PObject> {
   new (): T;
   name: string;
