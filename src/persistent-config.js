@@ -37,6 +37,7 @@ export class PersistentConfig {
     if (!configurations.has(Class)) {
       let config = new PersistentConfig();
       inheritConfig(config, Class);
+      config.target = Class;
       configurations.set(Class, config);
     }
     return configurations.get(Class);
@@ -54,10 +55,13 @@ export class PersistentConfig {
   postLoad: Function = undefined;
   postPersist: Function = undefined;
   postRemove: Function = undefined;
+  postUpdate: Function = undefined;
   preLoad: Function = undefined;
   prePersist: Function = undefined;
   preRemove: Function = undefined;
+  preUpdate: Function = undefined;
   propertyMap: Object = {};
+  target: PClass;
 
   configure(config: IPersistentConfig): void {
     Object.keys(config).forEach(key => {
@@ -84,15 +88,20 @@ export class PersistentConfig {
   configureProperty(propertyKey: string, config: IPersistentPropertyConfig): void {
     if (!(propertyKey in this.propertyMap)) {
       this.propertyMap[propertyKey] = new PersistentPropertyConfig(propertyKey);
+      if (!Reflect.has(this.target.prototype, propertyKey)) {
+        Reflect.defineProperty(this.target.prototype, propertyKey, {
+          enumerable: true,
+          configurable: true,
+          writable: true,
+          value: '(persistent)'
+        });
+      }
     }
     this.propertyMap[propertyKey].configure(config);
   }
 
   getProperty(propertyKey: string): PersistentPropertyConfig {
-    if (!(propertyKey in this.propertyMap)) {
-      this.configureProperty(propertyKey, {});
-    }
-    return this.propertyMap[propertyKey];
+    return this.propertyMap[propertyKey] || null;
   }
 }
 

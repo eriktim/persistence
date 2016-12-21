@@ -119,23 +119,19 @@ export class EntityManager {
     return contextMap.get(this).has(entity);
   }
 
-  create(Target, data = {}) {
-    return Promise.resolve()
-      .then(() => {
-        let config = PersistentConfig.get(Target);
-        if (!config || !config.path) {
-          throw new Error('EntityManager expects a valid Entity');
-        }
-        if (!Util.isObject(data)) {
-          return null;
-        }
-        let entity = new Target(this);
-        return Promise.resolve()
-          .then(() => PersistentObject.apply(entity, data))
-          .then(() => config.nonPersistent || attach(this, entity))
-          .then(() => applySafe(config.postLoad, entity))
-          .then(() => entity);
-      });
+  async create(Target, data = {}) {
+    let config = PersistentConfig.get(Target);
+    if (!config || !config.path) {
+      throw new Error('EntityManager expects a valid Entity');
+    }
+    if (!Util.isObject(data)) {
+      return null;
+    }
+    let entity = new Target(this);
+    await PersistentObject.apply(entity, data);
+    config.nonPersistent || attach(this, entity);
+    await applySafe(config.postLoad, entity);
+    return entity;
   }
 
   detach(entity) {

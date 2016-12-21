@@ -1,4 +1,4 @@
-import {PersistentConfig} from './persistent-config';
+import {PersistentConfig, PropertyType} from './persistent-config';
 
 function ucFirst(str: string): string {
   return str.charAt(0).toLocaleUpperCase() + str.substr(1);
@@ -6,14 +6,19 @@ function ucFirst(str: string): string {
 
 export class Util {
   static createHookDecorator(hook: string): MethodDecorator {
-    return function(target: PObject, propertyKey: string, descriptor: PropertyDescriptor) {
+    return function(target: PObject, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
       let fn = descriptor.value;
       if (typeof fn !== 'function') {
         throw new Error(`@${ucFirst(hook)}() ${propertyKey} is not a function`);
       }
       let config = PersistentConfig.get(target);
       config.configure({[hook]: fn});
-      Reflect.deleteProperty(target, propertyKey);
+      return {
+        configurable: true,
+        enumerable: false,
+        writable: false,
+        value: '(hook)'
+      };
     };
   }
 

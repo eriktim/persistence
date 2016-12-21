@@ -6,9 +6,11 @@ declare interface IPersistentConfig {
   postLoad?: Function;
   postPersist?: Function;
   postRemove?: Function;
+  postUpdate: Function;
   preLoad?: Function;
   prePersist?: Function;
   preRemove?: Function;
+  preUpdate: Function;
 }
 
 declare interface IPersistentPropertyConfig {

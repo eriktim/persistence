@@ -1,7 +1,6 @@
-import {entityHandler} from './handler/entity';
+import {constructionHandler} from './handler/construction-handler';
 import {setCollectionData} from './collection';
 import {Config} from './config';
-import {PersistentConfig, PropertyType} from './persistent-config';
 import {PersistentData, readValue} from './persistent-data';
 import {defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED}
     from './symbols';
@@ -22,12 +21,12 @@ export class PersistentObject {
     }
     Target.isPersistent = true;
 
-    return new Proxy(Target, entityHandler);
+    return new Proxy(Target, constructionHandler);
   }
 
-  static apply(obj: PObject, data: Object, parent?: PObject) {
+  static async apply(obj: PObject, data: Object, parent?: PObject) {
     // defineSymbol(obj, PARENT, {value: parent, writable: false});
-    // PersistentObject.setData(obj, data);
+    PersistentObject.setData(obj, data);
     // let entity = getEntity(obj);
     // if (entity) {
     //   let entityManager = entity[ENTITY_MANAGER];
@@ -44,7 +43,7 @@ export class PersistentObject {
   }
 
   static setData(obj: PObject, data: Object) {
-    // PersistentData.inject(obj, data);
+    PersistentData.inject(obj, data);
     // let entityConfig = PersistentConfig.get(obj);
     // let propertyMap = entityConfig.propertyMap;
     // Object.keys(propertyMap)

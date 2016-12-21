@@ -25,7 +25,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/jasmine-promises/dist/jasmine-promises.js'
+      'node_modules/jasmine-promises/dist/jasmine-promises.js',
+      'node_modules/babel-polyfill/dist/polyfill.js'
     ],
 
     // list of files to exclude
