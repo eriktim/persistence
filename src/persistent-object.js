@@ -8,7 +8,7 @@ import {defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED}
 
 const propertyDecorator = Config.getPropertyDecorator();
 
-export function getEntity(obj) {
+export function getEntity(obj: PObject) {
   while (obj[PARENT]) {
     obj = obj[PARENT];
   }
@@ -26,29 +26,41 @@ const arrayHandler = {
 };
 
 const objectHandler = {
-  get: function(target, property) {
+  get: function (target, property) {
     const config = PersistentConfig.get(target.constructor);
     const propConfig = config.getProperty(property);
     if (propConfig) {
-      return Reflect.apply(propConfig.getter, target, []);
+      return PersistentData.getProperty(this, config.fullPath);
     } else {
       return target[property];
     }
   },
-  set: function(target, property, value) {
+  set: function (target, property, value) {
     const config = PersistentConfig.get(target.constructor);
     const propConfig = config.getProperty(property);
     if (propConfig) {
-      Reflect.apply(propConfig.setter, target, [value]);
-    } else if (Reflect.has(target, property) || Object.isExtensible(target)) {
+      if (propConfig.type === PropertyType.ID) {
+        throw new Error('cannot set server-generated id');
+      }
+      return PersistentData.setProperty(this, config.fullPath, value);
+    } else {
       target[property] = value;
     }
     return true;
   }
 };
 
+const collectionHandler = {
+  get: function(target, property) {
+    const config = PersistentConfig.get(target.constructor);
+    const propConfig = config.getProperty(property);
+  },
+  set: function(target, property, value) {
+  }
+};
+
 export class PersistentObject {
-  static byDecoration(Target, allowOwnConstructor = false) {
+  static byDecoration(Target: PClass, allowOwnConstructor: boolean = false): PClass {
     if (Target.hasOwnProperty('isPersistent')) {
       return undefined;
     }
@@ -81,7 +93,7 @@ export class PersistentObject {
     });
   }
 
-  static apply(obj, data, parent) {
+  static apply(obj: PObject, data: Object, parent?: PObject) {
     defineSymbol(obj, PARENT, {value: parent, writable: false});
     PersistentObject.setData(obj, data);
     let entity = getEntity(obj);
@@ -99,7 +111,7 @@ export class PersistentObject {
     }
   }
 
-  static setData(obj, data) {
+  static setData(obj: PObject, data: Object) {
     PersistentData.inject(obj, data);
     let entityConfig = PersistentConfig.get(obj);
     let propertyMap = entityConfig.propertyMap;

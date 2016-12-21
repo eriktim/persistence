@@ -1,13 +1,13 @@
 import {PersistentConfig} from '../persistent-config';
 
-export function PostRemove(): MethodDecorator {
+export function PreRemove(): MethodDecorator {
   return function(target: PObject, propertyKey: PropertyKey, descriptor: PropertyDescriptor) {
-    let postRemove = descriptor.value;
-    if (typeof postRemove !== 'function') {
-      throw new Error(`@PostRemove ${propertyKey} is not a function`);
+    let preRemove = descriptor.value;
+    if (typeof preRemove !== 'function') {
+      throw new Error(`@PreRemove ${propertyKey} is not a function`);
     }
     let config = PersistentConfig.get(target);
-    config.configure({postRemove});
+    config.configure({preRemove});
     Reflect.deleteProperty(target, propertyKey);
   };
 }

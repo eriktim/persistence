@@ -1,7 +1,6 @@
 import moment from 'moment';
 
 import {PersistentConfig, PropertyType} from '../persistent-config';
-import {Util} from '../util';
 
 export const TemporalFormat = Object.seal({
   DEFAULT: 'YYYY-MM-DDTHH:mm:ssZ',
@@ -20,16 +19,11 @@ function parse(value, format) {
   return parser(value, format);
 }
 
-export function Temporal(formatOrTarget, optPropertyKey, optDescriptor) {
-  let isDecorator = Util.isPropertyDecorator(...arguments);
-  let format = TemporalFormat.DEFAULT;
-  if (!isDecorator) {
-    format = formatOrTarget || format;
+export function Temporal(format: string = TemporalFormat.DEFAULT) {
+  return function(target: PObject, propertyKey: PropertyKey) {
     if (!formats.find(f => f === format)) {
-      throw new Error(`invalid type for @Temporal() ${optPropertyKey}`);
+      throw new Error(`invalid type for @Temporal() ${propertyKey}`);
     }
-  }
-  let deco = function(target, propertyKey) {
     let config = PersistentConfig.get(target).getProperty(propertyKey);
     let getter = config.getter;
     let setter = config.setter;
@@ -40,7 +34,7 @@ export function Temporal(formatOrTarget, optPropertyKey, optDescriptor) {
         let val = parse(value, format);
         return val.isValid() ? val : undefined;
       },
-      setter: function(value) {
+      setter: function(value: moment.Moment) {
         let val = value;
         if (!moment.isMoment(val)) {
           val = parse(value, format);
@@ -52,6 +46,4 @@ export function Temporal(formatOrTarget, optPropertyKey, optDescriptor) {
       }
     });
   };
-  return isDecorator ?
-      deco(formatOrTarget, optPropertyKey, optDescriptor) : deco;
 }

@@ -1,18 +1,15 @@
-import {PersistentData} from './persistent-data';
 import {Util} from './util';
 
-const configurations = new WeakMap();
-const propertyKeys = new Map();
+const configurations: WeakMap<PClass, PersistentConfig> = new WeakMap();
 
 export const PropertyType = Object.freeze({
   COLLECTION: 'collection',
   EMBEDDED: 'embedded',
   ID: 'id',
-  TEMPORAL: 'temporal',
-  TRANSIENT: 'transient'
+  TEMPORAL: 'temporal'
 });
 
-function inheritConfig(config, Class) {
+function inheritConfig(config: any, Class: PClass): boolean {
   // proxy-safe retrieval of super class
   let prototype = Class.prototype;
   let proto = prototype ? Reflect.getPrototypeOf(prototype) : null;
@@ -23,7 +20,7 @@ function inheritConfig(config, Class) {
   if (!configurations.has(SuperClass)) {
     return inheritConfig(config, SuperClass);
   }
-  let superConfig = configurations.get(SuperClass);
+  let superConfig: any = configurations.get(SuperClass);
   for (let key in superConfig) {
     if (key === 'propertyMap') {
       Object.assign(config[key], superConfig[key]);
@@ -35,7 +32,7 @@ function inheritConfig(config, Class) {
 }
 
 export class PersistentConfig {
-  static get(objectOrClass) {
+  static get(objectOrClass: PClass|PObject): PersistentConfig {
     let Class = Util.getClass(objectOrClass);
     if (!configurations.has(Class)) {
       let config = new PersistentConfig();
@@ -45,24 +42,24 @@ export class PersistentConfig {
     return configurations.get(Class);
   }
 
-  static has(objectOrClass) {
+  static has(objectOrClass: PClass|PObject): boolean {
     let Class = Util.getClass(objectOrClass);
     return configurations.has(Class);
   }
 
-  cacheOnly = false;
-  idKey = undefined;
-  nonPersistent = false;
-  path = undefined;
-  postLoad = undefined;
-  postPersist = undefined;
-  postRemove = undefined;
-  preLoad = undefined;
-  prePersist = undefined;
-  preRemove = undefined;
-  propertyMap = {};
+  cacheOnly: boolean = false;
+  idKey: string = undefined;
+  nonPersistent: boolean = false;
+  path: string = undefined;
+  postLoad: Function = undefined;
+  postPersist: Function = undefined;
+  postRemove: Function = undefined;
+  preLoad: Function = undefined;
+  prePersist: Function = undefined;
+  preRemove: Function = undefined;
+  propertyMap: Object = {};
 
-  configure(config) {
+  configure(config: IPersistentConfig): void {
     Object.keys(config).forEach(key => {
       if (!Reflect.has(this, key)) {
         throw new Error(`entity key '${key}' is not a valid configuration`);
@@ -84,14 +81,14 @@ export class PersistentConfig {
     });
   }
 
-  configureProperty(propertyKey, config) {
+  configureProperty(propertyKey: string, config: IPersistentPropertyConfig): void {
     if (!(propertyKey in this.propertyMap)) {
-      this.propertyMap[propertyKey] = new EntityPropertyConfig(propertyKey);
+      this.propertyMap[propertyKey] = new PersistentPropertyConfig(propertyKey);
     }
     this.propertyMap[propertyKey].configure(config);
   }
 
-  getProperty(propertyKey) {
+  getProperty(propertyKey: string): PersistentPropertyConfig {
     if (!(propertyKey in this.propertyMap)) {
       this.configureProperty(propertyKey, {});
     }
@@ -99,28 +96,20 @@ export class PersistentConfig {
   }
 }
 
-class EntityPropertyConfig {
-  getter = undefined;
-  path = undefined;
-  setter = undefined;
-  type = undefined;
+class PersistentPropertyConfig {
+  path: string = undefined;
+  propertyKey: string = undefined;
+  type: string = undefined;
 
-  get fullPath() {
-    return this.path || propertyKeys.get(this);
+  get fullPath(): string {
+    return this.path || this.propertyKey;
   }
 
-  constructor(propertyKey) {
-    const config = this;
-    propertyKeys.set(config, propertyKey);
-    this.getter = function() {
-      return PersistentData.getProperty(this, config.fullPath);
-    };
-    this.setter = function(value) {
-      return PersistentData.setProperty(this, config.fullPath, value);
-    };
+  constructor(propertyKey: string) {
+    this.propertyKey = propertyKey;
   }
 
-  configure(config) {
+  configure(config: IPersistentPropertyConfig): void {
     Object.keys(config).forEach(key => {
       if (!Reflect.has(this, key)) {
         throw new Error(`unknown entity property configuration key: ${key}`);

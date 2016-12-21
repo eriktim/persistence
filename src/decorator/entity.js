@@ -1,22 +1,13 @@
 import {PersistentConfig} from '../persistent-config';
 import {PersistentObject} from '../persistent-object';
-import {Util} from '../util';
 
-export function Entity(optionsOrTarget) {
-  const isDecorator = Util.isClassDecorator(...arguments);
-  const deco = function(Target) {
+export function Entity(optionsOrTarget: string|IEntityOptions): ClassDecorator {
+  return function(Target: PClass) {
+    let options = typeof optionsOrTarget === 'string' ?
+        {path: optionsOrTarget} : optionsOrTarget || {};
     // FIXME warn Function.name
-    const defaultPath = () => Target.name.toLowerCase();
-    let path;
-    let nonPersistent = false;
-    if (isDecorator) {
-      path = defaultPath();
-    } else {
-      let options = typeof optionsOrTarget === 'string' ?
-          {path: optionsOrTarget} : optionsOrTarget || {};
-      path = options.path || defaultPath();
-      nonPersistent = options.nonPersistent || false;
-    }
+    let path = options.path || Target.name.toLowerCase();
+    let nonPersistent = options.nonPersistent || false;
     const config = PersistentConfig.get(Target);
     config.configure({
       path,
@@ -25,5 +16,4 @@ export function Entity(optionsOrTarget) {
     });
     return PersistentObject.byDecoration(Target);
   };
-  return isDecorator ? deco(optionsOrTarget) : deco;
 }

@@ -11,13 +11,13 @@ const defaultQueryEntityMapperFactory = Entity => {
   };
 };
 
-function identity(val) {
+function identity<T>(val: T): T {
   return val;
 }
 
 export class Config {
   constructor() {
-    const config = {
+    const config: IConfig = {
       baseUrl: null,
       extensible: false,
       fetchInterceptor: null,
@@ -32,7 +32,7 @@ export class Config {
     }
   }
 
-  configure(userConfig = null) {
+  configure(userConfig: IConfig = null) {
     const config = configurations.get(this);
     for (let key in userConfig || {}) {
       if (!Reflect.has(config, key)) {
@@ -42,7 +42,7 @@ export class Config {
     }
   }
 
-  plugin(plugin) {
+  plugin(plugin: IPlugin) {
     if (typeof plugin !== 'object' ||
         plugin === null ||
         typeof plugin.getPlugin !== 'function') {
@@ -53,35 +53,35 @@ export class Config {
     return this;
   }
 
-  get current() {
+  get current(): IConfig {
     let config = {};
     Object.assign(config, configurations.get(this));
     return Object.freeze(config);
   }
 
-  static create(userConfig) {
+  static create(userConfig: IConfig): Config {
     const config = new Config();
     config.configure(userConfig);
     return config;
   }
 
-  static getPropertyDecorator() {
+  static getPropertyDecorator(): PropertyDecorator {
     return propertyDecorator;
   }
 
-  static setPropertyDecorator(decorator) {
+  static setPropertyDecorator(decorator: PropertyDecorator): void {
     if (typeof decorator !== 'function') {
       throw new TypeError('property decorator must be a function');
     }
     propertyDecorator = decorator;
   }
 
-  static getDefault() {
+  static getDefault(): Config {
     return defaultInstance;
   }
 }
 
-export function resetGlobalConfigForTesting() {
+export function resetGlobalConfigForTesting(): void {
   defaultInstance = undefined;
   propertyDecorator = undefined;
 }

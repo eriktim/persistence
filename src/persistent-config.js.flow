@@ -1,0 +1,17 @@
+declare interface IPersistentConfig {
+  cacheOnly?: boolean;
+  idKey?: string;
+  nonPersistent?: boolean;
+  path?: string;
+  postLoad?: Function;
+  postPersist?: Function;
+  postRemove?: Function;
+  preLoad?: Function;
+  prePersist?: Function;
+  preRemove?: Function;
+}
+
+declare interface IPersistentPropertyConfig {
+  path?: string;
+  type: string;
+}

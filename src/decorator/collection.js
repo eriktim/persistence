@@ -1,6 +1,5 @@
 import {CollectionFactory} from '../collection';
 import {PersistentConfig, PropertyType} from '../persistent-config';
-import {Util} from '../util';
 
 const collectionsMap = new WeakMap();
 
@@ -26,14 +25,11 @@ function getCollectionFactory(Type, getter, setter) {
   };
 }
 
-export function Collection(Type) {
-  if (Util.isPropertyDecorator(...arguments) || !Util.isClass(Type)) {
-    throw new Error('@Collection requires a type');
-  }
+export function Collection(Type: PClass): PropertyDecorator {
   if (!Type.isCollectible) {
     throw new TypeError('@Collection type must be @Collectible');
   }
-  return function(target, propertyKey, descriptor) {
+  return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target).getProperty(propertyKey);
     let getCollection = getCollectionFactory(
         Type, config.getter, config.setter);

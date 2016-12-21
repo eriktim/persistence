@@ -1,5 +1,6 @@
 export class Util {
-  static mergeDescriptors(infDescriptor: PropertyDescriptor, supDescriptor: PropertyDescriptor): PropertyDescriptor {
+  static mergeDescriptors(infDescriptor: PropertyDescriptor,
+                          supDescriptor: PropertyDescriptor): PropertyDescriptor {
     let descriptor: PropertyDescriptor = {
       enumerable: 'enumerable' in infDescriptor ?
           infDescriptor.enumerable : true,
@@ -32,8 +33,8 @@ export class Util {
     return descriptor;
   }
 
-  static getClass(target) {
-    if (Util.isClass(target)) {
+  static getClass(target: PObject|PClass) {
+    if (typeof target === 'function') {
       // taking the prototype filters out proxies
       return target.prototype.constructor;
     }

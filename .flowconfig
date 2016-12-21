@@ -1,0 +1,17 @@
+[ignore]
+<PROJECT_ROOT>/.idea/.*
+<PROJECT_ROOT>/build/.*
+<PROJECT_ROOT>/dist/.*
+<PROJECT_ROOT>/doc/.*
+<PROJECT_ROOT>/jspm_packages/.*
+<PROJECT_ROOT>/node_modules/.*
+<PROJECT_ROOT>/test/.*
+<PROJECT_ROOT>/src/entity-manager.js
+<PROJECT_ROOT>/src/persistent-data.js
+
+[libs]
+flowtypes.js
+
+[options]
+esproposal.class_instance_fields=enable
+unsafe.enable_getters_and_setters=true

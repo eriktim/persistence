@@ -1,0 +1,17 @@
+declare interface IConfig {
+  baseUrl: string;
+  extensible?: boolean;
+  fetchInterceptor?: Function;
+  onNewObject?: Function;
+  queryEntityMapperFactory?: Function;
+  referenceToUri?: (reference: any) => string,
+  uriToReference?: (uri: string) => any
+}
+
+declare interface IPluginData {
+  config: IConfig;
+}
+
+declare interface IPlugin {
+  getPlugin: () => IPluginData
+}

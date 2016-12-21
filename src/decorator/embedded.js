@@ -28,15 +28,11 @@ function getEmbeddedDataFactory(Type, getter, setter) {
   };
 }
 
-export function Embedded(Type) {
-  let isDecorator = Util.isPropertyDecorator(...arguments);
-  if (isDecorator) {
-    throw new Error('@Embedded requires a type');
-  }
+export function Embedded(Type: PClass): PropertyDecorator {
   if (!Type.isEmbeddable) {
     throw new TypeError('@Embedded type must be @Embeddable');
   }
-  return function(target, propertyKey) {
+  return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target).getProperty(propertyKey);
     let getEmbeddedData = getEmbeddedDataFactory(
         Type, config.getter, config.setter);

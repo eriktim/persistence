@@ -15,7 +15,7 @@ exports.base = function() {
     presets: [ 'es2015', 'stage-1'],
     plugins: [
       'transform-decorators-legacy',
-      ['babel-plugin-transform-builtin-extend', {globals: ['Set']}]
+      'transform-flow-strip-types'
     ]
   };
 }

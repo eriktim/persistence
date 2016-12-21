@@ -82,12 +82,11 @@ function getAndSetReferenceFactory(Type, getter, setter) {
   ];
 }
 
-export function OneToOne(Type, options = {}) {
-  if (Util.isPropertyDecorator(...arguments) ||
-      (Util.is(Type) && Type !== SELF_REF && !Util.isClass(Type))) {
+export function OneToOne(Type: PClass): PropertyDecorator {
+  if (Util.is(Type) && Type !== SELF_REF && !Type.isPersistent) {
     throw new Error('@OneToOne requires a constructor argument');
   }
-  return function(target, propertyKey) {
+  return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target).getProperty(propertyKey);
     let [getReference, setReference] = getAndSetReferenceFactory(
         Type, config.getter, config.setter);

@@ -1,14 +1,11 @@
 import {PersistentConfig, PropertyType} from '../persistent-config';
-import {Util} from '../util';
 
-export function Id(optTarget, optPropertyKey, optDescriptor) {
-  let isDecorator = Util.isPropertyDecorator(...arguments);
-  let deco = function(target, propertyKey) {
+export function Id(): PropertyDecorator {
+  return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target);
     config.configure({
       idKey: propertyKey
     });
     config.configureProperty(propertyKey, {type: PropertyType.ID});
   };
-  return isDecorator ? deco(optTarget, optPropertyKey, optDescriptor) : deco;
 }

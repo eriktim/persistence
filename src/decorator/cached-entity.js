@@ -1,12 +1,11 @@
 import {PersistentConfig} from '../persistent-config';
-import {Util} from '../util';
 
-export function CachedEntity(pathOrTarget) {
-  const isDecorator = Util.isClassDecorator(...arguments);
-  const deco = function(Target) {
-    // FIXME warn Function.name
-    const defaultPath = () => Target.name.toLowerCase();
-    let path = isDecorator ? defaultPath() : pathOrTarget || defaultPath();
+export function CachedEntity(path?: string): ClassDecorator {
+  return function(Target: PClass) {
+    if (!path) {
+      // FIXME warn Function.name
+      path = Target.name.toLowerCase();
+    }
     const config = PersistentConfig.get(Target);
     config.configure({
       path,
@@ -14,5 +13,4 @@ export function CachedEntity(pathOrTarget) {
       nonPersistent: true
     });
   };
-  return isDecorator ? deco(pathOrTarget) : deco;
 }
