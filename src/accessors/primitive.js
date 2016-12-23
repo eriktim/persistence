@@ -2,17 +2,17 @@ import {PersistentConfig} from '../persistent-config';
 import {PersistentData} from '../persistent-data';
 import {Util} from '../util';
 
-export class PropertyAccessors {
+export class PrimitiveAccessors {
   config: PersistentConfig;
   fullPath: string;
-  postUpdate: Function;
-  preUpdate: Function;
+  parameters: any[];
   propertyKey: PropertyKey;
 
-  constructor(config: PersistentConfig, propertyKey: PropertyKey) {
+  constructor(config: PersistentConfig, propertyKey: PropertyKey, parameters: any[]) {
     let propConfig = config.getProperty(propertyKey);
     this.fullPath = propConfig.fullPath;
     this.config = config;
+    this.parameters = parameters;
     this.propertyKey = propertyKey;
   }
 

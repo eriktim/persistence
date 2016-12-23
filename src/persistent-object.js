@@ -1,4 +1,4 @@
-import {constructionHandler} from './handler/construction-handler';
+import {constructionHandlerFactory} from './handler/construction-handler';
 import {setCollectionData} from './collection';
 import {Config} from './config';
 import {Metadata} from './metadata';
@@ -12,8 +12,15 @@ export function getEntity(obj: PObject) {
   return Reflect.hasMetadata(Metadata.ENTITY_MANAGER, obj) ? obj : null;
 }
 
+function clearMetadata(obj: PObject, propertiesKey: string, key: string) {
+  let properties = Reflect.getMetadata(propertiesKey, obj);
+  if (properties) {
+    properties.forEach(prop => Reflect.deleteMetadata(key, obj, prop));
+  }
+}
+
 export class PersistentObject {
-  static byDecoration(Target: PClass): PClass {
+  static byDecoration(Target: PClass, isEntity: boolean = false): PClass {
     if (Target.hasOwnProperty('isPersistent')) {
       return undefined;
     }
@@ -23,10 +30,10 @@ export class PersistentObject {
     for (let propertyKey of config.hookProperties) {
       Reflect.deleteProperty(Target.prototype, propertyKey);
     }
-    return new Proxy(Target, constructionHandler);
+    return new Proxy(Target, constructionHandlerFactory(isEntity));
   }
 
-  static async apply(obj: PObject, data: Object, parent?: PObject) {
+  static apply(obj: PObject, data: Object, parent?: PObject) {
     Reflect.defineMetadata(Metadata.PARENT, parent, this);
     PersistentObject.setData(obj, data);
     let entity = getEntity(obj);
@@ -46,18 +53,7 @@ export class PersistentObject {
 
   static setData(obj: PObject, data: Object) {
     PersistentData.inject(obj, data);
-    // let entityConfig = PersistentConfig.get(obj);
-    // let propertyMap = entityConfig.propertyMap;
-    // Object.keys(propertyMap)
-    //   .forEach(propertyKey => {
-    //     let config = propertyMap[propertyKey];
-    //     if (config.type === PropertyType.COLLECTION) {
-    //       let propData = readValue(data, config.fullPath);
-    //       propData && setCollectionData(obj[propertyKey], propData);
-    //     } else if (config.type === PropertyType.EMBEDDED) {
-    //       let propData = readValue(data, config.fullPath);
-    //       propData && PersistentObject.setData(obj[propertyKey], propData);
-    //     }
-    //   });
+    clearMetadata(obj, Metadata.EMBEDDED_PROPERTIES, Metadata.EMBEDDED);
+    clearMetadata(obj, Metadata.COLLECTION_PROPERTIES, Metadata.COLLECTION);
   }
 }

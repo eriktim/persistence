@@ -1,7 +1,6 @@
 import moment from 'moment';
 
-window.moment = moment;
-import {PropertyAccessors} from './property';
+import {PrimitiveAccessors} from './primitive';
 
 const FORMAT = 'YYYY-MM-DDTHH:mm:ssZ';
 const IS_TIMEZONE = /[+-][0-9]{2,2}:[0-9]{2,2}$/;
@@ -12,7 +11,7 @@ function parse(value, format) {
   return parser(value, format);
 }
 
-export class TemporalAccessors extends PropertyAccessors {
+export class TemporalAccessors extends PrimitiveAccessors {
   get(target: PObject): any {
     let value = super.get(target);
     let m = parse(value, FORMAT);

@@ -1,4 +1,4 @@
-import {PropertyAccessors} from './accessors/property';
+import {PrimitiveAccessors} from './accessors/primitive';
 
 import {Util} from './util';
 
@@ -44,7 +44,7 @@ export class PersistentConfig {
   }
 
   cacheOnly: boolean = false;
-  hookProperties: string[] = [];
+  hookProperties: PropertyKey[] = [];
   idKey: string = undefined;
   nonPersistent: boolean = false;
   path: string = undefined;
@@ -102,7 +102,7 @@ export class PersistentConfig {
 }
 
 class PersistentPropertyConfig {
-  accessors: PropertyAccessors;
+  accessors: PrimitiveAccessors;
   config: PersistentConfig;
   path: string;
   propertyKey: string;
@@ -126,10 +126,10 @@ class PersistentPropertyConfig {
       if (this.typeIsDefined) {
         throw new Error('already configured property type');
       }
-      this.accessors = new config.accessorsClass(this.config, this.propertyKey);
+      this.accessors = new config.accessorsClass(this.config, this.propertyKey, config.parameters);
       this.typeIsDefined = true;
     } else if (!this.typeIsDefined) {
-      this.accessors = new PropertyAccessors(this.config, this.propertyKey);
+      this.accessors = new PrimitiveAccessors(this.config, this.propertyKey);
     }
   }
 }

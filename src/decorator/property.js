@@ -1,4 +1,4 @@
-import {PropertyAccessors} from '../accessors/property';
+import {PrimitiveAccessors} from '../accessors/primitive';
 import {PersistentConfig} from '../persistent-config';
 
 export function Property(path?: string): PropertyDecorator {

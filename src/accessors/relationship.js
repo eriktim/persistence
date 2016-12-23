@@ -1,6 +1,6 @@
-import {PropertyAccessors} from './property';
+import {PrimitiveAccessors} from './primitive';
 
-export class RelationshipAccessors extends PropertyAccessors {
+export class RelationshipAccessors extends PrimitiveAccessors {
   async get(target: PObject): any {
     // if (Type === SELF_REF) {
     //   Type = Object.getPrototypeOf(target).constructor;

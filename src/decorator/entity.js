@@ -9,7 +9,7 @@ export function Entity(path?: string): ClassDecorator {
     }
     const config = PersistentConfig.get(Target);
     config.configure({path});
-    return PersistentObject.byDecoration(Target);
+    return PersistentObject.byDecoration(Target, true);
   };
 }
 

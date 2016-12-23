@@ -1,5 +1,5 @@
 import {IdAccessors} from '../accessors/id';
-import {PersistentConfig, PropertyType} from '../persistent-config';
+import {PersistentConfig} from '../persistent-config';
 
 export function Id(): PropertyDecorator {
   return function(target: PObject, propertyKey: PropertyKey) {
