@@ -1,3 +1,4 @@
+import {IdAccessors} from '../accessors/id';
 import {PersistentConfig, PropertyType} from '../persistent-config';
 
 export function Id(): PropertyDecorator {
@@ -6,6 +7,8 @@ export function Id(): PropertyDecorator {
     config.configure({
       idKey: propertyKey
     });
-    config.configureProperty(propertyKey, {type: PropertyType.ID});
+    config.configureProperty(propertyKey, {
+      accessorsClass: IdAccessors
+    });
   };
 }

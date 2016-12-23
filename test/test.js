@@ -22,15 +22,13 @@ class Foo {
   }
 
   @PreUpdate()
-  preUpdate(prop, newVal, oldVal) {
-    let ok = true; // change me if you want! :-)
-    console.log(`Pre Update${ok ? '' : ' rejects'}!`, ...arguments);
-    return ok;
+  preUpdate() {
+    console.log('Pre Update!');
   }
 
   @PostUpdate()
-  postUpdate(prop, newVal, oldVal) {
-    console.log('Post Update!', ...arguments);
+  postUpdate() {
+    console.log('Post Update!');
   }
 }
 

@@ -20,11 +20,8 @@ export class PersistentObject {
     Target.isPersistent = true;
 
     let config = PersistentConfig.get(Target);
-    for (let propertyKey in config.propertyMap) {
-      if (config.propertyMap[propertyKey].type === PropertyType.HOOK) {
-        Reflect.deleteProperty(Target.prototype, propertyKey);
-        Reflect.deleteProperty(config.propertyMap, propertyKey);
-      }
+    for (let propertyKey of config.hookProperties) {
+      Reflect.deleteProperty(Target.prototype, propertyKey);
     }
     return new Proxy(Target, constructionHandler);
   }

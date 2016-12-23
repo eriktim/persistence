@@ -1,14 +1,8 @@
+import {PropertyAccessors} from './accessors/property';
+
 import {Util} from './util';
 
 const configurations: WeakMap<PClass, PersistentConfig> = new WeakMap();
-
-export const PropertyType = Object.freeze({
-  COLLECTION: 'collection',
-  EMBEDDED: 'embedded',
-  HOOK: 'hook',
-  ID: 'id',
-  TEMPORAL: 'temporal'
-});
 
 function inheritConfig(config: any, Class: PClass): boolean {
   // proxy-safe retrieval of super class
@@ -50,6 +44,7 @@ export class PersistentConfig {
   }
 
   cacheOnly: boolean = false;
+  hookProperties: string[] = [];
   idKey: string = undefined;
   nonPersistent: boolean = false;
   path: string = undefined;
@@ -87,8 +82,8 @@ export class PersistentConfig {
   }
 
   configureProperty(propertyKey: string, config: IPersistentPropertyConfig): void {
-    if (!(propertyKey in this.propertyMap)) {
-      this.propertyMap[propertyKey] = new PersistentPropertyConfig(propertyKey);
+    if (!(Reflect.has(this.propertyMap, propertyKey))) {
+      this.propertyMap[propertyKey] = new PersistentPropertyConfig(this, propertyKey);
       if (!Reflect.has(this.target.prototype, propertyKey)) {
         Reflect.defineProperty(this.target.prototype, propertyKey, {
           enumerable: true,
@@ -107,24 +102,34 @@ export class PersistentConfig {
 }
 
 class PersistentPropertyConfig {
-  path: string = undefined;
-  propertyKey: string = undefined;
-  type: string = undefined;
+  accessors: PropertyAccessors;
+  config: PersistentConfig;
+  path: string;
+  propertyKey: string;
+  typeIsDefined: boolean;
 
   get fullPath(): string {
     return this.path || this.propertyKey;
   }
 
-  constructor(propertyKey: string) {
+  constructor(config: PersistentConfig, propertyKey: string) {
+    this.config = config;
     this.propertyKey = propertyKey;
+    this.typeIsDefined = false;
   }
 
   configure(config: IPersistentPropertyConfig): void {
-    Object.keys(config).forEach(key => {
-      if (!Reflect.has(this, key)) {
-        throw new Error(`unknown entity property configuration key: ${key}`);
+    if (config.path) {
+      this.path = config.path;
+    }
+    if (config.accessorsClass) {
+      if (this.typeIsDefined) {
+        throw new Error('already configured property type');
       }
-      this[key] = config[key];
-    });
+      this.accessors = new config.accessorsClass(this.config, this.propertyKey);
+      this.typeIsDefined = true;
+    } else if (!this.typeIsDefined) {
+      this.accessors = new PropertyAccessors(this.config, this.propertyKey);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import {PersistentConfig, PropertyType} from '../persistent-config';
+import {PersistentConfig} from '../persistent-config';
 
 export function Collection(Type: PClass): PropertyDecorator {
   if (!Type.isCollectible) {
@@ -6,6 +6,6 @@ export function Collection(Type: PClass): PropertyDecorator {
   }
   return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target);
-    config.configureProperty(propertyKey, {type: PropertyType.COLLECTION});
+    config.configureProperty(propertyKey, {});
   };
 }

@@ -1,4 +1,4 @@
-import {PersistentConfig, PropertyType} from '../persistent-config';
+import {PersistentConfig} from '../persistent-config';
 
 export function Embedded(Type: PClass): PropertyDecorator {
   if (!Type.isEmbeddable) {
@@ -6,6 +6,6 @@ export function Embedded(Type: PClass): PropertyDecorator {
   }
   return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target);
-    config.configureProperty(propertyKey, {type: PropertyType.EMBEDDED});
+    config.configureProperty(propertyKey, {});
   };
 }

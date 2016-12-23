@@ -22,8 +22,8 @@ export class Config {
       fetchInterceptor: null,
       onNewObject: () => undefined,
       queryEntityMapperFactory: defaultQueryEntityMapperFactory,
-      referenceToUri: identity,
-      uriToReference: identity
+      unwrapUri: identity,
+      wrapUri: identity
     };
     configurations.set(this, config);
     if (!defaultInstance) {

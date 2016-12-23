@@ -1,10 +1,14 @@
-import {PersistentConfig, PropertyType} from './persistent-config';
+import {PersistentConfig} from './persistent-config';
 
 function ucFirst(str: string): string {
   return str.charAt(0).toLocaleUpperCase() + str.substr(1);
 }
 
 export class Util {
+  static applySafe(fn, thisObj, args = []) {
+    return fn ? Reflect.apply(fn, thisObj, args) : undefined;
+  }
+
   static createHookDecorator(hook: string): MethodDecorator {
     return function(target: PObject, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
       let fn = descriptor.value;
@@ -13,7 +17,7 @@ export class Util {
       }
       let config = PersistentConfig.get(target);
       config.configure({[hook]: fn});
-      config.configureProperty(propertyKey, {type: PropertyType.HOOK});
+      config.hookProperties.push(propertyKey);
       return {
         configurable: true,
         enumerable: false,

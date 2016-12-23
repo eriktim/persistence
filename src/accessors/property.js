@@ -1,28 +1,33 @@
 import {PersistentConfig} from '../persistent-config';
 import {PersistentData} from '../persistent-data';
+import {Util} from '../util';
 
-export function getProperty(target: PObject, propertyKey: PropertyKey): any {
-  let config = PersistentConfig.get(target.constructor);
-  let propConfig = config.getProperty(propertyKey);
-  return PersistentData.getProperty(target, propConfig.fullPath);
-}
+export class PropertyAccessors {
+  config: PersistentConfig;
+  fullPath: string;
+  postUpdate: Function;
+  preUpdate: Function;
+  propertyKey: PropertyKey;
 
-export async function setProperty(target: PObject, propertyKey: PropertyKey, value: any): boolean {
-  let config = PersistentConfig.get(target.constructor);
-  let propConfig = config.getProperty(propertyKey);
-  let oldValue = PersistentData.getProperty(target, propConfig.fullPath);
-  if (oldValue !== value) {
-    if (await runUpdateHook(config.preUpdate, value, oldValue)) {
-      PersistentData.setProperty(target, propConfig.fullPath, value);
-      await runUpdateHook(config.postUpdate, value, oldValue);
+  constructor(config: PersistentConfig, propertyKey: PropertyKey) {
+    let propConfig = config.getProperty(propertyKey);
+    this.fullPath = propConfig.fullPath;
+    this.config = config;
+    this.propertyKey = propertyKey;
+  }
+
+  get(target: PObject): any {
+    return PersistentData.getProperty(target, this.fullPath);
+  }
+
+  async set(target: PObject, value: any): boolean {
+    let oldValue = PersistentData.getProperty(target, this.fullPath);
+    let update = oldValue !== value;
+    if (update) {
+      await Util.applySafe(this.config.preUpdate, target);
+      PersistentData.setProperty(target, this.fullPath, value);
+      await Util.applySafe(this.config.postUpdate, target);
     }
+    return update;
   }
-}
-
-async function runUpdateHook(fn: Function, propertyKey: PropertyKey, newValue: any, oldValue: any): boolean {
-  let result = true;
-  if (fn) {
-    result = await !!Reflect.apply(fn, this, [propertyKey, newValue, oldValue]);
-  }
-  return result;
 }

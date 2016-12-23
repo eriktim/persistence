@@ -9,6 +9,6 @@ export function ManyToOne(Type: PClass): PropertyDecorator {
   }
   return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target);
-//    config.configureProperty(propertyKey, {type: PropertyType.MANY_TO_ONE});
+//    config.configureProperty(propertyKey, {});
   };
 }

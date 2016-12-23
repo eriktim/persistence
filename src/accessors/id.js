@@ -1,9 +1,7 @@
-import {getProperty} from './property';
+import {PropertyAccessors} from './property';
 
-export function getId(target: PObject, propertyKey: PropertyKey): any {
-  return getProperty(target, config, propertyKey);
-}
-
-export async function setId(target: PObject, propertyKey: PropertyKey, value: any): boolean {
-  throw new Error('cannot set server-generated id');
+export class IdAccessors extends PropertyAccessors {
+  set(target: PObject, value: any) {
+    throw new Error('cannot set server-generated id');
+  }
 }
