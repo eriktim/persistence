@@ -4,6 +4,7 @@ import {Property} from '../src/decorator/property';
 import {PostLoad} from '../src/decorator/post-load';
 import {PostUpdate} from '../src/decorator/post-update';
 import {PreUpdate} from '../src/decorator/pre-update';
+import {Temporal} from '../src/decorator/temporal';
 import {Config} from '../src/config';
 import {EntityManager} from '../src/entity-manager';
 
@@ -12,6 +13,8 @@ class Foo {
   @Id() id;
   @Property() bar;
   @Property('some.nested.value') baz;
+
+  @Temporal() time;
 
   @PostLoad()
   postLoad() {

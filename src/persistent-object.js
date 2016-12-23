@@ -4,16 +4,12 @@ import {Config} from './config';
 import {Metadata} from './metadata';
 import {PersistentConfig, PropertyType} from './persistent-config';
 import {PersistentData, readValue} from './persistent-data';
-import {defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED}
-    from './symbols';
-
-const propertyDecorator = Config.getPropertyDecorator();
 
 export function getEntity(obj: PObject) {
-  while (obj[PARENT]) {
-    obj = obj[PARENT];
+  while (Reflect.hasMetadata(Metadata.PARENT, obj)) {
+    obj = Reflect.getMetadata(Metadata.PARENT, obj);
   }
-  return ENTITY_MANAGER in obj ? obj : null;
+  return Reflect.hasMetadata(Metadata.ENTITY_MANAGER, obj) ? obj : null;
 }
 
 export class PersistentObject {
@@ -27,6 +23,7 @@ export class PersistentObject {
     for (let propertyKey in config.propertyMap) {
       if (config.propertyMap[propertyKey].type === PropertyType.HOOK) {
         Reflect.deleteProperty(Target.prototype, propertyKey);
+        Reflect.deleteProperty(config.propertyMap, propertyKey);
       }
     }
     return new Proxy(Target, constructionHandler);

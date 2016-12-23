@@ -1,42 +1,42 @@
+import {getId, setId} from '../accessors/id';
+import {getProperty, setProperty} from '../accessors/property';
+import {Metadata} from '../metadata';
 import {PersistentConfig, PropertyType} from '../persistent-config';
-import {PersistentData} from '../persistent-data';
+import {getEntity} from '../persistent-object';
 
 export const objectHandler = {
-  get: function(target, property, receiver) {
+  get: function(target, propertyKey, receiver) {
+console.log(`get ${propertyKey}`);
     const config = PersistentConfig.get(target.constructor);
-    const propConfig = config.getProperty(property);
+    const propConfig = config.getProperty(propertyKey);
     if (propConfig) {
-      return PersistentData.getProperty(receiver, propConfig.fullPath);
+      switch (propConfig.type) {
+        case PropertyType.ID:
+          return getId(receiver, propertyKey);
+        case PropertyType.PROPERTY:
+          return getProperty(receiver, propertyKey);
+      }
     } else {
-      return target[property];
+      return target[propertyKey];
     }
   },
-  set: async function(target, property, value, receiver) {
-    // TODO if !destroyed! && REUSE
+  set: async function(target, propertyKey, value, receiver) {
+    let entity = getEntity(target);
+    let isRemoved = entity ? Reflect.getMetadata(Metadata.ENTITY_IS_REMOVED, entity) : false;
+    if (isRemoved) {
+      throw new Error('cannot set value of removed entity');
+    }
     const config = PersistentConfig.get(target.constructor);
-    const propConfig = config.getProperty(property);
+    const propConfig = config.getProperty(propertyKey);
     if (propConfig) {
-      if (propConfig.type === PropertyType.ID) {
-        throw new Error('cannot set server-generated id');
-      }
-      // REUSE pre/postUpdate TODO
-      let oldValue = PersistentData.getProperty(receiver, propConfig.fullPath);
-      if (oldValue !== value) {
-        let preUpdate = config.preUpdate;
-        if (preUpdate) {
-          let result = await Reflect.apply(preUpdate, this, [property, value, oldValue]);
-          if (result !== true) {
-            return true;
-          }
-        }
-        PersistentData.setProperty(receiver, propConfig.fullPath, value);
-        let postUpdate = config.postUpdate;
-        if (postUpdate) {
-          await Reflect.apply(postUpdate, this, [property, value, oldValue]);
-        }
+      switch (propConfig.type) {
+        case PropertyType.ID:
+          return setId(receiver, propertyKey, value);
+        case PropertyType.PROPERTY:
+          return setProperty(receiver, propertyKey, value);
       }
     } else {
-      target[property] = value;
+      target[propertyKey] = value;
     }
     return true;
   }

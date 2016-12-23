@@ -61,7 +61,7 @@ export class PersistentConfig {
   prePersist: Function = undefined;
   preRemove: Function = undefined;
   preUpdate: Function = undefined;
-  propertyMap: Object = {};
+  propertyMap: Object = Object.create(null);
   target: PClass;
 
   configure(config: IPersistentConfig): void {
