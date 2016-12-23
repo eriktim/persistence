@@ -1,6 +1,8 @@
 import {constructionHandler} from './handler/construction-handler';
 import {setCollectionData} from './collection';
 import {Config} from './config';
+import {Metadata} from './metadata';
+import {PersistentConfig, PropertyType} from './persistent-config';
 import {PersistentData, readValue} from './persistent-data';
 import {defineSymbol, ENTITY_MANAGER, PARENT, RELATIONS, REMOVED}
     from './symbols';
@@ -21,25 +23,31 @@ export class PersistentObject {
     }
     Target.isPersistent = true;
 
+    let config = PersistentConfig.get(Target);
+    for (let propertyKey in config.propertyMap) {
+      if (config.propertyMap[propertyKey].type === PropertyType.HOOK) {
+        Reflect.deleteProperty(Target.prototype, propertyKey);
+      }
+    }
     return new Proxy(Target, constructionHandler);
   }
 
   static async apply(obj: PObject, data: Object, parent?: PObject) {
-    // defineSymbol(obj, PARENT, {value: parent, writable: false});
+    Reflect.defineMetadata(Metadata.PARENT, parent, this);
     PersistentObject.setData(obj, data);
-    // let entity = getEntity(obj);
-    // if (entity) {
-    //   let entityManager = entity[ENTITY_MANAGER];
-    //   let onNewObject = entityManager.config.onNewObject;
-    //   if (typeof onNewObject === 'function') {
-    //     Reflect.apply(onNewObject, null, [obj, entity]);
-    //   }
-    // }
-    // let isExtensible = obj === entity ?
-    //     PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
-    // if (!isExtensible) {
-    //   Object.preventExtensions(obj);
-    // }
+    let entity = getEntity(obj);
+    if (entity) {
+      let entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, entity);
+      let onNewObject = entityManager.config.onNewObject;
+      if (typeof onNewObject === 'function') {
+        Reflect.apply(onNewObject, null, [obj, entity]);
+      }
+    }
+    let isExtensible = obj === entity ?
+        PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
+    if (!isExtensible) {
+      Object.preventExtensions(obj);
+    }
   }
 
   static setData(obj: PObject, data: Object) {

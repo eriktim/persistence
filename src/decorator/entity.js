@@ -1,4 +1,4 @@
-import {PersistentConfig} from '../persistent-config';
+import {PersistentConfig, PropertyType} from '../persistent-config';
 import {PersistentObject} from '../persistent-object';
 
 export function Entity(path?: string): ClassDecorator {

@@ -5,6 +5,7 @@ const configurations: WeakMap<PClass, PersistentConfig> = new WeakMap();
 export const PropertyType = Object.freeze({
   COLLECTION: 'collection',
   EMBEDDED: 'embedded',
+  HOOK: 'hook',
   ID: 'id',
   TEMPORAL: 'temporal'
 });

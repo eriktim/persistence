@@ -30,7 +30,6 @@ export const objectHandler = {
           }
         }
         PersistentData.setProperty(receiver, propConfig.fullPath, value);
-        target[property] = value; // for debugging
         let postUpdate = config.postUpdate;
         if (postUpdate) {
           await Reflect.apply(postUpdate, this, [property, value, oldValue]);

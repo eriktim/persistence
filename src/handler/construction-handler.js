@@ -1,4 +1,5 @@
 import {EntityManager} from '../entity-manager';
+import {Metadata} from '../metadata';
 
 import {objectHandler} from './object-handler';
 
@@ -8,10 +9,9 @@ export const constructionHandler: ProxyHandler = {
       if (!(entityManager instanceof EntityManager)) {
         throw new Error('Use EntityManager#create to create new entities');
       }
-      // defineSymbol(this, ENTITY_MANAGER,
-      //   {value: entityManager, writable: false});
-      // defineSymbol(this, RELATIONS, {value: new Set(), writable: false});
-      // defineSymbol(this, REMOVED, false);
+      Reflect.defineMetadata(Metadata.ENTITY_MANAGER, entityManager, this);
+      Reflect.defineMetadata(Metadata.ENTITY_RELATIONS, new Set(), this);
+      Reflect.defineMetadata(Metadata.ENTITY_IS_REMOVED, false, this);
     }, argumentsList, Target);
     return new Proxy(obj, objectHandler);
   }
