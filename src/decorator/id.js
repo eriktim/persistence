@@ -1,4 +1,5 @@
-import {PersistentConfig, PropertyType} from '../persistent-config';
+import {IdAccessors} from '../accessors/id';
+import {PersistentConfig} from '../persistent-config';
 
 export function Id(): PropertyDecorator {
   return function(target: PObject, propertyKey: PropertyKey) {
@@ -6,6 +7,8 @@ export function Id(): PropertyDecorator {
     config.configure({
       idKey: propertyKey
     });
-    config.configureProperty(propertyKey, {type: PropertyType.ID});
+    config.configureProperty(propertyKey, {
+      accessorsClass: IdAccessors
+    });
   };
 }

@@ -1,4 +1,4 @@
-import {PersistentConfig} from '../persistent-config';
+import {PersistentConfig, PropertyType} from '../persistent-config';
 import {PersistentObject} from '../persistent-object';
 
 export function Entity(path?: string): ClassDecorator {
@@ -9,7 +9,7 @@ export function Entity(path?: string): ClassDecorator {
     }
     const config = PersistentConfig.get(Target);
     config.configure({path});
-    return PersistentObject.byDecoration(Target);
+    return PersistentObject.byDecoration(Target, true);
   };
 }
 

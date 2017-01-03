@@ -1,7 +1,6 @@
 const configurations = new WeakMap();
 
 let defaultInstance;
-let propertyDecorator;
 
 const defaultQueryEntityMapperFactory = Entity => {
   return function(values) {
@@ -23,8 +22,8 @@ export class Config {
       fetchInterceptor: null,
       onNewObject: () => undefined,
       queryEntityMapperFactory: defaultQueryEntityMapperFactory,
-      referenceToUri: identity,
-      uriToReference: identity
+      unwrapUri: identity,
+      wrapUri: identity
     };
     configurations.set(this, config);
     if (!defaultInstance) {
@@ -63,17 +62,6 @@ export class Config {
     const config = new Config();
     config.configure(userConfig);
     return config;
-  }
-
-  static getPropertyDecorator(): PropertyDecorator {
-    return propertyDecorator;
-  }
-
-  static setPropertyDecorator(decorator: PropertyDecorator): void {
-    if (typeof decorator !== 'function') {
-      throw new TypeError('property decorator must be a function');
-    }
-    propertyDecorator = decorator;
   }
 
   static getDefault(): Config {

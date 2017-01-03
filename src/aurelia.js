@@ -5,7 +5,7 @@ import {VERSION, defineSymbol} from './symbols';
 
 export * from './index';
 
-Config.setPropertyDecorator(computedFrom(VERSION));
+Config.setPropertyDecorator(computedFrom(VERSION)); // FIXME, both version and setPropertyDecorator are deprecated
 
 const baseConfig = {
   extensible: false,

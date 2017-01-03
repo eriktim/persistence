@@ -4,8 +4,8 @@ declare interface IConfig {
   fetchInterceptor?: Function;
   onNewObject?: Function;
   queryEntityMapperFactory?: Function;
-  referenceToUri?: (reference: any) => string,
-  uriToReference?: (uri: string) => any
+  unwrapUri?: (wrappedUri: any) => string,
+  wrapUri?: (uri: string) => any
 }
 
 declare interface IPluginData {

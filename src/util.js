@@ -5,6 +5,10 @@ function ucFirst(str: string): string {
 }
 
 export class Util {
+  static applySafe(fn, thisObj, args = []) {
+    return fn ? Reflect.apply(fn, thisObj, args) : undefined;
+  }
+
   static createHookDecorator(hook: string): MethodDecorator {
     return function(target: PObject, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
       let fn = descriptor.value;
@@ -13,6 +17,7 @@ export class Util {
       }
       let config = PersistentConfig.get(target);
       config.configure({[hook]: fn});
+      config.hookProperties.push(propertyKey);
       return {
         configurable: true,
         enumerable: false,

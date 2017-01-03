@@ -1,13 +1,8 @@
+import {PrimitiveAccessors} from './accessors/primitive';
+
 import {Util} from './util';
 
 const configurations: WeakMap<PClass, PersistentConfig> = new WeakMap();
-
-export const PropertyType = Object.freeze({
-  COLLECTION: 'collection',
-  EMBEDDED: 'embedded',
-  ID: 'id',
-  TEMPORAL: 'temporal'
-});
 
 function inheritConfig(config: any, Class: PClass): boolean {
   // proxy-safe retrieval of super class
@@ -49,6 +44,7 @@ export class PersistentConfig {
   }
 
   cacheOnly: boolean = false;
+  hookProperties: PropertyKey[] = [];
   idKey: string = undefined;
   nonPersistent: boolean = false;
   path: string = undefined;
@@ -60,7 +56,7 @@ export class PersistentConfig {
   prePersist: Function = undefined;
   preRemove: Function = undefined;
   preUpdate: Function = undefined;
-  propertyMap: Object = {};
+  propertyMap: Object = Object.create(null);
   target: PClass;
 
   configure(config: IPersistentConfig): void {
@@ -86,8 +82,8 @@ export class PersistentConfig {
   }
 
   configureProperty(propertyKey: string, config: IPersistentPropertyConfig): void {
-    if (!(propertyKey in this.propertyMap)) {
-      this.propertyMap[propertyKey] = new PersistentPropertyConfig(propertyKey);
+    if (!(Reflect.has(this.propertyMap, propertyKey))) {
+      this.propertyMap[propertyKey] = new PersistentPropertyConfig(this, propertyKey);
       if (!Reflect.has(this.target.prototype, propertyKey)) {
         Reflect.defineProperty(this.target.prototype, propertyKey, {
           enumerable: true,
@@ -106,24 +102,34 @@ export class PersistentConfig {
 }
 
 class PersistentPropertyConfig {
-  path: string = undefined;
-  propertyKey: string = undefined;
-  type: string = undefined;
+  accessors: PrimitiveAccessors;
+  config: PersistentConfig;
+  path: string;
+  propertyKey: string;
+  typeIsDefined: boolean;
 
   get fullPath(): string {
     return this.path || this.propertyKey;
   }
 
-  constructor(propertyKey: string) {
+  constructor(config: PersistentConfig, propertyKey: string) {
+    this.config = config;
     this.propertyKey = propertyKey;
+    this.typeIsDefined = false;
   }
 
   configure(config: IPersistentPropertyConfig): void {
-    Object.keys(config).forEach(key => {
-      if (!Reflect.has(this, key)) {
-        throw new Error(`unknown entity property configuration key: ${key}`);
+    if (config.path) {
+      this.path = config.path;
+    }
+    if (config.accessorsClass) {
+      if (this.typeIsDefined) {
+        throw new Error('already configured property type');
       }
-      this[key] = config[key];
-    });
+      this.accessors = new config.accessorsClass(this.config, this.propertyKey, config.parameters);
+      this.typeIsDefined = true;
+    } else if (!this.typeIsDefined) {
+      this.accessors = new PrimitiveAccessors(this.config, this.propertyKey);
+    }
   }
 }

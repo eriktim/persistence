@@ -36,10 +36,6 @@ export function setUnresolvedRelation(entity, relatedEntity, setUri) {
   }
 }
 
-function applySafe(fn, thisObj, args = []) {
-  return fn ? Reflect.apply(fn, thisObj, args) : undefined;
-}
-
 function assertEntity(entityManager, entity) {
   if (!entityManager.contains(entity)) {
     throw new TypeError('argument is not a persistent entity');
@@ -130,7 +126,7 @@ export class EntityManager {
     let entity = new Target(this);
     await PersistentObject.apply(entity, data);
     config.nonPersistent || attach(this, entity);
-    await applySafe(config.postLoad, entity);
+    await Util.applySafe(config.postLoad, entity);
     return entity;
   }
 
@@ -228,7 +224,7 @@ export class EntityManager {
           let config = PersistentConfig.get(entity);
           let data = PersistentData.extract(entity);
           return Promise.resolve()
-            .then(() => applySafe(config.prePersist, entity))
+            .then(() => Util.applySafe(config.prePersist, entity))
             .then(() => Reflect.apply(fetch, server,
                 [noId ? path : `${path}/${id}`, data]))
             .then(raw => {
@@ -251,7 +247,7 @@ export class EntityManager {
               }
             })
             .then(() => attach(this, entity))
-            .then(() => applySafe(config.postPersist, entity));
+            .then(() => Util.applySafe(config.postPersist, entity));
         }
       })
       .then(() => entity);
@@ -279,11 +275,11 @@ export class EntityManager {
         let path = getPath(entity);
         let config = PersistentConfig.get(entity);
         return Promise.resolve()
-          .then(() => applySafe(config.preRemove, entity))
+          .then(() => Util.applySafe(config.preRemove, entity))
           .then(() => id ?
               serverMap.get(this).delete(`${path}/${id}`) : undefined)
           .then(() => entity[REMOVED] = true)
-          .then(() => applySafe(config.postRemove, entity))
+          .then(() => Util.applySafe(config.postRemove, entity))
           .then(() => this.detach(entity))
           .then(() => entity);
       });
