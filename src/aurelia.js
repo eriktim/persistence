@@ -1,16 +1,20 @@
 import {computedFrom} from 'aurelia-binding';
 
 import {Config} from './config';
-import {VERSION, defineSymbol} from './symbols';
 
 export * from './index';
 
-Config.setPropertyDecorator(computedFrom(VERSION)); // FIXME, both version and setPropertyDecorator are deprecated
+//Config.setPropertyDecorator(computedFrom(VERSION)); // FIXME, both version and setPropertyDecorator are deprecated
 
 const baseConfig = {
   extensible: false,
   onNewObject: function(object) {
-    defineSymbol(object, '__observers__', {});
+    Reflect.defineProperty(object, '__observers__', {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: {}
+    });
   }
 };
 

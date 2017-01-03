@@ -1,4 +1,3 @@
-import {PARENT, VERSION, defineSymbol} from './symbols';
 import {Util} from './util';
 
 const dataMap = new WeakMap();
@@ -208,12 +207,7 @@ export class PersistentData {
 
   static setProperty(obj, path, value) {
     let data = getData(obj);
-    if (writeValue(data, path, value)) {
-      do {
-        obj[VERSION]++;
-        obj = obj[PARENT];
-      } while (obj);
-    }
+    return writeValue(data, path, value);
   }
 
   static extract(obj) {
@@ -224,12 +218,8 @@ export class PersistentData {
     if (!data || typeof data !== 'object') {
       throw new TypeError('injection data must be an object');
     }
-    if (!Reflect.has(obj, VERSION)) {
-      defineSymbol(obj, VERSION, 0);
-    }
     dataMap.set(obj, data);
     this.setNotDirty(obj);
-    obj[VERSION]++;
   }
 
   static isDirty(obj) {

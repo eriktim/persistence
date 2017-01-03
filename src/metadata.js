@@ -8,4 +8,6 @@ export class Metadata {
   static ENTITY_RELATIONSHIPS = 'persistence:entity-relationships';
   static LOCATION = 'persistence:location';
   static PARENT = 'persistence:parent';
+  static RELATIONSHIP = 'persistence:relationship';
+  static RELATIONSHIP_PROPERTIES = 'persistence:relationships-properties';
 }

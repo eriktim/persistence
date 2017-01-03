@@ -3,7 +3,6 @@ import {Metadata} from './metadata';
 import {PersistentConfig} from './persistent-config';
 import {PersistentData} from './persistent-data';
 import {PersistentObject} from './persistent-object';
-import {RELATIONS, REMOVED} from './symbols';
 import {Util} from './util';
 
 const serverMap = new WeakMap();
@@ -16,8 +15,9 @@ export function getServerForTesting(entityManager) {
 }
 
 export function getUri(entity) {
-  let parts = [getPath(entity), getId(entity)].filter(v => v);
-  return parts.length === 2 ? parts.join('/') : undefined;
+  let path = getPath(entity);
+  let id = getId(entity);
+  return path && id ? `${path}/${id}` : undefined;
 }
 
 export function idFromUri(uri) {
@@ -203,7 +203,8 @@ export class EntityManager {
       .then(() => {
         assertEntity(this, entity);
         // persist related entities
-        return Promise.all(Array.from(entity[RELATIONS])
+        let relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
+        return Promise.all(Array.from(relationships)
             .map(e => this.persist(e)));
       })
       .then(() => {
@@ -281,7 +282,7 @@ export class EntityManager {
           .then(() => Util.applySafe(config.preRemove, entity))
           .then(() => id ?
               serverMap.get(this).delete(`${path}/${id}`) : undefined)
-          .then(() => entity[REMOVED] = true)
+          .then(() => Reflect.defineMetadata(Metadata.ENTITY_IS_REMOVED, true, entity))
           .then(() => Util.applySafe(config.postRemove, entity))
           .then(() => this.detach(entity))
           .then(() => entity);
