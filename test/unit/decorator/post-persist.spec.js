@@ -4,7 +4,7 @@ import {PostPersist} from '../../../src/decorator/post-persist';
 import {Property} from '../../../src/decorator/property';
 import {createEntityManagerStub} from '../helper';
 
-describe('@PostPersist', () => {
+describe('@PostPersist()', () => {
   let entityManager;
   let test = function(Class, ...properties) {
     expect(properties.length > 0).toBe(true);
@@ -25,12 +25,12 @@ describe('@PostPersist', () => {
   });
 
   it('Default', () => {
-    @Entity
+    @Entity()
     class Foo {
-      @Id key;
-      @Property triggered;
+      @Id() key;
+      @Property() triggered;
 
-      @PostPersist
+      @PostPersist()
       trigger() {
         this.triggered = true;
       }
@@ -40,34 +40,34 @@ describe('@PostPersist', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Id key;
-      @Property triggered;
+      @Id() key;
+      @Property() triggered;
 
-      @PostPersist
+      @PostPersist()
       trigger() {
         this.triggered = true;
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {}
     return test(Bar, 'triggered');
   });
 
   it('Inheritance & default', () => {
     class Foo {
-      @Id key;
-      @Property triggeredSuper;
+      @Id() key;
+      @Property() triggeredSuper;
 
-      @PostPersist
+      @PostPersist()
       trigger() {
         this.triggeredSuper = true;
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {
-      @Property triggeredSub;
+      @Property() triggeredSub;
 
-      @PostPersist
+      @PostPersist()
       trigger() {
         this.triggeredSub = true;
       }
@@ -77,9 +77,9 @@ describe('@PostPersist', () => {
 
   it('Invalid usage', () => {
     expect(() => {
-      @Entity class Foo {
-        @PostPersist prop = 'val';
+      @Entity() class Foo {
+        @PostPersist() prop = 'val';
       }
-    }).toThrowError('@PostPersist prop is not a function');
+    }).toThrowError('@PostPersist() prop is not a function');
   });
 });

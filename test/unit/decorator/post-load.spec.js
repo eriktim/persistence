@@ -3,7 +3,7 @@ import {PostLoad} from '../../../src/decorator/post-load';
 import {Property} from '../../../src/decorator/property';
 import {createEntityManagerStub} from '../helper';
 
-describe('@PostLoad', () => {
+describe('@PostLoad()', () => {
   let entityManager;
   let test = function(Class, ...properties) {
     expect(properties.length > 0).toBe(true);
@@ -18,11 +18,11 @@ describe('@PostLoad', () => {
   });
 
   it('Default', () => {
-    @Entity
+    @Entity()
     class Foo {
-      @Property triggered;
+      @Property() triggered;
 
-      @PostLoad
+      @PostLoad()
       trigger() {
         this.triggered = true;
       }
@@ -32,32 +32,32 @@ describe('@PostLoad', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Property triggered;
+      @Property() triggered;
 
-      @PostLoad
+      @PostLoad()
       trigger() {
         this.triggered = true;
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {}
     return test(Bar, 'triggered');
   });
 
   it('Inheritance & default', () => {
     class Foo {
-      @Property triggeredSuper;
+      @Property() triggeredSuper;
 
-      @PostLoad
+      @PostLoad()
       trigger() {
         this.triggeredSuper = true;
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {
-      @Property triggeredSub;
+      @Property() triggeredSub;
 
-      @PostLoad
+      @PostLoad()
       trigger() {
         this.triggeredSub = true;
       }
@@ -67,9 +67,9 @@ describe('@PostLoad', () => {
 
   it('Invalid usage', () => {
     expect(() => {
-      @Entity class Foo {
-        @PostLoad prop = 'val';
+      @Entity() class Foo {
+        @PostLoad() prop = 'val';
       }
-    }).toThrowError('@PostLoad prop is not a function');
+    }).toThrowError('@PostLoad() prop is not a function');
   });
 });

@@ -11,16 +11,16 @@ describe('PersistentConfig', () => {
   });
 
   it('get', () => {
-    expect(PersistentConfig.get(foo)).toEqual(config);
-    expect(PersistentConfig.get(Foo)).toEqual(config);
-    expect(PersistentConfig.get(new Proxy(Foo, {}))).toEqual(config);
+    expect(PersistentConfig.get(foo)).toEqual(config, 'foo');
+    expect(PersistentConfig.get(Foo)).toEqual(config, 'Foo');
+    expect(PersistentConfig.get(new Proxy(Foo, {}))).toEqual(config, 'proxy');
   });
 
   it('has', () => {
-    expect(PersistentConfig.has(foo)).toBeTruthy();
-    expect(PersistentConfig.has(Foo)).toBeTruthy();
-    expect(PersistentConfig.has(new Proxy(Foo, {}))).toBeTruthy();
-    expect(PersistentConfig.has({})).toBeFalsy();
+    expect(PersistentConfig.has(foo)).toBeTruthy('foo');
+    expect(PersistentConfig.has(Foo)).toBeTruthy('Foo');
+    expect(PersistentConfig.has(new Proxy(Foo, {}))).toBeTruthy('proxy');
+    expect(PersistentConfig.has(Object.create(null))).toBeFalsy('any');
   });
 
   let keys = [

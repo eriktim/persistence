@@ -71,5 +71,4 @@ export class Config {
 
 export function resetGlobalConfigForTesting(): void {
   defaultInstance = undefined;
-  propertyDecorator = undefined;
 }

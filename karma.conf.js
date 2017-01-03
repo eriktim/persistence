@@ -13,8 +13,8 @@ module.exports = function(config) {
 
     jspm: {
       // Edit this to your needs
-      //loadFiles: ['test/unit/**/*.js'],
-      loadFiles: ['test/test.js'],
+      loadFiles: ['test/unit/**/*.js'],
+      //loadFiles: ['test/test.js'],
       serveFiles: ['src/**/*.js'],
       paths: {
         '*': '*',

@@ -2,10 +2,10 @@ import {Entity} from '../../../src/decorator/entity';
 import {Id} from '../../../src/decorator/id';
 import {PreRemove} from '../../../src/decorator/pre-remove';
 import {Property} from '../../../src/decorator/property';
-import {REMOVED} from '../../../src/symbols';
+import {Metadata} from '../../../src/metadata';
 import {createEntityManagerStub} from '../helper';
 
-describe('@PreRemove', () => {
+describe('@PreRemove()', () => {
   let entityManager;
   let test = function(Class, ...properties) {
     expect(properties.length > 0).toBe(true);
@@ -23,14 +23,14 @@ describe('@PreRemove', () => {
   });
 
   it('Default', () => {
-    @Entity
+    @Entity()
     class Foo {
-      @Id key;
-      @Property removed;
+      @Id() key;
+      @Property() removed;
 
-      @PreRemove
+      @PreRemove()
       trigger() {
-        this.removed = this[REMOVED];
+        this.removed = Reflect.getMetadata(Metadata.ENTITY_IS_REMOVED, this);
       }
     }
     return test(Foo, 'removed');
@@ -38,36 +38,36 @@ describe('@PreRemove', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Id key;
-      @Property removed;
+      @Id() key;
+      @Property() removed;
 
-      @PreRemove
+      @PreRemove()
       trigger() {
-        this.removed = this[REMOVED];
+        this.removed = Reflect.getMetadata(Metadata.ENTITY_IS_REMOVED, this);
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {}
     return test(Bar, 'removed');
   });
 
   it('Inheritance & default', () => {
     class Foo {
-      @Id key;
-      @Property removedSuper;
+      @Id() key;
+      @Property() removedSuper;
 
-      @PreRemove
+      @PreRemove()
       trigger() {
-        this.removedSuper = this[REMOVED];
+        this.removedSuper = Reflect.getMetadata(Metadata.ENTITY_IS_REMOVED, this);
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {
-      @Property removedSub;
+      @Property() removedSub;
 
-      @PreRemove
+      @PreRemove()
       trigger() {
-        this.removedSub = this[REMOVED];
+        this.removedSub = Reflect.getMetadata(Metadata.ENTITY_IS_REMOVED, this);
       }
     }
     return test(Bar, 'removedSuper', 'removedSub');
@@ -75,9 +75,9 @@ describe('@PreRemove', () => {
 
   it('Invalid usage', () => {
     expect(() => {
-      @Entity class Bar {
-        @PreRemove prop = 'val';
+      @Entity() class Bar {
+        @PreRemove() prop = 'val';
       }
-    }).toThrowError('@PreRemove prop is not a function');
+    }).toThrowError('@PreRemove() prop is not a function');
   });
 });

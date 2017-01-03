@@ -4,15 +4,12 @@ import {Property} from '../../../src/decorator/property';
 import {PersistentData} from '../../../src/persistent-data';
 import {createEntityManagerStub} from '../helper';
 
-@Entity
+@Entity()
 class Foo {
-  @Id
+  @Id()
   key;
 
   undecorated = undefined;
-
-  @Property
-  unnamed;
 
   @Property()
   empty;
@@ -39,14 +36,17 @@ class Foo {
   arrayAndArrayValue;
 }
 
-describe('@Property', () => {
+describe('@Property()', () => {
   let entityManager;
   let data;
 
   beforeEach(() => {
     entityManager = createEntityManagerStub();
-    return entityManager.create(Foo, {}).then(foo => {
+    return entityManager.create(Foo, {key: '123'}).then(foo => {
       for (let prop in foo) {
+        if (prop === 'key') {
+          continue;
+        }
         foo[prop] = prop;
       }
       data = PersistentData.extract(foo);
@@ -54,9 +54,8 @@ describe('@Property', () => {
   });
 
   it('Save', () => {
-    expect(data.key).toEqual('key');
+    expect(data.key).toEqual('123');
     expect(data.undecorated).toBeUndefined();
-    expect(data.unnamed).toEqual('unnamed');
     expect(data.empty).toEqual('empty');
     expect(data.nameOfNamed).toEqual('named');
     expect(data.some).toEqual({path: 'path'});
@@ -68,7 +67,7 @@ describe('@Property', () => {
   });
 
   it('Advanced indices', () => {
-    @Entity class Bar {
+    @Entity() class Bar {
       @Property('elements[key=bad][0]')
       badProperty;
 
@@ -123,7 +122,7 @@ describe('@Property', () => {
 
   it('JSON indices', () => {
     const SYSTEM = 'http://hl7.org';
-    @Entity class Resource {
+    @Entity() class Resource {
       @Property(`component[{"code":{"coding":[{"system":"${SYSTEM}","code":123}]}}].valueString`)
       property;
 

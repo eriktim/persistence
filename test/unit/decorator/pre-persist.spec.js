@@ -4,7 +4,7 @@ import {Property} from '../../../src/decorator/property';
 import {PrePersist} from '../../../src/decorator/pre-persist';
 import {createEntityManagerStub} from '../helper';
 
-describe('@PrePersist', () => {
+describe('@PrePersist()', () => {
   let entityManager;
   let test = function(Class, ...properties) {
     expect(properties.length > 0).toBe(true);
@@ -25,12 +25,12 @@ describe('@PrePersist', () => {
   });
 
   it('Default', () => {
-    @Entity
+    @Entity()
     class Foo {
-      @Id key;
-      @Property triggered;
+      @Id() key;
+      @Property() triggered;
 
-      @PrePersist
+      @PrePersist()
       trigger() {
         this.triggered = true;
       }
@@ -40,34 +40,34 @@ describe('@PrePersist', () => {
 
   it('Inheritance', () => {
     class Foo {
-      @Id key;
-      @Property triggered;
+      @Id() key;
+      @Property() triggered;
 
-      @PrePersist
+      @PrePersist()
       trigger() {
         this.triggered = true;
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {}
     return test(Bar, 'triggered');
   });
 
   it('Inheritance & default', () => {
     class Foo {
-      @Id key;
-      @Property triggeredSuper;
+      @Id() key;
+      @Property() triggeredSuper;
 
-      @PrePersist
+      @PrePersist()
       trigger() {
         this.triggeredSuper = true;
       }
     }
-    @Entity
+    @Entity()
     class Bar extends Foo {
-      @Property triggeredSub;
+      @Property() triggeredSub;
 
-      @PrePersist
+      @PrePersist()
       trigger() {
         this.triggeredSub = true;
       }
@@ -77,9 +77,9 @@ describe('@PrePersist', () => {
 
   it('Invalid usage', () => {
     expect(() => {
-      @Entity class Bar {
-        @PrePersist prop = 'val';
+      @Entity() class Bar {
+        @PrePersist() prop = 'val';
       }
-    }).toThrowError('@PrePersist prop is not a function');
+    }).toThrowError('@PrePersist() prop is not a function');
   });
 });

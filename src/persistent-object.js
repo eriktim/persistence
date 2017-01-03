@@ -24,9 +24,14 @@ export class PersistentObject {
     }
     Target.isPersistent = true;
 
-    let config = PersistentConfig.get(Target);
-    for (let propertyKey of config.hookProperties) {
-      Reflect.deleteProperty(Target.prototype, propertyKey);
+    // remove all hook properties
+    let prototype = Target.prototype;
+    while (prototype) {
+      let config = PersistentConfig.get(prototype.constructor);
+      for (let propertyKey of config.hookProperties) {
+        Reflect.deleteProperty(prototype, propertyKey);
+      }
+      prototype = Object.getPrototypeOf(prototype);
     }
     return new Proxy(Target, constructionHandlerFactory(isEntity));
   }
