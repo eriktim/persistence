@@ -1,4 +1,4 @@
-import {PersistentConfig, PropertyType} from './persistent-config';
+import {PersistentConfig} from './persistent-config';
 
 function ucFirst(str: string): string {
   return str.charAt(0).toLocaleUpperCase() + str.substr(1);

@@ -47,4 +47,8 @@ async function run() {
   foo.baz = 'baz';
 }
 
-run();
+describe('Test', () => {
+  it('run', () => {
+    expect(run).not.toThrow();
+  });
+});

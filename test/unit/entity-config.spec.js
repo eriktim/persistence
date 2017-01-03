@@ -30,9 +30,11 @@ describe('PersistentConfig', () => {
     'postLoad',
     'postPersist',
     'postRemove',
+    'postUpdate',
     'preLoad',
     'prePersist',
-    'preRemove'
+    'preRemove',
+    'preUpdate'
   ];
   let factory = key => {
     let index = 1;

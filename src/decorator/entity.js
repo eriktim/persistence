@@ -13,7 +13,7 @@ export function Entity(path?: string): ClassDecorator {
   };
 }
 
-export function FakeEntity(path?: string): ClassDecorator {
+export function LocalEntity(path?: string): ClassDecorator {
   return function(Target: PClass) {
     if (!path) {
       // FIXME warn Function.name
