@@ -115,10 +115,13 @@ export class EntityManager {
     return contextMap.get(this).has(entity);
   }
 
-  async create(Target, data = {}) {
+  async create(Target, data = null) {
     let config = PersistentConfig.get(Target);
     if (!config || !config.path) {
       throw new Error('EntityManager expects a valid Entity');
+    }
+    if (data === null) {
+      data = Object.create(null);
     }
     if (!Util.isObject(data)) {
       return null;

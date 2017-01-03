@@ -20,13 +20,17 @@ export class PrimitiveAccessors {
     return PersistentData.getProperty(target, this.fullPath);
   }
 
-  async set(target: PObject, value: any): boolean {
+  set(target: PObject, value: any): boolean {
+    return this.setInternal(target, value, true);
+  }
+
+  setInternal(target: PObject, value: any, triggerHooks: boolean = false): boolean {
     let oldValue = PersistentData.getProperty(target, this.fullPath);
     let update = oldValue !== value;
     if (update) {
-      await Util.applySafe(this.config.preUpdate, target);
+      triggerHooks && Util.applySafe(this.config.preUpdate, target);
       PersistentData.setProperty(target, this.fullPath, value);
-      await Util.applySafe(this.config.postUpdate, target);
+      triggerHooks && Util.applySafe(this.config.postUpdate, target);
     }
     return update;
   }

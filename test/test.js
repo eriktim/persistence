@@ -1,3 +1,5 @@
+import {Collectible} from '../src/decorator/collectible';
+import {Collection} from '../src/decorator/collection';
 import {Embeddable} from '../src/decorator/embeddable';
 import {Embedded} from '../src/decorator/embedded';
 import {Entity} from '../src/decorator/entity';
@@ -8,7 +10,7 @@ import {PostUpdate} from '../src/decorator/post-update';
 import {PreUpdate} from '../src/decorator/pre-update';
 import {Temporal} from '../src/decorator/temporal';
 import {Config} from '../src/config';
-import {PersistentObject} from '../src/persistent-object';
+import {PersistentData} from '../src/persistent-data';
 import {EntityManager} from '../src/entity-manager';
 
 @Embeddable()
@@ -16,12 +18,18 @@ class Bar {
   @Property() prop;
 }
 
+@Collectible()
+class Baz {
+  @Property() prop;
+}
+
 @Entity()
 class Foo {
   @Id() id;
   @Property() bar;
-  @Property('some.nested.value') baz;
+  @Property('some.nested.value') nested;
   @Embedded(Bar) obj;
+  @Collection(Baz) arr;
 
   @Temporal() time;
 
@@ -55,19 +63,27 @@ async function run() {
   window.Bar = Bar;
 
   foo.bar = 'bar';
-  foo.baz = 'baz';
+  foo.nested = 'nested';
   foo.obj.prop = 'prop';
 
+  let baz = new Baz();
+  foo.arr.push(baz);
+  foo.arr.push(new Baz(), new Baz(), new Baz());
+  baz.prop = 'q1';
+
   // reset
-  setTimeout(() => {
-    console.log('pre-reset', JSON.stringify(raw));
-    PersistentObject.setData(foo, {});
-    console.log('reset');
-  }, 1000);
+  return new Promise(resolve => {
+    setTimeout(() => {
+      console.log('pre-reset', JSON.stringify(raw));
+      //PersistentObject.setData(foo, {});
+      //console.log('reset');
+      resolve();
+    }, 1000);
+  });
 }
 
 describe('Test', () => {
   it('run', () => {
-    expect(run).not.toThrow();
+    return run();
   });
 });

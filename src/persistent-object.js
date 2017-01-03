@@ -1,9 +1,7 @@
-import {constructionHandlerFactory} from './handler/construction-handler';
-import {setCollectionData} from './collection';
-import {Config} from './config';
+import {constructionHandlerFactory} from './handler/construction';
 import {Metadata} from './metadata';
-import {PersistentConfig, PropertyType} from './persistent-config';
-import {PersistentData, readValue} from './persistent-data';
+import {PersistentConfig} from './persistent-config';
+import {PersistentData} from './persistent-data';
 
 export function getEntity(obj: PObject) {
   while (Reflect.hasMetadata(Metadata.PARENT, obj)) {

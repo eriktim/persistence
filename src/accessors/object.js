@@ -10,8 +10,8 @@ export class ObjectAccessors extends PrimitiveAccessors {
       let Type = this.parameters[0];
       let data = super.get(target);
       if (!data) {
-        data = {};
-        super.set(target, data); // FIXME silent update, no hooks
+        data = Object.create(null);
+        super.setInternal(target, data);
       }
       let obj = new Type();
       PersistentObject.apply(obj, data, target);
@@ -20,7 +20,7 @@ export class ObjectAccessors extends PrimitiveAccessors {
     return Reflect.getMetadata(Metadata.EMBEDDED, target, this.propertyKey);
   }
 
-  async set(target: PObject, obj: any): boolean {
+  set(target: PObject, obj: any): boolean {
     let Type = this.parameters[0];
     if (!(obj instanceof Type)) {
       throw new Error('invalid object type');

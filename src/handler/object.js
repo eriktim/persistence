@@ -1,10 +1,9 @@
 import {Metadata} from '../metadata';
-import {PersistentConfig, PropertyType} from '../persistent-config';
+import {PersistentConfig} from '../persistent-config';
 import {getEntity} from '../persistent-object';
 
 export const objectHandler = {
   get: function(target, propertyKey, receiver) {
-console.log(`get ${propertyKey}`);
     const config = PersistentConfig.get(target);
     let propConfig = config.getProperty(propertyKey);
     if (propConfig) {
@@ -13,7 +12,7 @@ console.log(`get ${propertyKey}`);
       return target[propertyKey];
     }
   },
-  set: async function(target, propertyKey, value, receiver) {
+  set: function(target, propertyKey, value, receiver) {
     let entity = getEntity(target);
     let isRemoved = entity ? Reflect.getMetadata(
         Metadata.ENTITY_IS_REMOVED, entity) : false;

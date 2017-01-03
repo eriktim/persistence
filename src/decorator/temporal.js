@@ -1,5 +1,5 @@
 import {TemporalAccessors} from '../accessors/temporal';
-import {PersistentConfig, PropertyType} from '../persistent-config';
+import {PersistentConfig} from '../persistent-config';
 
 export function Temporal() {
   return function(target: PObject, propertyKey: PropertyKey) {

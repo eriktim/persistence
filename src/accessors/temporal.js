@@ -18,7 +18,7 @@ export class TemporalAccessors extends PrimitiveAccessors {
     return m.isValid() ? m : undefined;
   }
 
-  set(target: PObject, value: any) {
+  set(target: PObject, value: any): boolean {
     let m;
     if (moment.isMoment(value)) {
       m = value;
@@ -28,6 +28,6 @@ export class TemporalAccessors extends PrimitiveAccessors {
         throw new Error(`invalid date: ${value}`);
       }
     }
-    super.set(target, m.format(FORMAT));
+    return super.set(target, m.format(FORMAT));
   }
 }

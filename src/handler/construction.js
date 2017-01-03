@@ -2,7 +2,7 @@ import {EntityManager} from '../entity-manager';
 import {Metadata} from '../metadata';
 import {PersistentObject} from '../persistent-object';
 
-import {objectHandler} from './object-handler';
+import {objectHandler} from './object';
 
 export const constructionHandlerFactory: () => ProxyHandler = function(isEntity: boolean) {
   let handler;
@@ -24,10 +24,13 @@ export const constructionHandlerFactory: () => ProxyHandler = function(isEntity:
     handler = {
       construct: function(Target: PClass, argumentsList: any[]) {
         let obj = Reflect.construct(function() {
-          let data = argumentsList.length === 1 ? argumentsList[0] : {};
-          PersistentObject.apply(this, data, null);
+          // empty constructor function
         }, argumentsList, Target);
-        return new Proxy(obj, objectHandler);
+        let proxy = new Proxy(obj, objectHandler);
+        let data = argumentsList.length === 1 ?
+            argumentsList[0] : Object.create(null);
+        PersistentObject.apply(proxy, data, null);
+        return proxy;
       }
     }
   }
