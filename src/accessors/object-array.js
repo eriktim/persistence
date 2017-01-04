@@ -2,21 +2,24 @@ import {Metadata} from '../metadata';
 import {arrayHandlerFactory} from '../handler/array';
 import {PersistentData} from '../persistent-data';
 
+import {ObjectAccessors} from './object';
 import {PrimitiveAccessors} from './primitive';
 
-function arrayProxy(data: any[], Type: any, createObjects: boolean): Proxy {
+function arrayProxy(data: any[], Type: any, parent?: any): Proxy {
+  let converter = ObjectAccessors.converterFactory(Type);
   let arr = [];
-  let proxy = new Proxy(arr, arrayHandlerFactory(Type));
+  let proxy = new Proxy(arr, arrayHandlerFactory(converter.objectToData));
   PersistentData.inject(arr, data);
-  createObjects && data.forEach(el => {
-    let obj = new Type();
-    PersistentData.inject(obj, el);
-    arr.push(obj);
-  });
+  if (parent) {
+    data.forEach(el => {
+      let obj = converter.dataToObject(el, parent);
+      arr.push(obj);
+    });
+  }
   return proxy;
 }
 
-export class ArrayAccessors extends PrimitiveAccessors {
+export class ObjectArrayAccessors extends PrimitiveAccessors {
   get(target: PObject): any {
     if (!Reflect.hasMetadata(Metadata.COLLECTION, target, this.propertyKey)) {
       let data = super.get(target);
@@ -25,7 +28,7 @@ export class ArrayAccessors extends PrimitiveAccessors {
         super.setInternal(target, data);
       }
       let Type = this.parameters[0];
-      let arr = arrayProxy(data, Type, true);
+      let arr = arrayProxy(data, Type, target);
       Reflect.defineMetadata(Metadata.COLLECTION, arr, target, this.propertyKey);
     }
     return Reflect.getMetadata(Metadata.COLLECTION, target, this.propertyKey);

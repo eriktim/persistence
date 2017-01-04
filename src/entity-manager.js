@@ -8,7 +8,7 @@ import {Util} from './util';
 const serverMap = new WeakMap();
 const contextMap = new WeakMap();
 const cacheMap = new WeakMap();
-const unresolvedRelationsMap = new WeakMap();
+const pendingUriMap = new WeakMap();
 
 export function getServerForTesting(entityManager) {
   return serverMap.get(entityManager);
@@ -24,16 +24,14 @@ export function idFromUri(uri) {
   return uri ? uri.split('?')[0].split('/').pop() : undefined;
 }
 
-export function setUnresolvedRelation(entity, relatedEntity, setUri) {
-  if (!unresolvedRelationsMap.has(entity)) {
-    unresolvedRelationsMap.set(entity, new Map());
+export async function awaitUri(entity) {
+  if (!pendingUriMap.has(entity)) {
+    pendingUriMap.set(entity, []);
   }
-  let unresolvedEntityRelationsMap = unresolvedRelationsMap.get(entity);
-  if (setUri) {
-    unresolvedEntityRelationsMap.set(relatedEntity, setUri);
-  } else {
-    unresolvedEntityRelationsMap.delete(relatedEntity);
-  }
+  let pendingUris = pendingUriMap.get(entity);
+  return new Promise(resolve => {
+    pendingUris.push(resolve);
+  });
 }
 
 function assertEntity(entityManager, entity) {
@@ -202,21 +200,20 @@ export class EntityManager {
     return Promise.resolve()
       .then(() => {
         assertEntity(this, entity);
+      })
+      .then(() => {
         // persist related entities
         let relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
         return Promise.all(Array.from(relationships)
-            .map(e => this.persist(e)));
-      })
-      .then(() => {
-        if (unresolvedRelationsMap.has(entity)) {
-          // set uri of unresolved related entities
-          let entries = unresolvedRelationsMap.get(entity).entries();
-          for (let [relation, setUri] of entries) {
-            let uri = getUri(relation);
-            setUri(uri);
-          }
-          unresolvedRelationsMap.delete(entity);
-        }
+            .map(relationship => this.persist(relationship)))
+            .then(() => {
+              relationships.forEach(relationship => {
+                if (pendingUriMap.has(relationship)) {
+                  pendingUriMap.get(relationship).forEach(r => r(getUri(r)));
+                  pendingUriMap.delete(relationship);
+                }
+              });
+            })
       })
       .then(() => {
         let id = getId(entity);

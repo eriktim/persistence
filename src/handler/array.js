@@ -4,7 +4,7 @@ const PROP_LENGTH = 'length';
 
 // TODO Type or Relationship!!! FIXME
 
-export function arrayHandlerFactory(Type: any): ProxyHandler {
+export function arrayHandlerFactory(toData: (obj: any) => any): ProxyHandler {
   return {
     get: function(target, property) {
       return target[property];
@@ -12,15 +12,12 @@ export function arrayHandlerFactory(Type: any): ProxyHandler {
     set: function(target, property, value) {
       if (property === PROP_LENGTH) {
         let data = PersistentData.extract(target);
-        data[property] = value;
+        data[PROP_LENGTH] = value;
       } else {
         let index = parseInt(property, 10);
         if (property === String(index)) {
-          if (!(value instanceof Type)) {
-            throw new Error('invalid object type');
-          }
           let data = PersistentData.extract(target);
-          data[index] = PersistentData.extract(value);
+          data[index] = toData(value);
         }
       }
       target[property] = value;

@@ -1,4 +1,4 @@
-import {ArrayAccessors} from '../accessors/array';
+import {ObjectArrayAccessors} from '../accessors/object-array';
 import {Metadata} from '../metadata';
 import {PersistentConfig} from '../persistent-config';
 
@@ -9,7 +9,7 @@ export function Collection(Type: PClass): PropertyDecorator {
   return function(target: PObject, propertyKey: PropertyKey) {
     let config = PersistentConfig.get(target);
     config.configureProperty(propertyKey, {
-      accessorsClass: ArrayAccessors,
+      accessorsClass: ObjectArrayAccessors,
       parameters: [Type]
     });
     let properties = Reflect.getMetadata(

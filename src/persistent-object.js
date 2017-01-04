@@ -66,6 +66,6 @@ export class PersistentObject {
     PersistentData.inject(obj, data);
     clearMetadata(obj, Metadata.COLLECTION_PROPERTIES, Metadata.COLLECTION);
     clearMetadata(obj, Metadata.EMBEDDED_PROPERTIES, Metadata.EMBEDDED);
-    clearMetadata(obj, Metadata.RELATIONSHIP_PROPERTIES, Metadata.RELATIONSHIP);
+    clearMetadata(obj, Metadata.ONE_TO_ONE_PROPERTIES, Metadata.ONE_TO_ONE);
   }
 }

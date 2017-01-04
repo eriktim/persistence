@@ -19,8 +19,8 @@ export function OneToOne(Type: PClass): PropertyDecorator {
       parameters: [Type]
     });
     let properties = Reflect.getMetadata(
-        Metadata.RELATIONSHIP_PROPERTIES, target) || [];
+        Metadata.ONE_TO_ONE_PROPERTIES, target) || [];
     properties.push(propertyKey);
-    Reflect.defineMetadata(Metadata.RELATIONSHIP_PROPERTIES, properties, target);
+    Reflect.defineMetadata(Metadata.ONE_TO_ONE_PROPERTIES, properties, target);
   };
 }
