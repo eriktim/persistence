@@ -136,7 +136,7 @@ class PersistentPropertyConfig {
             throw new Error('already configured property type');
           }
           let parameters = config.parameters || [];
-          this.accessors = Reflect.construct(config[key], [this.config, this.propertyKey, ...parameters]);
+          this.accessors = Reflect.construct(config[key], [this.config, this.propertyKey, parameters]);
           this.typeIsDefined = true;
           break;
         case 'parameters':

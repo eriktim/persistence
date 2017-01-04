@@ -11,6 +11,7 @@ function arrayProxy(data: any[], Type: any, createObjects: boolean): Proxy {
   createObjects && data.forEach(el => {
     let obj = new Type();
     PersistentData.inject(obj, el);
+    arr.push(obj);
   });
   return proxy;
 }
