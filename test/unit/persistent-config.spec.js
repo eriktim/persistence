@@ -57,21 +57,20 @@ describe('PersistentConfig', () => {
     expect(configure).toThrow();
   });
 
-  let propKeys = [
-    'getter',
-    'path',
-    'setter',
-    'type'
-  ];
-  let propFactory = key => {
+  let propMap = {
+    'accessorsClass': class Foo {},
+    'parameters': ['bar'],
+    'path': 'bar'
+  };
+  let propFactory = (key, value) => {
     return () => {
       let configure = () => PersistentConfig.get(foo).configureProperty(
-          key, {[key]: 'bar'});
+          key, {[key]: value});
       configure();
     };
   };
-  for (let key of propKeys) {
-    it(`configureProperty '${key}'`, propFactory(key));
+  for (let key in propMap) {
+    it(`configureProperty '${key}'`, propFactory(key, propMap[key]));
   }
 
   it(`configureProperty 'foo'`, () => {

@@ -22,7 +22,7 @@ export const objectHandler = {
     const config = PersistentConfig.get(target);
     let propConfig = config.getProperty(propertyKey);
     if (propConfig) {
-      return propConfig.accessors.set(receiver, value);
+      propConfig.accessors.set(receiver, value);
     } else {
       target[propertyKey] = value;
     }

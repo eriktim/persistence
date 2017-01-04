@@ -67,11 +67,18 @@ export class PersistentConfig {
       if (this[key] && /^(pre|post)/.test(key)) {
         let cb1 = this[key];
         let cb2 = config[key];
-        this[key] = function() {
-          return Promise.resolve()
-            .then(() => Reflect.apply(cb1, this, []))
-            .then(() => Reflect.apply(cb2, this, []));
-        };
+        if (/Update$/.test(key)) {
+          this[key] = function() {
+            Reflect.apply(cb1, this, []);
+            Reflect.apply(cb2, this, []);
+          };
+        } else {
+          this[key] = function() {
+            return Promise.resolve()
+              .then(() => Reflect.apply(cb1, this, []))
+              .then(() => Reflect.apply(cb2, this, []));
+          };
+        }
       } else {
         if (key === 'propertyMap') {
           throw new Error('cannot configure propertyMap directly');
@@ -119,16 +126,27 @@ class PersistentPropertyConfig {
   }
 
   configure(config: IPersistentPropertyConfig): void {
-    if (config.path) {
-      this.path = config.path;
-    }
-    if (config.accessorsClass) {
-      if (this.typeIsDefined) {
-        throw new Error('already configured property type');
+    Object.keys(config).forEach(key => {
+      switch(key) {
+        case 'path':
+          this.path = config[key];
+          break;
+        case 'accessorsClass':
+          if (this.typeIsDefined) {
+            throw new Error('already configured property type');
+          }
+          let parameters = config.parameters || [];
+          this.accessors = Reflect.construct(config[key], [this.config, this.propertyKey, ...parameters]);
+          this.typeIsDefined = true;
+          break;
+        case 'parameters':
+          // see 'accessorsClass'
+          break;
+        default:
+          throw new Error(`entity key '${key}' is not a valid configuration`);
       }
-      this.accessors = new config.accessorsClass(this.config, this.propertyKey, config.parameters);
-      this.typeIsDefined = true;
-    } else if (!this.typeIsDefined) {
+    });
+    if (!this.typeIsDefined) {
       this.accessors = new PrimitiveAccessors(this.config, this.propertyKey);
     }
   }

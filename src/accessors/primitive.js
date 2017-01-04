@@ -2,6 +2,8 @@ import {PersistentConfig} from '../persistent-config';
 import {PersistentData} from '../persistent-data';
 import {Util} from '../util';
 
+const updateHookTriggers = new WeakSet();
+
 export class PrimitiveAccessors {
   config: PersistentConfig;
   fullPath: string;
@@ -28,9 +30,22 @@ export class PrimitiveAccessors {
     let oldValue = PersistentData.getProperty(target, this.fullPath);
     let update = oldValue !== value;
     if (update) {
-      triggerHooks && Util.applySafe(this.config.preUpdate, target);
+      let runningUpdateHooks = updateHookTriggers.has(target);
+      if (runningUpdateHooks) {
+        triggerHooks = false;
+      } else {
+        updateHookTriggers.add(target);
+      }
+      if (triggerHooks) {
+        Util.applySafe(this.config.preUpdate, target);
+      }
       PersistentData.setProperty(target, this.fullPath, value);
-      triggerHooks && Util.applySafe(this.config.postUpdate, target);
+      if (triggerHooks) {
+        Util.applySafe(this.config.postUpdate, target);
+      }
+      if (!runningUpdateHooks) {
+        updateHookTriggers.delete(target);
+      }
     }
     return update;
   }
