@@ -1,29 +1,26 @@
 import {PersistentConfig} from '../persistent-config';
 import {PersistentObject} from '../persistent-object';
 
-export function Entity(path?: string): ClassDecorator {
+function decoratorFactory(path?: string, obj: any) {
   return function(Target: PClass) {
     if (!path) {
       // FIXME warn Function.name
       path = Target.name.toLowerCase();
     }
+    obj['path'] = path;
     const config = PersistentConfig.get(Target);
-    config.configure({path});
+    config.configure(obj);
     return PersistentObject.byDecoration(Target, true);
   };
 }
 
-export function LocalEntity(path?: string): ClassDecorator {
-  return function(Target: PClass) {
-    if (!path) {
-      // FIXME warn Function.name
-      path = Target.name.toLowerCase();
-    }
-    const config = PersistentConfig.get(Target);
-    config.configure({
-      path,
-      cacheOnly: true,
-      nonPersistent: true
-    });
-  };
+export function Entity(path?: string): ClassDecorator {
+  return decoratorFactory(path, {});
+}
+
+export function PhonyEntity(path?: string): ClassDecorator {
+  return decoratorFactory(path, {
+    cacheOnly: true,
+    nonPersistent: true
+  });
 }
