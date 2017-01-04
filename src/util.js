@@ -17,7 +17,9 @@ export class Util {
       }
       let config = PersistentConfig.get(target);
       config.configure({[hook]: fn});
-      config.hookProperties.push(propertyKey);
+      if (!config.hookProperties.includes(propertyKey)) {
+        config.hookProperties.push(propertyKey);
+      }
       return {
         configurable: true,
         enumerable: false,

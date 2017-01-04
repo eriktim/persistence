@@ -4,7 +4,7 @@ export function Transient(): PropertyDecorator {
       configurable: true,
       enumerable: true,
       writable: true,
-      value: undefined
+      value: '(transient)'
     });
   };
 }

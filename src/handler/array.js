@@ -2,6 +2,8 @@ import {PersistentData} from '../persistent-data';
 
 const PROP_LENGTH = 'length';
 
+// TODO Type or Relationship!!! FIXME
+
 export function arrayHandlerFactory(Type: any): ProxyHandler {
   return {
     get: function(target, property) {

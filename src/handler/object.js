@@ -17,15 +17,14 @@ export const objectHandler = {
     let isRemoved = entity ? Reflect.getMetadata(
         Metadata.ENTITY_IS_REMOVED, entity) : false;
     if (isRemoved) {
-      throw new Error('cannot set value of removed entity');
+      return false; // cannot set value of removed entity
     }
     const config = PersistentConfig.get(target);
     let propConfig = config.getProperty(propertyKey);
     if (propConfig) {
       propConfig.accessors.set(receiver, value);
-    } else {
-      target[propertyKey] = value;
     }
+    target[propertyKey] = value;
     return true;
   }
 };

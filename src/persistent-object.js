@@ -47,6 +47,14 @@ export class PersistentObject {
         Reflect.apply(onNewObject, null, [obj, entity]);
       }
     }
+    for (let propertyKey in obj) {
+      Reflect.defineProperty(obj, propertyKey, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: undefined
+      });
+    }
     let isExtensible = obj === entity ?
         PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
     if (!isExtensible) {
