@@ -11,10 +11,10 @@ const exports = [
   'Embedded',
   'Entity',
   'EntityManager',
-  'FakeEntity',
   'Id',
   'ManyToOne',
   'OneToOne',
+  'PhonyEntity',
   'PostLoad',
   'PostPersist',
   'PostRemove',
@@ -24,7 +24,6 @@ const exports = [
   'PreUpdate',
   'Property',
   'Temporal',
-  'TemporalFormat',
   'Transient'
 ];
 

@@ -80,7 +80,8 @@ export class Util {
 
   static isInt(value: any): boolean {
     let num = Number.parseInt(value, 10);
-    return String(num) === value;
+    return typeof value === 'string' ?
+        String(num) === value : num === value;
   }
 
   static isObject(value: any): boolean {
