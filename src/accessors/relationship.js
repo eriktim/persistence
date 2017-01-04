@@ -1,6 +1,6 @@
 import {Metadata} from '../metadata';
 import {getEntity} from '../persistent-object';
-import {getUri, idFromUri, awaitRelationship} from '../entity-manager';
+import {getUri, idFromUri, awaitUri} from '../entity-manager';
 
 import {PrimitiveAccessors} from './primitive';
 
@@ -15,13 +15,13 @@ export class RelationshipAccessors extends PrimitiveAccessors {
         let id = idFromUri(uri);
         return id ? await entityManager.find(Type, id) : undefined;
       },
-      objectToData: async function(obj: any) {
-        if (!(value instanceof Type)) {
-          throw new TypeError('invalid reference object');
+      objectToData: function(obj: any) {
+        if (!(obj instanceof Type)) {
+          throw new TypeError('invalid relationship object');
         }
         let uri = getUri(obj);
         let promise = uri ? Promise.resolve(uri) : awaitUri(obj);
-        return promise.then(() => {
+        return promise.then(uri => {
           const entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, obj);
           const config = entityManager.config;
           return config.wrapUri(uri);
@@ -62,7 +62,7 @@ export class RelationshipAccessors extends PrimitiveAccessors {
     const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
     if (relationship) {
       relationships.delete(relationship);
-      setUnresolvedRelation(entity, relationship, null);
+      setUnresolvedRelation(entity, relationship, null); // TODO FIXME
     }
     this.converter.objectToData(value).then(data => {
       // don't wait for me
