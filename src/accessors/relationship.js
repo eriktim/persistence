@@ -31,6 +31,7 @@ export class RelationshipAccessors extends PrimitiveAccessors {
   }
 
   converter;
+  pendingSet;
 
   constructor(...rest) {
     super(...rest);
@@ -62,12 +63,16 @@ export class RelationshipAccessors extends PrimitiveAccessors {
     const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
     if (relationship) {
       relationships.delete(relationship);
-      setUnresolvedRelation(entity, relationship, null); // TODO FIXME
+      if (this.pendingSet) {
+        this.pendingSet.reject();
+      }
     }
-    this.converter.objectToData(value).then(data => {
+    this.pendingSet = this.converter.objectToData(value);
+    this.pendingSet.then(data => {
       // don't wait for me
+      this.pendingSet = null;
       super.set(target, data);
-    });
+    }, () => {});
     Reflect.defineMetadata(Metadata.ONE_TO_ONE, value, target, this.propertyKey);
     relationships.add(value);
     return true;

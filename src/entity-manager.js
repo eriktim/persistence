@@ -29,9 +29,11 @@ export async function awaitUri(entity) {
     pendingUriMap.set(entity, []);
   }
   let pendingUris = pendingUriMap.get(entity);
-  return new Promise(resolve => {
+  let p = new Promise((resolve, reject) => {
+    p.reject = reject;
     pendingUris.push(resolve);
   });
+  return p;
 }
 
 function assertEntity(entityManager, entity) {
