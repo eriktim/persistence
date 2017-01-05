@@ -17,7 +17,17 @@ export class RelationshipMapper implements IMapper {
     const config = entityManager.config;
     let uri = config.unwrapUri(data);
     let id = idFromUri(uri);
-    return id ? entityManager.find(this.objClass, id) : Promise.resolve(undefined);
+    if (!id) {
+      return Promise.resolve(undefined);
+    }
+    return entityManager.find(this.objClass, id).then(obj => {
+      const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
+      relationships.add(obj);
+      if (obj && !entityManager.contains(target) && entityManager.contains(obj)) {
+        entityManager.detach(obj);
+      }
+      return obj;
+    });
   }
 
   toData(target: PObject, obj: any): Promise<any> {
@@ -45,7 +55,7 @@ export class RelationshipMapper implements IMapper {
 
 export class RelationshipAccessors extends PrimitiveAccessors {
   mapper: RelationshipMapper;
-  pendingSet: Promise<any>;
+  abortPendingSet: Function;
 
   constructor(...rest) {
     super(...rest);
@@ -55,32 +65,31 @@ export class RelationshipAccessors extends PrimitiveAccessors {
 
   async get(target: PObject): any {
     let value = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
-    const entity = getEntity(target);
-    const entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, entity);
     if (!value) {
-      const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
       let data = super.get(target);
       value = await this.mapper.fromData(target, data);
       Reflect.defineMetadata(Metadata.ONE_TO_ONE, value, target, this.propertyKey);
-      relationships.add(value);
-    }
-    if (value && !entityManager.contains(target) && entityManager.contains(value)) {
-      entityManager.detach(value);
     }
     return value;
   }
 
-  set(target: PObject, value: any) {
+  set(target: PObject, value: any): boolean {
     const oldValue = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
     if (oldValue) {
       this.unlink(target, oldValue);
     }
-    this.pendingSet = this.mapper.toData(target, value);
-    this.pendingSet.then(data => {
-      // don't wait for me
-      this.pendingSet = null;
-      super.set(target, data);
-    }, () => {});
+    if (this.abortPendingSet) {
+      this.abortPendingSet();
+    }
+    let abort = new Promise(resolve => {
+      this.abortPendingSet = () => resolve(false);
+    });
+    Promise.race([this.mapper.toData(target, value), abort]).then(data => {
+      if (data) {
+        super.set(target, data);
+      }
+      this.abortPendingSet = null;
+    });
     Reflect.defineMetadata(Metadata.ONE_TO_ONE, value, target, this.propertyKey);
     return true;
   }

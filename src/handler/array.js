@@ -30,4 +30,4 @@ export function arrayHandlerFactory(mapper: IMapper): ProxyHandler {
       return true;
     }
   };
-};
+}

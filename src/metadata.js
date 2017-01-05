@@ -12,4 +12,5 @@ export class Metadata {
   static ONE_TO_ONE = 'persistence:one-to-one';
   static ONE_TO_ONE_PROPERTIES = 'persistence:one-to-one-properties';
   static PARENT = 'persistence:parent';
+  static PENDING_RELATIONSHIP = 'persistence:pending-relationship'
 }

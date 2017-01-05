@@ -25,15 +25,15 @@ export function idFromUri(uri) {
 }
 
 export async function awaitUri(entity) {
-  if (!pendingUriMap.has(entity)) {
-    pendingUriMap.set(entity, []);
+  if (!Reflect.hasMetadata(Metadata.PENDING_RELATIONSHIP, entity)) {
+    let r;
+    let p = new Promise(resolve => {
+      r = resolve;
+    });
+    pendingUriMap.set(entity, r);
+    Reflect.defineMetadata(Metadata.PENDING_RELATIONSHIP, p, entity);
   }
-  let pendingUris = pendingUriMap.get(entity);
-  let p = new Promise((resolve, reject) => {
-    p.reject = reject;
-    pendingUris.push(resolve);
-  });
-  return p;
+  return Reflect.getMetadata(Metadata.PENDING_RELATIONSHIP, entity);
 }
 
 function assertEntity(entityManager, entity) {
@@ -211,7 +211,8 @@ export class EntityManager {
             .then(() => {
               relationships.forEach(relationship => {
                 if (pendingUriMap.has(relationship)) {
-                  pendingUriMap.get(relationship).forEach(r => r(getUri(r)));
+                  let resolve = pendingUriMap.get(relationship);
+                  resolve(getUri(relationship));
                   pendingUriMap.delete(relationship);
                 }
               });
