@@ -1,0 +1,5 @@
+declare interface IMapper {
+  fromData: (target: PObject, data: any) => any;
+  toData: (target: PObject, obj: any) => any;
+  unlink?: (target: PObject, obj: any) => void;
+}

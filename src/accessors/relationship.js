@@ -4,53 +4,66 @@ import {getUri, idFromUri, awaitUri} from '../entity-manager';
 
 import {PrimitiveAccessors} from './primitive';
 
-export class RelationshipAccessors extends PrimitiveAccessors {
-  static converterFactory(Type: any) {
-    return {
-      dataToObject: async function(data: any, parent: any) {
-        const entity = getEntity(parent);
-        const entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, entity);
-        const config = entityManager.config;
-        let uri = config.unwrapUri(data);
-        let id = idFromUri(uri);
-        return id ? await entityManager.find(Type, id) : undefined;
-      },
-      objectToData: function(obj: any) {
-        if (!(obj instanceof Type)) {
-          throw new TypeError('invalid relationship object');
-        }
-        let uri = getUri(obj);
-        let promise = uri ? Promise.resolve(uri) : awaitUri(obj);
-        return promise.then(uri => {
-          const entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, obj);
-          const config = entityManager.config;
-          return config.wrapUri(uri);
-        });
-      }
-    };
+export class RelationshipMapper implements IMapper {
+  objClass: any;
+
+  constructor(objClass: any) {
+    this.objClass = objClass;
   }
 
-  converter;
-  pendingSet;
+  fromData(target: PObject, data: any): Promise<any> {
+    const entity = getEntity(target);
+    const entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, entity);
+    const config = entityManager.config;
+    let uri = config.unwrapUri(data);
+    let id = idFromUri(uri);
+    return id ? entityManager.find(this.objClass, id) : Promise.resolve(undefined);
+  }
+
+  toData(target: PObject, obj: any): Promise<any> {
+    if (!(obj instanceof this.objClass)) {
+      throw new TypeError('invalid relationship object');
+    }
+    const entity = getEntity(target);
+    const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
+    relationships.add(obj);
+    let uri = getUri(obj);
+    let promise = uri ? Promise.resolve(uri) : awaitUri(obj);
+    return promise.then(uri => {
+      const entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, obj);
+      const config = entityManager.config;
+      return config.wrapUri(uri);
+    });
+  }
+
+  unlink(target: PObject, obj: any) {
+    const entity = getEntity(target);
+    const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
+    relationships.delete(obj);
+  }
+}
+
+export class RelationshipAccessors extends PrimitiveAccessors {
+  mapper: RelationshipMapper;
+  pendingSet: Promise<any>;
 
   constructor(...rest) {
     super(...rest);
     let Type = this.parameters[0];
-    this.converter = RelationshipAccessors.converterFactory(Type);
+    this.mapper = new RelationshipMapper(Type);
   }
 
   async get(target: PObject): any {
-    const relationship = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
+    let value = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
     const entity = getEntity(target);
     const entityManager = Reflect.getMetadata(Metadata.ENTITY_MANAGER, entity);
-    if (!relationship) {
+    if (!value) {
       const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
       let data = super.get(target);
-      let value = await this.converter.dataToObject(data, target);
+      value = await this.mapper.fromData(target, data);
       Reflect.defineMetadata(Metadata.ONE_TO_ONE, value, target, this.propertyKey);
       relationships.add(value);
     }
-    let value = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
     if (value && !entityManager.contains(target) && entityManager.contains(value)) {
       entityManager.detach(value);
     }
@@ -58,23 +71,17 @@ export class RelationshipAccessors extends PrimitiveAccessors {
   }
 
   set(target: PObject, value: any) {
-    const relationship = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
-    const entity = getEntity(target);
-    const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
-    if (relationship) {
-      relationships.delete(relationship);
-      if (this.pendingSet) {
-        this.pendingSet.reject();
-      }
+    const oldValue = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
+    if (oldValue) {
+      this.unlink(target, oldValue);
     }
-    this.pendingSet = this.converter.objectToData(value);
+    this.pendingSet = this.mapper.toData(target, value);
     this.pendingSet.then(data => {
       // don't wait for me
       this.pendingSet = null;
       super.set(target, data);
     }, () => {});
     Reflect.defineMetadata(Metadata.ONE_TO_ONE, value, target, this.propertyKey);
-    relationships.add(value);
     return true;
   }
 }

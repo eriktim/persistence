@@ -2,17 +2,17 @@ import {Metadata} from '../metadata';
 import {arrayHandlerFactory} from '../handler/array';
 import {PersistentData} from '../persistent-data';
 
-import {ObjectAccessors} from './object';
+import {ObjectMapper} from './object';
 import {PrimitiveAccessors} from './primitive';
 
 function arrayProxy(data: any[], Type: any, parent?: any): Proxy {
-  let converter = ObjectAccessors.converterFactory(Type);
+  let mapper = new ObjectMapper(Type);
   let arr = [];
-  let proxy = new Proxy(arr, arrayHandlerFactory(converter.objectToData));
+  let proxy = new Proxy(arr, arrayHandlerFactory(mapper));
   PersistentData.inject(arr, data);
   if (parent) {
-    data.forEach(el => {
-      let obj = converter.dataToObject(el, parent);
+    data.forEach(item => {
+      let obj = mapper.fromData(parent, item);
       arr.push(obj);
     });
   }
