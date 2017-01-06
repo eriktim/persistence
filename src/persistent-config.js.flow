@@ -15,6 +15,6 @@ declare interface IPersistentConfig {
 
 declare interface IPersistentPropertyConfig {
   accessorsClass?: typeof accessorsClass;
-  parameters?: any[];
+  mapper?: IMapper;
   path?: string;
 }

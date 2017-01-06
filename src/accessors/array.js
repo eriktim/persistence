@@ -19,32 +19,27 @@ function arrayProxy(data: any[], mapper: IMapper, parent?: any): Proxy {
 
 export class ArrayAccessors extends PrimitiveAccessors {
   get(target: PObject): any {
-    if (!Reflect.hasMetadata(Metadata.COLLECTION, target, this.propertyKey)) {
+    if (!Reflect.hasMetadata(Metadata.ARRAY_REF, target, this.propertyKey)) {
       let data = super.get(target);
       if (!data) {
         data = [];
         super.setInternal(target, data);
       }
-      let mapper = this.parameters[1];
-      let arr = arrayProxy(data, mapper, target);
-      Reflect.defineMetadata(Metadata.COLLECTION, arr, target, this.propertyKey);
+      let arr = arrayProxy(data, this.mapper, target);
+      Reflect.defineMetadata(Metadata.ARRAY_REF, arr, target, this.propertyKey);
     }
-    return Reflect.getMetadata(Metadata.COLLECTION, target, this.propertyKey);
+    return Reflect.getMetadata(Metadata.ARRAY_REF, target, this.propertyKey);
   }
 
   set(target: PObject, value: any): boolean {
     if (!Array.isArray(value)) {
       throw new Error('invalid array');
     }
-    let [Type, mapper] = this.parameters;
     let values: any[] = value;
-    if (values.find(el => !(el instanceof Type))) {
-      throw new Error('invalid array element(s)');
-    }
     let data = values.map(el => PersistentData.extract(el));
     super.set(target, data);
-    let arr = arrayProxy(data, mapper, false);
-    Reflect.defineMetadata(Metadata.COLLECTION, arr, target, this.propertyKey);
+    let arr = arrayProxy(data, this.mapper, false);
+    Reflect.defineMetadata(Metadata.ARRAY_REF, arr, target, this.propertyKey);
     return true;
   }
 }

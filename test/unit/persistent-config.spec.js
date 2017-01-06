@@ -59,7 +59,7 @@ describe('PersistentConfig', () => {
 
   let propMap = {
     'accessorsClass': class Foo {},
-    'parameters': ['bar'],
+    'mapper': {},
     'path': 'bar'
   };
   let propFactory = (key, value) => {

@@ -1,4 +1,5 @@
-import {RelationshipAccessors} from '../accessors/relationship';
+import {RelationshipMapper} from '../accessors/mapper';
+import {ObjectAccessors} from '../accessors/object';
 import {PersistentConfig} from '../persistent-config';
 import {Metadata} from '../metadata';
 import {Util} from '../util';
@@ -15,12 +16,12 @@ export function OneToOne(Type: PClass): PropertyDecorator {
     }
     let config = PersistentConfig.get(target);
     config.configureProperty(propertyKey, {
-      accessorsClass: RelationshipAccessors,
-      parameters: [Type]
+      accessorsClass: ObjectAccessors,
+      mapper: new RelationshipMapper(Type)
     });
     let properties = Reflect.getMetadata(
-        Metadata.ONE_TO_ONE_PROPERTIES, target) || [];
+        Metadata.OBJECT_REF_PROPERTIES, target) || [];
     properties.push(propertyKey);
-    Reflect.defineMetadata(Metadata.ONE_TO_ONE_PROPERTIES, properties, target);
+    Reflect.defineMetadata(Metadata.OBJECT_REF_PROPERTIES, properties, target);
   };
 }

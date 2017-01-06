@@ -1,5 +1,5 @@
 import {ArrayAccessors} from '../accessors/array';
-import {ObjectMapper} from '../accessors/object';
+import {ObjectMapper} from '../accessors/mapper';
 import {Metadata} from '../metadata';
 import {PersistentConfig} from '../persistent-config';
 
@@ -11,11 +11,11 @@ export function Collection(Type: PClass): PropertyDecorator {
     let config = PersistentConfig.get(target);
     config.configureProperty(propertyKey, {
       accessorsClass: ArrayAccessors,
-      parameters: [Type, new ObjectMapper(Type)]
+      mapper: new ObjectMapper(Type)
     });
     let properties = Reflect.getMetadata(
-        Metadata.COLLECTION_PROPERTIES, target) || [];
+        Metadata.ARRAY_REF_PROPERTIES, target) || [];
     properties.push(propertyKey);
-    Reflect.defineMetadata(Metadata.COLLECTION_PROPERTIES, properties, target);
+    Reflect.defineMetadata(Metadata.ARRAY_REF_PROPERTIES, properties, target);
   };
 }

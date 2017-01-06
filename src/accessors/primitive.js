@@ -7,14 +7,14 @@ const updateHookTriggers = new WeakSet();
 export class PrimitiveAccessors {
   config: PersistentConfig;
   fullPath: string;
-  parameters: any[];
+  mapper: IMapper;
   propertyKey: PropertyKey;
 
-  constructor(config: PersistentConfig, propertyKey: PropertyKey, parameters: any[]) {
+  constructor(config: PersistentConfig, propertyKey: PropertyKey, mapper?: IMapper) {
     let propConfig = config.getProperty(propertyKey);
     this.fullPath = propConfig.fullPath;
     this.config = config;
-    this.parameters = parameters;
+    this.mapper = mapper || null;
     this.propertyKey = propertyKey;
   }
 

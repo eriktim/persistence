@@ -64,8 +64,7 @@ export class PersistentObject {
 
   static setData(obj: PObject, data: Object) {
     PersistentData.inject(obj, data);
-    clearMetadata(obj, Metadata.COLLECTION_PROPERTIES, Metadata.COLLECTION);
-    clearMetadata(obj, Metadata.EMBEDDED_PROPERTIES, Metadata.EMBEDDED);
-    clearMetadata(obj, Metadata.ONE_TO_ONE_PROPERTIES, Metadata.ONE_TO_ONE);
+    clearMetadata(obj, Metadata.ARRAY_REF_PROPERTIES, Metadata.ARRAY_REF);
+    clearMetadata(obj, Metadata.OBJECT_REF_PROPERTIES, Metadata.OBJECT_REF);
   }
 }
