@@ -4,7 +4,7 @@ export class Metadata {
   static ENTITY_IS_REMOVED = 'persistence:entity-is-removed';
   static ENTITY_MANAGER = 'persistence:entity-manager';
   static ENTITY_RELATIONSHIPS = 'persistence:entity-relationships';
-  static LOCATION = 'persistence:location';
+  static REST_LOCATION = 'persistence:rest-location';
   static OBJECT_REF = 'persistence:object-ref';
   static OBJECT_REF_PROPERTIES = 'persistence:object-ref-properties';
   static PARENT = 'persistence:parent';

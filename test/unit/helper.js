@@ -31,7 +31,7 @@ export function createEntityManagerStub(options: IConfig = {}) {
       path,
       body: Object.assign({}, body)
     });
-    Reflect.defineMetadata(Metadata.LOCATION, path + (path.endsWith('/') ? '' : '/') + (body.id || '1'), body);
+    Reflect.defineMetadata(Metadata.REST_LOCATION, path + (path.endsWith('/') ? '' : '/') + (body.id || '1'), body);
     return Promise.resolve(body);
   };
   return entityManager;

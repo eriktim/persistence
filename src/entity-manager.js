@@ -233,7 +233,7 @@ export class EntityManager {
                 [noId ? path : `${path}/${id}`, data]))
             .then(raw => {
               if (noId) {
-                let location = Reflect.getMetadata(Metadata.LOCATION, raw);
+                let location = Reflect.getMetadata(Metadata.REST_LOCATION, raw);
                 if (!location) {
                   throw new Error('REST server should return'
                       + ' the location of the new entity');
@@ -353,7 +353,7 @@ class Server {
               let location = response.headers.get('location');
               let promise = response.json();
               return location ? promise.then(obj => {
-                Reflect.defineMetadata(Metadata.LOCATION, location, obj);
+                Reflect.defineMetadata(Metadata.REST_LOCATION, location, obj);
                 return obj;
               }) : promise;
             }

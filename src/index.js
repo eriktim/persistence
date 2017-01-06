@@ -1,9 +1,3 @@
-// TODO
-// * PreUpdate
-// * PostUpdate
-// * version @ Embedded/Collection
-// * Symbol('originalData') a.k.a. reset
-
 export {Collectible} from './decorator/collectible';
 export {Collection} from './decorator/collection';
 export {Embeddable} from './decorator/embeddable';
