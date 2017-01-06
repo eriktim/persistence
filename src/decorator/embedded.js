@@ -1,5 +1,5 @@
-import {ObjectMapper} from '../accessors/mapper';
 import {ObjectAccessors} from '../accessors/object';
+import {ObjectMapper} from '../mapper/object';
 import {Metadata} from '../metadata';
 import {PersistentConfig} from '../persistent-config';
 

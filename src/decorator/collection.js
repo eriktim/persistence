@@ -1,5 +1,5 @@
 import {ArrayAccessors} from '../accessors/array';
-import {ObjectMapper} from '../accessors/mapper';
+import {ObjectMapper} from '../mapper/object';
 import {Metadata} from '../metadata';
 import {PersistentConfig} from '../persistent-config';
 

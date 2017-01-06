@@ -1,31 +1,7 @@
 import {Metadata} from '../metadata';
-import {PersistentData} from '../persistent-data';
 import {PersistentObject} from '../persistent-object';
 import {getEntity} from '../persistent-object';
 import {getUri, idFromUri, awaitUri} from '../entity-manager';
-
-import {PrimitiveAccessors} from './primitive';
-
-export class ObjectMapper implements IMapper {
-  objClass: any;
-
-  constructor(objClass: any) {
-    this.objClass = objClass;
-  }
-
-  fromData(target: PObject, data: any): Promise<any> {
-    let obj = new this.objClass();
-    PersistentObject.apply(obj, data, parent);
-    return obj;
-  }
-
-  toData(target: PObject, obj: any): any {
-    if (!(obj instanceof this.objClass)) {
-      throw new Error('invalid object type');
-    }
-    return PersistentData.extract(obj);
-  }
-}
 
 export class RelationshipMapper implements IMapper {
   objClass: any;
@@ -73,47 +49,5 @@ export class RelationshipMapper implements IMapper {
     const entity = getEntity(target);
     const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
     relationships.delete(obj);
-  }
-}
-
-export class RelationshipAccessors extends PrimitiveAccessors {
-  mapper: RelationshipMapper;
-  abortPendingSet: Function;
-
-  constructor(...rest) {
-    super(...rest);
-    let Type = this.parameters[0];
-    this.mapper = new RelationshipMapper(Type);
-  }
-
-  async get(target: PObject): any {
-    let value = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
-    if (!value) {
-      let data = super.get(target);
-      value = await this.mapper.fromData(target, data);
-      Reflect.defineMetadata(Metadata.ONE_TO_ONE, value, target, this.propertyKey);
-    }
-    return value;
-  }
-
-  set(target: PObject, value: any): boolean {
-    const oldValue = Reflect.getMetadata(Metadata.ONE_TO_ONE, target, this.propertyKey);
-    if (oldValue) {
-      this.unlink(target, oldValue);
-    }
-    if (this.abortPendingSet) {
-      this.abortPendingSet();
-    }
-    let abort = new Promise(resolve => {
-      this.abortPendingSet = () => resolve(false);
-    });
-    Promise.race([this.mapper.toData(target, value), abort]).then(data => {
-      if (data) {
-        super.set(target, data);
-      }
-      this.abortPendingSet = null;
-    });
-    Reflect.defineMetadata(Metadata.ONE_TO_ONE, value, target, this.propertyKey);
-    return true;
   }
 }

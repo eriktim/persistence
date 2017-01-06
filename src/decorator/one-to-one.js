@@ -1,4 +1,4 @@
-import {RelationshipMapper} from '../accessors/mapper';
+import {RelationshipMapper} from '../mapper/relationship';
 import {ObjectAccessors} from '../accessors/object';
 import {PersistentConfig} from '../persistent-config';
 import {Metadata} from '../metadata';

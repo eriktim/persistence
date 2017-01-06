@@ -25,7 +25,7 @@ export class ObjectAccessors extends PrimitiveAccessors {
       }
     }
     let data = this.mapper.toData(target, obj);
-    if (data instanceof Promise) {
+    if (data instanceof Promise) { // async mapper
       data.then(d => super.set(target, d));
       obj = Promise.resolve(obj);
     } else {
