@@ -16,7 +16,7 @@ export function asJasmineValue(value) {
   return value;
 }
 
-export function createEntityManagerStub(options = {}) {
+export function createEntityManagerStub(options: IConfig = {}) {
   let config = Config.create(Object.assign({baseUrl: URL}, options));
   let entityManager = new EntityManager(config);
   entityManager.requests = [];

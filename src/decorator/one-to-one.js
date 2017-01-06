@@ -8,7 +8,7 @@ const SELF_REF = 'self';
 
 export function OneToOne(Type: PClass): PropertyDecorator {
   if (Util.is(Type) && Type !== SELF_REF && !Type.isPersistent) {
-    throw new Error('@OneToOne requires a constructor argument');
+    throw new Error('@OneToOne requires an entity class');
   }
   return function(target: PObject, propertyKey: PropertyKey) {
     if (Type === SELF_REF) {

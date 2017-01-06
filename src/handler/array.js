@@ -18,11 +18,17 @@ export function arrayHandlerFactory(mapper: IMapper): ProxyHandler {
         let index = parseInt(property, 10);
         if (property === String(index)) {
           let arr = PersistentData.extract(target);
-          let data = mapper.toData(target, value);
-          if (data instanceof Promise) {
-            data.then(d => arr[index] = d); // deferred
+          if (value instanceof Promise) {
+            value.then(v => mapper.toData(target, v))
+                 .then(data => arr[index] = data);
           } else {
-            arr[index] = data;
+            let data = mapper.toData(target, value);
+            if (data instanceof Promise) { // async mapper
+              data.then(d => arr[index] = d);
+              value = Promise.resolve(value);
+            } else {
+              arr[index] = data;
+            }
           }
         }
       }

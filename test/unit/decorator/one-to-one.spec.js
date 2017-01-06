@@ -47,7 +47,7 @@ describe('@OneToOne()', () => {
   });
 
   it('invalid reference', () => {
-    expect(() => foo.bar = foo).toThrowError('invalid relationship object');
+    expect(() => foo.bar = foo).toThrowError('invalid related entity');
   });
 
   it('valid reference', () => {

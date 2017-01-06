@@ -37,7 +37,9 @@ export class PersistentObject {
   }
 
   static apply(obj: PObject, data: Object, parent?: PObject) {
-    Reflect.defineMetadata(Metadata.PARENT, parent, this);
+    if (parent) {
+      Reflect.defineMetadata(Metadata.PARENT, parent, obj);
+    }
     PersistentObject.setData(obj, data);
     let entity = getEntity(obj);
     if (entity) {
@@ -55,10 +57,12 @@ export class PersistentObject {
         value: undefined
       });
     }
-    let isExtensible = obj === entity ?
-        PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
-    if (!isExtensible) {
-      Object.preventExtensions(obj);
+    if (!Array.isArray(obj)) {
+      let isExtensible = obj === entity ?
+          PersistentConfig.get(entity).isExtensible : Object.isExtensible(entity);
+      if (!isExtensible) {
+        Object.preventExtensions(obj);
+      }
     }
   }
 

@@ -1,13 +1,14 @@
 import {Metadata} from '../metadata';
 import {arrayHandlerFactory} from '../handler/array';
 import {PersistentData} from '../persistent-data';
+import {PersistentObject} from '../persistent-object';
 
 import {PrimitiveAccessors} from './primitive';
 
 function arrayProxy(data: any[], mapper: IMapper, parent?: any): Proxy {
   let arr = [];
   let proxy = new Proxy(arr, arrayHandlerFactory(mapper));
-  PersistentData.inject(arr, data);
+  PersistentObject.apply(arr, data, parent);
   if (parent) {
     data.forEach(item => {
       let obj = mapper.fromData(parent, item);

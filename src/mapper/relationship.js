@@ -31,7 +31,7 @@ export class RelationshipMapper implements IMapper {
 
   toData(target: PObject, obj: any): Promise<any> {
     if (!(obj instanceof this.objClass)) {
-      throw new TypeError('invalid relationship object');
+      throw new TypeError('invalid related entity');
     }
     const entity = getEntity(target);
     const relationships = Reflect.getMetadata(Metadata.ENTITY_RELATIONSHIPS, entity);
